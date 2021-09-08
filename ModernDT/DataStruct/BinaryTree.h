@@ -1,11 +1,10 @@
 #pragma once
 #include "Container.h"
-#include "Basic.h"
 
 namespace mdt {
 
 	template<typename T>
-	class BinaryTree
+	class BinaryTree : public IContainer<T>, public IConvert<T>
 	{
 	private:
 		template<typename T>
@@ -20,6 +19,8 @@ namespace mdt {
 
 			~Node()
 			{
+				free_smem(_left);
+				free_smem(_right);
 			}
 		};
 
@@ -29,6 +30,9 @@ namespace mdt {
 
 	public:
 		friend List<T>;
+		friend Set<T>;
+		friend Stack<T>;
+		friend Queue<T>;
 
 	public:
 		BinaryTree() {}
@@ -36,11 +40,12 @@ namespace mdt {
 		BinaryTree(const T& _root)
 			: m_Root(new Node<T>(_root)), m_Size(1) {}
 
-		virtual ~BinaryTree()
+		~BinaryTree()
 		{
 			delete m_Root;
 		}
 
+		// Utility
 		bool Insert(const T& _value)
 		{
 			if (!m_Root) {
@@ -74,12 +79,32 @@ namespace mdt {
 					parent->_right = new Node<T>(_value);
 				}
 
+				free_smem(parent);
+				free_smem(child);
+
 				m_Size++;
 				return true;
 
 			}
 			return false;
 		}
+
+		bool InsertRange(const IContainer<T>& _container)
+		{
+			for (const auto& item : _container.Data()) {
+				Insert(item);
+			}
+			return true;
+		}
+
+		bool InsertRange(const std::initializer_list<T>& _initList)
+		{
+			for (const auto& item : _initList) {
+				Insert(item);
+			}
+			return true;
+		}
+
 
 		bool Remove(const T& _value)
 		{
@@ -133,8 +158,8 @@ namespace mdt {
 				}
 			}
 
-			delete parent;
-			delete child;
+			free_smem(parent);
+			free_smem(child);
 
 			m_Size--;
 			return found;
@@ -145,9 +170,27 @@ namespace mdt {
 			return false;
 		}
 
-		T Find(const T& _value) const
+		bool Contains(const T& _value) const
 		{
+			Node<T>* parent = nullptr;
+			Node<T>* child = m_Root;
 
+			while (child) {
+				if (child->_value == _value)
+					return true;
+
+				if (_value < child->_value) {
+					parent = child;
+					child = child->_left;
+				}
+				else if (_value > child->_value) {
+					parent = child;
+					child = child->_right;
+				}
+			}
+
+			free_smem(parent);
+			free_smem(child);
 			return false;
 		}
 
@@ -168,26 +211,50 @@ namespace mdt {
 		}
 
 		// Accessors
-		constexpr inline Node<T>* Root() const { return m_Root; }
-		constexpr inline size_t Size() const { return m_Size; }
+		constexpr inline T& Root() const { return m_Root->_value; }
+		constexpr inline size_t Capacity() const override { return m_Size; }
+
+		// IConvert
+		virtual List<T> ToList() const override
+		{
+			List<T> list(m_Size);
+			return list;
+		}
+
+		virtual Set<T> ToSet() const override
+		{
+			Set<T> set(m_Size);
+			return set;
+		}
+
+		virtual Stack<T> ToStack() const override
+		{
+			Stack<T> stack(m_Size);
+			return stack;
+		}
+
+		virtual Queue<T> ToQueue() const override
+		{
+			Queue<T> queue(m_Size);
+			return queue;
+		}
+
+		// IContainer
+		virtual void ForEach(Param<const T&> _param) override
+		{
+			Traverse(m_Root, _param);
+		}
+
+		virtual T* Data() const override
+		{
+			return ToList().Data();
+		}
 
 		// Operator Overloads
 		friend std::ostream& operator<<(std::ostream& _stream, BinaryTree<T>& _current)
 		{
 			_stream << _current.ToList();
 			return _stream;
-		}
-
-		// Conversions
-		List<T> ToList()
-		{
-			List<T> list(m_Size);
-			return list;
-		}
-
-		void ForEach(Param<const T&> _param)
-		{
-			Traverse(m_Root, _param);
 		}
 
 	private:
@@ -200,13 +267,26 @@ namespace mdt {
 			}
 		}
 
-		void Print(const T& _value)
+		List<T>& GetData()
 		{
-			std::cout << _value << std::endl;
+			m_Data.Clear();
+			Collect(m_Root, m_Data);
+			return m_Data;
+		}
+
+		void Collect(Node<T>* _current, List<T>& _container)
+		{
+			if (_current) {
+				_container.Add(_current._value);
+				Collect(_current->_left, _container);
+				Collect(_current->_right, _container);
+			}
 		}
 
 	private:
 		Node<T>* m_Root = nullptr;
 		size_t m_Size = 0;
+
+		List<T> m_Data;
 	};
 }

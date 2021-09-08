@@ -4,10 +4,13 @@
 namespace mdt {
 
 	template<typename T>
-	class List : public DataContainer<T>
+	class List : public DataContainer<T>, public IContainer<T>
 	{
 	public:
 		using Iterator = DataContainer<T>::Iterator;
+
+	public:
+		friend IContainer<T>;
 
 	public:
 		List() 
@@ -15,30 +18,41 @@ namespace mdt {
 			ReAlloc(2);
 		}
 
-		List(size_t size)
-			: m_Capacity(size)
+		List(size_t _size)
+			: m_Capacity(_size)
 		{
 			ReAlloc(m_Capacity);
 		}
 
-		List(const List<T>& other)
+		List(const std::initializer_list<T>& _initList)
+			: m_Data(_initList)
 		{
-			
 		}
 
-		List(List<T>&& other)
+		List(const List<T>& _other)
+			: m_Data(_other.m_Data), m_Capacity(_other.m_Capacity)
 		{
+			__super::m_Size = _other.m_Size;
+		}
+
+		List(List<T>&& _other) noexcept
+			: m_Capacity(_other.m_Capacity)
+		{
+			m_Data = std::move(_other.m_Data);
+			__super::m_Size = _other.m_Size;
+
+			free_amem(_other.m_Data);
 		}
 
 		~List()
 		{
-			delete[] m_Data;
+			free_amem(m_Data);
 		}
 
 		// Override Methods
 		virtual bool Add(const T& _value) override
 		{
-			if (__super::m_Size <= m_Capacity) {
+			if (__super::m_Size >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
 			}
 
@@ -46,6 +60,38 @@ namespace mdt {
 			__super::m_Size++;
 
 			return true;
+		}
+
+		virtual bool AddRange(const IContainer<T>& _container) override
+		{
+			if (_container.Data()) {
+				size_t size = _container.Capacity();
+				for (size_t i = 0; i < size; i++)
+					Add(_container.Data()[i]);
+				return true;
+			}
+			return false;
+		}
+
+		virtual bool AddRange(const std::initializer_list<T>& _initList)
+		{
+			if (_initList.size() > 0) {
+				for (auto& item : _initList)
+					Add(item);
+				return true;
+			}
+			return false;
+		}
+
+		virtual bool AddRange(const std::vector<T>& _vector)
+		{
+			if (_vector.data()) {
+				size_t size = _vector.size();
+				for (size_t i = 0; i < size; i++)
+					Add(_vector.data()[i]);
+				return true;
+			}
+			return false;
 		}
 
 		virtual bool Remove(const T& _value) override
@@ -71,7 +117,7 @@ namespace mdt {
 
 		virtual bool RemoveAt(size_t _index) override
 		{
-			if (_index > 0 && _index < __super::m_Size) {
+			if (_index >= 0 && _index < __super::m_Size) {
 				return Remove(m_Data[_index]);
 			}
 			return false;
@@ -95,18 +141,28 @@ namespace mdt {
 			__super::m_Size = 0;
 		}
 
+		// IContainer
+		virtual void ForEach(Param<const T&> _param) override
+		{
+			for (size_t i = 0; i < __super::m_Size; i++) {
+				_param(m_Data[i]);
+			}
+		}
+
+		constexpr virtual T* Data() const override { return m_Data; }
+
 		// Accessors
-		constexpr inline size_t Capacity() const { return m_Capacity; }
+		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
 		inline void SetCapacity(size_t _capacity) { m_Capacity = _capacity; }
 
 		// Iterator
-		constexpr virtual Iterator begin() override
+		constexpr Iterator begin() override
 		{
 			return Iterator(m_Data);
 		}
 
-		constexpr virtual Iterator end() override
+		constexpr Iterator end() override
 		{
 			return Iterator(m_Data + __super::m_Size);
 		}

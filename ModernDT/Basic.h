@@ -1,5 +1,9 @@
 #pragma once
 
+#define free_smem(x)		x = nullptr; delete x;
+#define free_amem(x)		x = nullptr; delete[] x;
+
+
 namespace mdt {
 
 	typedef void(*Void)();
@@ -12,4 +16,6 @@ namespace mdt {
 
 	template<typename RType, typename ... Args>
 	using Dynamic = RType(*)(Args...);
+
+
 }

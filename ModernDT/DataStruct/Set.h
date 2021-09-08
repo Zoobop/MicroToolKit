@@ -5,7 +5,7 @@
 namespace mdt {
 
 	template<typename T>
-	class Set : public DataContainer<T>
+	class Set : public DataContainer<T>, public IContainer<T>
 	{
 	public:
 		using Iterator = DataContainer<T>::Iterator;
@@ -16,18 +16,31 @@ namespace mdt {
 			ReAlloc(2);
 		}
 
-		Set(size_t size)
-			: m_Capacity(size)
+		Set(size_t _size)
+			: m_Capacity(_size)
 		{
 			ReAlloc(m_Capacity);
 		}
 
-		Set(const Set<T>& other)
+		Set(const std::initializer_list<T>& _initList)
+			: m_Data(_initList), m_Capacity(_initList.size() * 2)
 		{
+			__super::m_Size = _initList.size();
 		}
 
-		Set(Set<T>&& other)
+		Set(const Set<T>& _other)
+			: m_Data(_other.m_Data), m_Capacity(_other.m_Capacity)
 		{
+			__super::m_Size = _other.m_Size;
+		}
+
+		Set(Set<T>&& _other) noexcept
+			: m_Capacity(_other.m_Capacity)
+		{
+			m_Data = std::move(_other.m_Data);
+			__super::m_Size = _other.m_Size;
+
+			free_amem(_other.m_Data);
 		}
 
 		~Set()
@@ -45,6 +58,17 @@ namespace mdt {
 
 				m_Data[__super::m_Size] = _value;
 				__super::m_Size++;
+				return true;
+			}
+			return false;
+		}
+
+		virtual bool AddRange(const IContainer<T>& _container) override
+		{
+			if (_container.Data()) {
+				size_t size = _container.Capacity();
+				for (size_t i = 0; i < size; i++)
+					Add(_container.Data()[i]);
 				return true;
 			}
 			return false;
@@ -94,8 +118,18 @@ namespace mdt {
 			__super::m_Size = 0;
 		}
 
+		// IContainer
+		virtual void ForEach(Param<const T&> _param) override
+		{
+			for (size_t i = 0; i < __super::m_Size; i++) {
+				_param(m_Data[i]);
+			}
+		}
+
+		constexpr virtual T* Data() const override { return m_Data; }
+
 		// Accessors
-		constexpr inline size_t Capacity() const { return m_Capacity; }
+		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
 		// Iterator
 		constexpr virtual Iterator begin() override

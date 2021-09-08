@@ -22,6 +22,8 @@
     <ClInclude Include="DataStruct\Stack.h" />
     <ClInclude Include="DataStruct\Tuple.h" />
     <ClInclude Include="Basic.h" />
+    <ClInclude Include="Interfaces\IContainer.h" />
+    <ClInclude Include="Interfaces\IConvert.h" />
     <ClInclude Include="ModernDT.h" />
   </ItemGroup>
   <ItemGroup>

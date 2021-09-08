@@ -51,6 +51,12 @@
     <ClInclude Include="DataStruct\LinkedList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Interfaces\IContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces\IConvert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Lab.cpp">

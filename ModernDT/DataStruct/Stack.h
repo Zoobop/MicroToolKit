@@ -5,7 +5,7 @@
 namespace mdt {
 
 	template<typename T>
-	class Stack
+	class Stack : public IContainer<T>
 	{
 	public:
 		using ValueType = T;
@@ -23,13 +23,22 @@ namespace mdt {
 			ReAlloc(m_Capacity);
 		}
 
-		Stack(const Stack<T>& other)
+		Stack(const std::initializer_list<T>& _initList)
+			: m_Data(_initList), m_Size(_initList.size()), m_Capacity(m_Size * 2)
 		{
-
 		}
 
-		Stack(Stack<T>&& other)
+		Stack(const Stack<T>& _other)
+			: m_Data(_other.m_Data), m_Size(_other.m_Size), m_Capacity(_other.m_Capacity)
 		{
+		}
+
+		Stack(Stack<T>&& _other) noexcept
+			: m_Size(_other.m_Size), m_Capacity(_other.m_Capacity)
+		{
+			m_Data = std::move(_other.m_Data);
+
+			free_amem(_other.m_Data);
 		}
 
 		~Stack()
@@ -76,9 +85,19 @@ namespace mdt {
 			m_Size = 0;
 		}
 
+		// IContainer
+		virtual void ForEach(Param<const T&> _param) override
+		{
+			for (size_t i = 0; i < m_Size; i++) {
+				_param(m_Data[i]);
+			}
+		}
+
+		constexpr virtual T* Data() const override { return m_Data; }
+
 		// Accessors
 		constexpr inline size_t Size() const { return m_Size; }
-		constexpr inline size_t Capacity() const { return m_Capacity; }
+		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
 		// Iterator
 		constexpr virtual Iterator begin()

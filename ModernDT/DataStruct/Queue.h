@@ -5,7 +5,7 @@
 namespace mdt {
 
 	template<typename T>
-	class Queue
+	class Queue : public IContainer<T>
 	{
 	public:
 		using ValueType = T;
@@ -17,19 +17,37 @@ namespace mdt {
 			ReAlloc(2);
 		}
 
-		Queue(size_t size)
-			: m_Capacity(size) 
+		Queue(size_t _size)
+			: m_Capacity(_size) 
 		{
 			ReAlloc(m_Capacity);
 		}
 
-		Queue(const Queue<T>& other)
+		Queue(const std::initializer_list<T>& _initList)
+			: m_Data(_initList), m_Size(_initList.size()), m_Capacity(m_Size * 2)
 		{
-
 		}
 
-		Queue(Queue<T>&& other)
+		Queue(const IContainer<T>& _container)
+			: m_Data(_container.Data()), m_Capacity(_container.Capacity())
 		{
+			m_Size = 0;
+			for (auto& item : m_Data) {
+				m_Size++;
+			}
+		}
+
+		Queue(const Queue<T>& _other)
+			: m_Data(_other.m_Data), m_Size(_other.m_Size), m_Capacity(_other.m_Capacity)
+		{
+		}
+
+		Queue(Queue<T>&& _other) noexcept
+			: m_Size(_other.m_Size), m_Capacity(_other.m_Capacity)
+		{
+			m_Data = std::move(_other.m_Data);
+
+			free_amem(_other.m_Data);
 		}
 
 		~Queue()
@@ -79,14 +97,27 @@ namespace mdt {
 
 		void Clear()
 		{
-			for (size_t i = 0; i < m_Size; )
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				m_Data[i].~T();
+			}
 			m_Data = nullptr;
 			m_Size = 0;
 		}
 
+		// IContainer
+		virtual void ForEach(Param<const T&> _param) override
+		{
+			for (size_t i = 0; i < m_Size; i++) {
+				_param(m_Data[i]);
+			}
+		}
+
+		constexpr virtual T* Data() const override { return m_Data; }
+
 		// Accessors
 		constexpr inline size_t Size() const { return m_Size; }
-		constexpr inline size_t Capacity() const { return m_Capacity; }
+		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
 		// Iterator
 		constexpr Iterator begin()
