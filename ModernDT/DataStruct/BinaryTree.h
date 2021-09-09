@@ -196,7 +196,10 @@ namespace mdt {
 
 		void Clear()
 		{
-			
+			ForEach([&](const T& _value)
+				{
+					_value.~T();
+				});
 		}
 
 		// Iterators
@@ -215,39 +218,45 @@ namespace mdt {
 		constexpr inline size_t Capacity() const override { return m_Size; }
 
 		// IConvert
-		virtual List<T> ToList() const override
+		virtual List<T> ToList() override
 		{
 			List<T> list(m_Size);
+			ForEach([&](const T& _value)
+				{
+					list.Add(_value);
+				});
 			return list;
 		}
 
-		virtual Set<T> ToSet() const override
+		virtual Set<T> ToSet() override
 		{
 			Set<T> set(m_Size);
 			return set;
 		}
 
-		virtual Stack<T> ToStack() const override
+		virtual Stack<T> ToStack() override
 		{
 			Stack<T> stack(m_Size);
 			return stack;
 		}
 
-		virtual Queue<T> ToQueue() const override
+		virtual Queue<T> ToQueue() override
 		{
 			Queue<T> queue(m_Size);
 			return queue;
 		}
 
 		// IContainer
-		virtual void ForEach(Param<const T&> _param) override
+		virtual void ForEach(const Param<const T&>& _param) override
 		{
 			Traverse(m_Root, _param);
 		}
 
-		virtual T* Data() const override
+		constexpr virtual T* Data() const override
 		{
-			return ToList().Data();
+			m_Data.Clear();
+			Collect(m_Root);
+			return m_Data.Data();
 		}
 
 		// Operator Overloads
@@ -258,7 +267,7 @@ namespace mdt {
 		}
 
 	private:
-		void Traverse(const Node<T>* _current, Param<const T&> _param)
+		void Traverse(const Node<T>* _current, const Param<const T&>& _param)
 		{
 			if (_current) {
 				_param(_current->_value);
@@ -267,19 +276,12 @@ namespace mdt {
 			}
 		}
 
-		List<T>& GetData()
-		{
-			m_Data.Clear();
-			Collect(m_Root, m_Data);
-			return m_Data;
-		}
-
-		void Collect(Node<T>* _current, List<T>& _container)
+		void Collect(const Node<T>* _current) const
 		{
 			if (_current) {
-				_container.Add(_current._value);
-				Collect(_current->_left, _container);
-				Collect(_current->_right, _container);
+				m_Data.Add(_current->_value);
+				Collect(_current->_left);
+				Collect(_current->_right);
 			}
 		}
 
@@ -287,6 +289,6 @@ namespace mdt {
 		Node<T>* m_Root = nullptr;
 		size_t m_Size = 0;
 
-		List<T> m_Data;
+		mutable List<T> m_Data;
 	};
 }

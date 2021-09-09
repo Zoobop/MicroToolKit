@@ -153,7 +153,7 @@ namespace mdt {
 		}
 
 		// IConvert
-		virtual List<T> ToList() const override
+		virtual List<T> ToList() override
 		{
 			List<T> list(m_Size);
 			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
@@ -162,7 +162,7 @@ namespace mdt {
 			return list;
 		}
 
-		virtual Set<T> ToSet() const override
+		virtual Set<T> ToSet() override
 		{
 			Set<T> set(m_Size);
 			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
@@ -171,7 +171,7 @@ namespace mdt {
 			return set;
 		}
 
-		virtual Stack<T> ToStack() const override
+		virtual Stack<T> ToStack() override
 		{
 			Stack<T> stack(m_Size);
 			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
@@ -180,7 +180,7 @@ namespace mdt {
 			return stack;
 		}
 
-		virtual Queue<T> ToQueue() const override
+		virtual Queue<T> ToQueue() override
 		{
 			Queue<T> queue(m_Size);
 			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
@@ -190,16 +190,18 @@ namespace mdt {
 		}
 
 		// IContainer
-		virtual void ForEach(Param<const T&> _param) override
+		virtual void ForEach(const Param<const T&>& _param) override
 		{
 			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
 				_param(node->_value);
 			}
 		}
 
-		virtual T* Data() const override
+		constexpr virtual T* Data() const override
 		{
-			return ToList().Data();
+			m_Data.Clear();
+			Collect();
+			return m_Data.Data();
 		}
 
 		// Operator Overloads
@@ -209,9 +211,19 @@ namespace mdt {
 			return _stream;
 		}
 	private:
+		void Collect() const
+		{
+			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
+				m_Data.Add(node->_value);
+			}
+		}
+
+	private:
 		Node<T>* m_Head = nullptr;
 		Node<T>* m_Tail = nullptr;
 		size_t m_Size = 0;
+
+		mutable List<T> m_Data;
 	};
 
 }

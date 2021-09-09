@@ -8,6 +8,12 @@ static int count = 0;
 
 #define DEBU
 
+template<typename T>
+__interface Interface
+{
+	void Foreach(const Param<const T&>& _param);
+};
+
 struct Data
 {
 	std::string data;
@@ -134,4 +140,16 @@ int main()
 	Data data3("Data 3");
 	Data data4("Data 4");
 	Data data5("Data 5");
+
+	binaryTree.ForEach([&list](const Data& x)
+		{
+			list.Add(x);
+		});
+
+	binaryTree.Insert(data1);
+	binaryTree.Insert(data2);
+	binaryTree.Insert(data3);
+	binaryTree.Insert(data4);
+
+	LOG(binaryTree);
 }

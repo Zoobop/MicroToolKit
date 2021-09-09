@@ -86,7 +86,7 @@ namespace mdt {
 		}
 
 		// IContainer
-		virtual void ForEach(Param<const T&> _param) override
+		virtual void ForEach(const Param<const T&>& _param) override
 		{
 			for (size_t i = 0; i < m_Size; i++) {
 				_param(m_Data[i]);

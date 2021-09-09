@@ -10,10 +10,10 @@ namespace mdt {
 	template<typename T>
 	__interface IConvert
 	{
-		List<T> ToList() const;
-		Set<T> ToSet() const;
-		Stack<T> ToStack() const;
-		Queue<T> ToQueue() const;
+		List<T> ToList();
+		Set<T> ToSet();
+		Stack<T> ToStack();
+		Queue<T> ToQueue();
 	};
 
 }

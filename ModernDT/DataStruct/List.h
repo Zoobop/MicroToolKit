@@ -142,7 +142,7 @@ namespace mdt {
 		}
 
 		// IContainer
-		virtual void ForEach(Param<const T&> _param) override
+		virtual void ForEach(const Param<const T&>& _param) override
 		{
 			for (size_t i = 0; i < __super::m_Size; i++) {
 				_param(m_Data[i]);
@@ -154,7 +154,7 @@ namespace mdt {
 		// Accessors
 		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
-		inline void SetCapacity(size_t _capacity) { m_Capacity = _capacity; }
+		constexpr inline void SetCapacity(size_t _capacity) { m_Capacity = _capacity; }
 
 		// Iterator
 		constexpr Iterator begin() override
