@@ -45,7 +45,7 @@
     <ClInclude Include="DataStruct\Stack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Basic.h">
+    <ClInclude Include="Core\Function.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataStruct\LinkedList.h">
@@ -55,6 +55,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Interfaces\IConvert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

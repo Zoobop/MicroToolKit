@@ -18,23 +18,20 @@ namespace mdt {
 		}
 
 		Queue(size_t _size)
-			: m_Capacity(_size) 
+			: m_Capacity(_size)
 		{
 			ReAlloc(m_Capacity);
 		}
 
-		Queue(const std::initializer_list<T>& _initList)
-			: m_Data(_initList), m_Size(_initList.size()), m_Capacity(m_Size * 2)
+		Queue(std::initializer_list<T>&& _initList)
 		{
-		}
+			size_t size = 0;
+			for (const auto& _item : _initList)
+				size++;
 
-		Queue(const IContainer<T>& _container)
-			: m_Data(_container.Data()), m_Capacity(_container.Capacity())
-		{
-			m_Size = 0;
-			for (auto& item : m_Data) {
-				m_Size++;
-			}
+			ReAlloc(size);
+			for (const auto& _item : _initList)
+				Enqueue(std::move((T&&)_item));
 		}
 
 		Queue(const Queue<T>& _other)
@@ -43,16 +40,17 @@ namespace mdt {
 		}
 
 		Queue(Queue<T>&& _other) noexcept
-			: m_Size(_other.m_Size), m_Capacity(_other.m_Capacity)
+			: m_Capacity(_other.m_Capacity), m_Size(_other.m_Size)
 		{
-			m_Data = std::move(_other.m_Data);
+			m_Data = _other.m_Data;
 
-			free_amem(_other.m_Data);
+			_other.m_Data = nullptr;
 		}
 
 		~Queue()
 		{
-			delete[] m_Data;
+			Clear();
+			Delete(m_Data, m_Capacity * sizeof(T));
 		}
 
 		void Enqueue(const T& _value)
@@ -65,25 +63,37 @@ namespace mdt {
 			m_Size++;
 		}
 
-		T& Dequeue()
+		void Enqueue(T&& _value)
+		{
+			if (m_Size <= m_Capacity) {
+				ReAlloc(m_Capacity + m_Capacity / 2);
+			}
+
+			m_Data[m_Size] = std::move(_value);
+			m_Size++;
+		}
+
+		T Dequeue()
 		{
 			T item;
 			if (m_Size > 0) {
-				for (size_t i = 0; i < m_Size; i++) {
-					if (i == 0)
-						item = m_Data[i];
-					else
-						m_Data[i - 1] = m_Data[i];
+				item = m_Data[0];
+				for (size_t i = 1; i < m_Size; i++) {
+					m_Data[i - 1] = std::move(m_Data[i]);
 				}
-
-				m_Size--;
+				m_Data[m_Size--].~T();
 			}
 			return item;
 		}
 
-		T& Peek() const
+		T Peek() const
 		{
-			return m_Data[m_Size - 1];
+			T item;
+			if (m_Size > 0) {
+				item = std::move(m_Data[m_Size - 1]);
+				return item;
+			}
+			return item;
 		}
 
 		bool Contains(const T& _value) const
@@ -95,13 +105,20 @@ namespace mdt {
 			return false;
 		}
 
+		bool Contains(T&& _value) const
+		{
+			for (size_t i = 0; i < m_Size; i++) {
+				if (m_Data[i] == _value)
+					return true;
+			}
+			return false;
+		}
+
 		void Clear()
 		{
 			for (size_t i = 0; i < m_Size; i++)
-			{
 				m_Data[i].~T();
-			}
-			m_Data = nullptr;
+
 			m_Size = 0;
 		}
 
@@ -162,16 +179,19 @@ namespace mdt {
 	private:
 		void ReAlloc(size_t _capacity)
 		{
-			T* newBlock = new T[_capacity];
+			T* newBlock = Alloc<T>(_capacity);
 
 			if (_capacity < m_Size)
 				m_Size = _capacity;
 
 			for (size_t i = 0; i < m_Size; i++) {
-				newBlock[i] = m_Data[i];
+				newBlock[i] = std::move(m_Data[i]);
 			}
 
-			delete[] m_Data;
+			for (size_t i = 0; i < m_Size; i++)
+				m_Data[i].~T();
+
+			Delete(m_Data, m_Capacity * sizeof(T));
 			m_Data = newBlock;
 			m_Capacity = _capacity;
 		}

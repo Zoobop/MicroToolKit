@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Memory.h" />
     <ClInclude Include="DataStruct\Array.h" />
     <ClInclude Include="DataStruct\BinaryTree.h" />
     <ClInclude Include="DataStruct\Container.h" />
@@ -21,7 +22,7 @@
     <ClInclude Include="DataStruct\Set.h" />
     <ClInclude Include="DataStruct\Stack.h" />
     <ClInclude Include="DataStruct\Tuple.h" />
-    <ClInclude Include="Basic.h" />
+    <ClInclude Include="Core\Function.h" />
     <ClInclude Include="Interfaces\IContainer.h" />
     <ClInclude Include="Interfaces\IConvert.h" />
     <ClInclude Include="ModernDT.h" />

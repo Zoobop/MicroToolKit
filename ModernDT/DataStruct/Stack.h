@@ -17,15 +17,21 @@ namespace mdt {
 			ReAlloc(2);
 		}
 
-		Stack(size_t size)
-			: m_Capacity(size)
+		Stack(size_t _size)
+			: m_Capacity(_size)
 		{
 			ReAlloc(m_Capacity);
 		}
 
-		Stack(const std::initializer_list<T>& _initList)
-			: m_Data(_initList), m_Size(_initList.size()), m_Capacity(m_Size * 2)
+		Stack(std::initializer_list<T>&& _initList)
 		{
+			size_t size = 0;
+			for (const auto& _item : _initList)
+				size++;
+
+			ReAlloc(size);
+			for (const auto& _item : _initList)
+				Push(std::move((T&&)_item));
 		}
 
 		Stack(const Stack<T>& _other)
@@ -34,16 +40,17 @@ namespace mdt {
 		}
 
 		Stack(Stack<T>&& _other) noexcept
-			: m_Size(_other.m_Size), m_Capacity(_other.m_Capacity)
+			: m_Capacity(_other.m_Capacity), m_Size(_other.m_Size)
 		{
-			m_Data = std::move(_other.m_Data);
+			m_Data = _other.m_Data;
 
-			free_amem(_other.m_Data);
+			_other.m_Data = nullptr;
 		}
 
 		~Stack()
 		{
-			delete[] m_Data;
+			Clear();
+			Delete(m_Data, m_Capacity * sizeof(T));
 		}
 
 		bool Push(const T& _value)
@@ -58,16 +65,65 @@ namespace mdt {
 			return true;
 		}
 
-		T& Pop()
+		bool Push(T&& _value)
 		{
-			T item = m_Data[m_Size - 1];
-			m_Size--;
+			if (m_Size <= m_Capacity) {
+				ReAlloc(m_Capacity + m_Capacity / 2);
+			}
+
+			m_Data[m_Size] = std::move(_value);
+			m_Size++;
+
+			return true;
+		}
+
+		template<typename ... _Args>
+		T& Emplace(_Args&&... args)
+		{
+			if (m_Size >= m_Capacity) {
+				ReAlloc(m_Capacity + m_Capacity / 2);
+			}
+
+			new(&m_Data[m_Size]) T(std::forward<_Args>(args)...);
+			return m_Data[m_Size++];
+		}
+
+		bool PushRange(const IContainer<T>& _container)
+		{
+			for (const auto& item : _container.Data()) {
+				Push(item);
+			}
+			return true;
+		}
+
+		bool PushRange(std::initializer_list<T>&& _initList)
+		{
+			for (const auto& item : _initList) {
+				Push(std::move(item));
+			}
+			return true;
+		}
+
+		T Pop()
+		{
+			T item;
+			if (m_Size > 0) {
+				item = std::move(m_Data[m_Size - 1]);
+				m_Data[m_Size - 1].~T();
+				m_Size--;
+				return item;
+			}
 			return item;
 		}
 
-		T& Peek() const
+		T Peek() const
 		{
-			return m_Data[m_Size - 1];
+			T item;
+			if (m_Size > 0) {
+				item = std::move(m_Data[m_Size - 1]);
+				return item;
+			}
+			return item;
 		}
 
 		bool Contains(const T& _value) const
@@ -79,9 +135,20 @@ namespace mdt {
 			return false;
 		}
 
+		bool Contains(T&& _value) const
+		{
+			for (size_t i = 0; i < m_Size; i++) {
+				if (m_Data[i] == _value)
+					return true;
+			}
+			return false;
+		}
+
 		void Clear()
 		{
-			m_Data = nullptr;
+			for (size_t i = 0; i < m_Size; i++)
+				m_Data[i].~T();
+
 			m_Size = 0;
 		}
 
@@ -100,12 +167,12 @@ namespace mdt {
 		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
 		// Iterator
-		constexpr virtual Iterator begin()
+		constexpr Iterator begin()
 		{
 			return Iterator(m_Data);
 		}
 
-		constexpr virtual Iterator end()
+		constexpr Iterator end()
 		{
 			return Iterator(m_Data + m_Size);
 		}
@@ -150,16 +217,19 @@ namespace mdt {
 	private:
 		void ReAlloc(size_t _capacity)
 		{
-			T* newBlock = new T[_capacity];
+			T* newBlock = Alloc<T>(_capacity);
 
 			if (_capacity < m_Size)
 				m_Size = _capacity;
 
 			for (size_t i = 0; i < m_Size; i++) {
-				newBlock[i] = m_Data[i];
+				newBlock[i] = std::move(m_Data[i]);
 			}
 
-			delete[] m_Data;
+			for (size_t i = 0; i < m_Size; i++)
+				m_Data[i].~T();
+
+			Delete(m_Data, m_Capacity * sizeof(T));
 			m_Data = newBlock;
 			m_Capacity = _capacity;
 		}

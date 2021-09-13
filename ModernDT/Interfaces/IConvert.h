@@ -8,12 +8,13 @@
 namespace mdt {
 
 	template<typename T>
-	__interface IConvert
+	class IConvert
 	{
-		List<T> ToList();
-		Set<T> ToSet();
-		Stack<T> ToStack();
-		Queue<T> ToQueue();
+	public:
+		virtual List<T> ToList() = 0;
+		virtual Set<T> ToSet() = 0;
+		virtual Stack<T> ToStack() = 0;
+		virtual Queue<T> ToQueue() = 0;
 	};
 
 }

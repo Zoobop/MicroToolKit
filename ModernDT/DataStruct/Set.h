@@ -11,6 +11,9 @@ namespace mdt {
 		using Iterator = DataContainer<T>::Iterator;
 
 	public:
+		friend class IContainer<T>;
+
+	public:
 		Set()
 		{
 			ReAlloc(2);
@@ -22,42 +25,63 @@ namespace mdt {
 			ReAlloc(m_Capacity);
 		}
 
-		Set(const std::initializer_list<T>& _initList)
-			: m_Data(_initList), m_Capacity(_initList.size() * 2)
+		Set(std::initializer_list<T>&& _initList)
 		{
-			__super::m_Size = _initList.size();
+			size_t size = 0;
+			for (const auto& _item : _initList)
+				size++;
+
+			ReAlloc(size);
+			for (const auto& _item : _initList)
+				Add(std::move((T&&)_item));
 		}
 
 		Set(const Set<T>& _other)
 			: m_Data(_other.m_Data), m_Capacity(_other.m_Capacity)
 		{
-			__super::m_Size = _other.m_Size;
+			_SIZE = _other.m_Size;
 		}
 
 		Set(Set<T>&& _other) noexcept
 			: m_Capacity(_other.m_Capacity)
 		{
-			m_Data = std::move(_other.m_Data);
-			__super::m_Size = _other.m_Size;
+			m_Data = _other.m_Data;
+			_SIZE = _other.m_Size;
 
-			free_amem(_other.m_Data);
+			_other.m_Data = nullptr;
 		}
 
 		~Set()
 		{
-			delete[] m_Data;
+			Clear();
+			Delete(m_Data, m_Capacity * sizeof(T));
 		}
 
 		// Override Methods
 		virtual bool Add(const T& _value) override
 		{
 			if (!Contains(_value)) {
-				if (__super::m_Size <= m_Capacity) {
+				if (_SIZE >= m_Capacity) {
 					ReAlloc(m_Capacity + m_Capacity / 2);
 				}
 
-				m_Data[__super::m_Size] = _value;
-				__super::m_Size++;
+				m_Data[_SIZE] = _value;
+				_SIZE++;
+
+				return true;
+			}
+			return false;
+		}
+		virtual bool Add(T&& _value) override
+		{
+			if (!Contains(_value)) {
+				if (_SIZE >= m_Capacity) {
+					ReAlloc(m_Capacity + m_Capacity / 2);
+				}
+
+				m_Data[_SIZE] = std::move(_value);
+				_SIZE++;
+
 				return true;
 			}
 			return false;
@@ -74,30 +98,76 @@ namespace mdt {
 			return false;
 		}
 
+		virtual bool AddRange(std::initializer_list<T>&& _initList)
+		{
+			if (_initList.size() > 0) {
+				for (auto& item : _initList)
+					Add(std::move(item));
+				return true;
+			}
+			return false;
+		}
+
+		virtual bool AddRange(const std::vector<T>& _vector)
+		{
+			if (_vector.data()) {
+				size_t size = _vector.size();
+				for (size_t i = 0; i < size; i++)
+					Add(_vector.data()[i]);
+				return true;
+			}
+			return false;
+		}
+
 		virtual bool Remove(const T& _value) override
 		{
-			if (__super::m_Size > 0) {
+			if (_SIZE > 0) {
 				size_t currentIndex = 0;
-				for (currentIndex; currentIndex < __super::m_Size; currentIndex++) {
+				while (currentIndex < _SIZE) {
 					if (m_Data[currentIndex] == _value) {
 						currentIndex++;
-						break;
+						while (currentIndex < _SIZE) {
+							m_Data[currentIndex - 1] = std::move(m_Data[currentIndex]);
+							currentIndex++;
+						}
 					}
+					currentIndex++;
 				}
 
-				for (currentIndex; currentIndex < __super::m_Size; currentIndex++) {
-					m_Data[currentIndex - 1] = m_Data[currentIndex];
-				}
-
-				__super::m_Size--;
+				_SIZE--;
+				m_Data[_SIZE].~T();
 				return true;
+
+			}
+			return false;
+		}
+
+		virtual bool Remove(T&& _value) override
+		{
+			if (_SIZE > 0) {
+				size_t currentIndex = 0;
+				while (currentIndex < _SIZE) {
+					if (m_Data[currentIndex] == _value) {
+						currentIndex++;
+						while (currentIndex < _SIZE) {
+							m_Data[currentIndex - 1] = std::move(m_Data[currentIndex]);
+							currentIndex++;
+						}
+					}
+					currentIndex++;
+				}
+
+				_SIZE--;
+				m_Data[_SIZE].~T();
+				return true;
+
 			}
 			return false;
 		}
 
 		virtual bool RemoveAt(size_t _index) override
 		{
-			if (_index > 0 && _index < __super::m_Size) {
+			if (_index >= 0 && _index < _SIZE) {
 				return Remove(m_Data[_index]);
 			}
 			return false;
@@ -105,7 +175,16 @@ namespace mdt {
 
 		virtual bool Contains(const T& _value) const override
 		{
-			for (size_t i = 0; i < __super::m_Size; i++) {
+			for (size_t i = 0; i < _SIZE; i++) {
+				if (m_Data[i] == _value)
+					return true;
+			}
+			return false;
+		}
+
+		virtual bool Contains(T&& _value) const override
+		{
+			for (size_t i = 0; i < _SIZE; i++) {
 				if (m_Data[i] == _value)
 					return true;
 			}
@@ -114,14 +193,16 @@ namespace mdt {
 
 		virtual void Clear() override
 		{
-			m_Data = nullptr;
-			__super::m_Size = 0;
+			for (size_t i = 0; i < _SIZE; i++)
+				m_Data[i].~T();
+
+			_SIZE = 0;
 		}
 
 		// IContainer
 		virtual void ForEach(const Param<const T&>& _param) override
 		{
-			for (size_t i = 0; i < __super::m_Size; i++) {
+			for (size_t i = 0; i < _SIZE; i++) {
 				_param(m_Data[i]);
 			}
 		}
@@ -131,15 +212,17 @@ namespace mdt {
 		// Accessors
 		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
+		constexpr inline void SetCapacity(size_t _capacity) { m_Capacity = _capacity; }
+
 		// Iterator
-		constexpr virtual Iterator begin() override
+		constexpr Iterator begin() override
 		{
 			return Iterator(m_Data);
 		}
 
-		constexpr virtual Iterator end() override
+		constexpr Iterator end() override
 		{
-			return Iterator(m_Data + __super::m_Size);
+			return Iterator(m_Data + _SIZE);
 		}
 
 		// Operator Overloads
@@ -162,7 +245,7 @@ namespace mdt {
 		void operator=(const Set<T>& _other)
 		{
 			m_Data = _other.m_Data;
-			__super::m_Size = _other.__super::m_Size;
+			_SIZE = _other._SIZE;
 			m_Capacity = _other.m_Capacity;
 		}
 
@@ -182,16 +265,19 @@ namespace mdt {
 	private:
 		void ReAlloc(size_t _capacity)
 		{
-			T* newBlock = new T[_capacity];
+			T* newBlock = Alloc<T>(_capacity);
 
-			if (_capacity < __super::m_Size)
-				__super::m_Size = _capacity;
+			if (_capacity < _SIZE)
+				_SIZE = _capacity;
 
-			for (size_t i = 0; i < __super::m_Size; i++) {
-				newBlock[i] = m_Data[i];
+			for (size_t i = 0; i < _SIZE; i++) {
+				newBlock[i] = std::move(m_Data[i]);
 			}
 
-			delete[] m_Data;
+			for (size_t i = 0; i < _SIZE; i++)
+				m_Data[i].~T();
+
+			Delete(m_Data, m_Capacity * sizeof(T));
 			m_Data = newBlock;
 			m_Capacity = _capacity;
 		}

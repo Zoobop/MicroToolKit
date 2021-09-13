@@ -1,16 +1,18 @@
 #pragma once
 
-#include "Basic.h"
+#include "Core/Function.h"
+#include "Core/Memory.h"
 
 namespace mdt {
 
 	template<typename T>
-	__interface IContainer
+	class IContainer
 	{
-		void ForEach(const Param<const T&>& _param);
+	public:
+		virtual void ForEach(const Param<const T&>& _param) = 0;
 
-		constexpr inline size_t Capacity() const;
-		constexpr T* Data() const;
+		virtual constexpr inline size_t Capacity() const = 0;
+		virtual constexpr T* Data() const = 0;
 	};
 
 }

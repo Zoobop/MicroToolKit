@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Basic.h"
+#include "Core/Function.h"
+#include "Core/Memory.h"
 
 #include "DataStruct/Array.h"
 #include "DataStruct/List.h"

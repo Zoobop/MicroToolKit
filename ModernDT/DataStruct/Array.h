@@ -17,15 +17,14 @@ namespace mdt {
 			Clear();
 		}
 
-		Array(const std::initializer_list<T>& _initList)
+		Array(std::initializer_list<T>&& _initList)
 			: m_Data(Verify(_initList))
 		{
 		}
 
 		~Array()
 		{
-			for (size_t i = 0; i < S; i++)
-				m_Data[i].~T();
+			
 		}
 
 		// Utility
@@ -33,6 +32,33 @@ namespace mdt {
 		{
 			for (size_t i = 0; i < S; i++) {
 				m_Data[i] = _value;
+			}
+			return true;
+		}
+
+		bool Fill(T&& _value)
+		{
+			for (size_t i = 0; i < S; i++) {
+				m_Data[i] = std::move(_value);
+			}
+			return true;
+		}
+
+		bool Set(std::initializer_list<T>&& _initList)
+		{
+			size_t i = 0;
+			for (const auto& _item : _initList) {
+				m_Data[i] = std::move(_item);
+				i++;
+			}
+			return true;
+		}
+
+		bool Set(const IContainer<T>& _container)
+		{
+			size_t size = _container.Capacity();
+			for (size_t i = 0; i < size; i++) {
+				m_Data[i] = _container.Data()[i];
 			}
 			return true;
 		}
@@ -46,10 +72,19 @@ namespace mdt {
 			return false;
 		}
 
+		bool Contains(T&& _value) const
+		{
+			for (size_t i = 0; i < S; i++) {
+				if (m_Data[i] == _value)
+					return true;
+			}
+			return false;
+		}
+
 		void Clear()
 		{
 			for (size_t i = 0; i < S; i++) {
-				m_Data[i].~T();
+				new(&m_Data[S]) T();
 			}
 		}
 
@@ -93,12 +128,12 @@ namespace mdt {
 			return m_Data[_index];
 		}
 
-		void operator=(const std::initializer_list<T>& _initList)
+		void operator=(std::initializer_list<T>&& _initList)
 		{
 			size_t i = 0;
 			for (auto& item : _initList) {
 				if (i < S) {
-					m_Data[i] = item;
+					m_Data[i] = std::move(item);
 					i++;
 				}
 				else break;
@@ -119,7 +154,7 @@ namespace mdt {
 		}
 
 	private:
-		T* Verify(const std::initializer_list<T>& _initList)
+		T* Verify(std::initializer_list<T>&& _initList)
 		{
 			if (_initList.size() <= S) {
 				return _initList;

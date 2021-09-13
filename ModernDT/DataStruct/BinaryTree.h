@@ -19,6 +19,8 @@ namespace mdt {
 
 			~Node()
 			{
+				_left = nullptr;
+				_right = nullptr;
 				free_smem(_left);
 				free_smem(_right);
 			}
@@ -42,7 +44,7 @@ namespace mdt {
 
 		~BinaryTree()
 		{
-			delete m_Root;
+			Clear();
 		}
 
 		// Utility
@@ -59,16 +61,13 @@ namespace mdt {
 				Node<T>* child = m_Root;
 
 				while (child) {
-					if (_value < child->_value) {
+					if (_value <= child->_value) {
 						parent = child;
 						child = child->_left;
 					}
-					else if (_value > child->_value) {
+					else {
 						parent = child;
 						child = child->_right;
-					}
-					else {
-						return false;
 					}
 				}
 
@@ -79,6 +78,8 @@ namespace mdt {
 					parent->_right = new Node<T>(_value);
 				}
 
+				parent = nullptr;
+				child = nullptr;
 				free_smem(parent);
 				free_smem(child);
 
@@ -158,6 +159,8 @@ namespace mdt {
 				}
 			}
 
+			parent = nullptr;
+			child = nullptr;
 			free_smem(parent);
 			free_smem(child);
 
@@ -176,8 +179,13 @@ namespace mdt {
 			Node<T>* child = m_Root;
 
 			while (child) {
-				if (child->_value == _value)
+				if (child->_value == _value) {
+					parent = nullptr;
+					child = nullptr;
+					free_smem(parent);
+					free_smem(child);
 					return true;
+				}
 
 				if (_value < child->_value) {
 					parent = child;
@@ -189,6 +197,8 @@ namespace mdt {
 				}
 			}
 
+			parent = nullptr;
+			child = nullptr;
 			free_smem(parent);
 			free_smem(child);
 			return false;
@@ -196,10 +206,7 @@ namespace mdt {
 
 		void Clear()
 		{
-			ForEach([&](const T& _value)
-				{
-					_value.~T();
-				});
+			FreeNodes(m_Root);
 		}
 
 		// Iterators
@@ -282,6 +289,16 @@ namespace mdt {
 				m_Data.Add(_current->_value);
 				Collect(_current->_left);
 				Collect(_current->_right);
+			}
+		}
+
+		void FreeNodes(const Node<T>* _current)
+		{
+			if (_current) {
+				FreeNodes(_current->_left);
+				FreeNodes(_current->_right);
+				_current = nullptr;
+				free((void*)_current);
 			}
 		}
 

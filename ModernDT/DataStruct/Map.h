@@ -5,11 +5,13 @@
 
 namespace mdt {
 
-	template<typename TKey, typename TVal>
+	template<typename _TKey, typename _TVal>
 	class Map
 	{
 	public:
-		using Iterator = ContainerIterator<Tuple<TKey, TVal>>;
+		using _Type = Tuple<_TKey, _TVal>;
+		using ValueType = _Type;
+		using Iterator = ContainerIterator<Map<_TKey, _TVal>>;
 
 	public:
 		Map()
@@ -17,35 +19,40 @@ namespace mdt {
 			ReAlloc(2);
 		}
 
-		Map(size_t size)
-			: m_Capacity(size)
+		Map(size_t _size)
+			: m_Capacity(_size)
 		{
 			ReAlloc(m_Capacity);
 		}
 
-		Map(const Map<TKey, TVal>& other)
+		Map(const Map<_TKey, _TVal>& _other)
+			: m_Capacity(_other.m_Capacity)
 		{
-
+			m_Data = _other.m_Data;
 		}
 
-		Map(Map<TKey, TVal>&& other)
+		Map(Map<_TKey, _TVal>&& _other)
+			: m_Capacity(_other.m_Capacity)
 		{
+			m_Data = _other.m_Data;
+			_other.m_Data = nullptr;
 		}
 
 		~Map()
 		{
-			delete[] m_Data;
+			Clear();
+			Delete(m_Data, m_Capacity);
 		}
 
-		// Override Methods
-		bool Add(const TKey& _key, const TVal& _value)
+		// Utility
+		bool Add(const _TKey& _key, const _TVal& _value)
 		{
 			if (!ContainsKey(_key)) {
-				if (m_Size <= m_Capacity) {
+				if (m_Size >= m_Capacity) {
 					ReAlloc(m_Capacity + m_Capacity / 2);
 				}
 
-				m_Data[m_Size] = Tuple(_key, _value);
+				new(&m_Data[m_Size]) _Type(_key, _value);
 				m_Size++;
 
 				return true;
@@ -53,29 +60,122 @@ namespace mdt {
 			return false;
 		}
 
-		bool RemoveKey(const TKey& _key)
+		bool Add(_TKey&& _key, _TVal&& _value)
 		{
-			if (ContainsKey(_key)) {
-				size_t currentIndex = 0;
-				for (currentIndex; currentIndex < m_Size; currentIndex++) {
-					if (m_Data[currentIndex].First() == _key) {
-						m_Data[currentIndex].~Tuple<TKey, TVal>();
-						currentIndex++;
-						break;
-					}
+			if (!ContainsKey(_key)) {
+				if (m_Size >= m_Capacity) {
+					ReAlloc(m_Capacity + m_Capacity / 2);
 				}
 
-				for (currentIndex; currentIndex < m_Size; currentIndex++) {
-					m_Data[currentIndex - 1] = m_Data[currentIndex];
-				}
+				new(&m_Data[m_Size]) _Type(_key, _value);
+				m_Size++;
 
-				m_Size--;
 				return true;
 			}
 			return false;
 		}
 
-		bool ContainsKey(const TKey& _key) const
+
+		bool Add(const _Type& _tuple)
+		{
+			if (m_Size >= m_Capacity) {
+				ReAlloc(m_Capacity + m_Capacity / 2);
+			}
+
+			if (!ContainsKey(_tuple.First())) {
+				m_Data[m_Size] = _tuple;
+			}
+			else {
+				for (size_t i = 0; i < m_Size; i++) {
+					if (m_Data[i].First() == _tuple.First()) {
+						m_Data[i] = _tuple;
+						break;
+					}
+				}
+			}
+			m_Size++;
+			return true;
+		}
+
+		bool Add(_Type&& _tuple)
+		{
+			if (m_Size >= m_Capacity) {
+				ReAlloc(m_Capacity + m_Capacity / 2);
+			}
+
+			if (!ContainsKey(_tuple.First())) {
+				new(&m_Data[m_Size]) _Type(_tuple);
+			}
+			else {
+				for (size_t i = 0; i < m_Size; i++) {
+					if (m_Data[i].First() == _tuple.First()) {
+						m_Data[i] = std::move(_tuple);
+						break;
+					}
+				}
+			}
+			m_Size++;
+			return true;
+		}
+
+		template<typename ... _Args>
+		_Type& Emplace(_Args&&... args)
+		{
+			if (m_Size >= m_Capacity) {
+				ReAlloc(m_Capacity + m_Capacity / 2);
+			}
+
+			new(&m_Data[m_Size]) _Type(std::forward<_Args>(args)...);
+			return m_Data[m_Size++];
+		}
+
+		bool RemoveKey(const _TKey& _key)
+		{
+			if (ContainsKey(_key)) {
+				size_t currentIndex = 0;
+				while (currentIndex < m_Size) {
+					if (m_Data[currentIndex].First() == _key) {
+						currentIndex++;
+						while (currentIndex < m_Size) {
+							m_Data[currentIndex - 1] = std::move(m_Data[currentIndex]);
+							currentIndex++;
+						}
+					}
+					currentIndex++;
+				}
+
+				m_Size--;
+				m_Data[m_Size].~_Type();
+				return true;
+
+			}
+			return false;
+		}
+
+		bool RemoveKey(_TKey&& _key)
+		{
+			if (ContainsKey(_key)) {
+				size_t currentIndex = 0;
+				while (currentIndex < m_Size) {
+					if (m_Data[currentIndex].First() == _key) {
+						currentIndex++;
+						while (currentIndex < m_Size) {
+							m_Data[currentIndex - 1] = std::move(m_Data[currentIndex]);
+							currentIndex++;
+						}
+					}
+					currentIndex++;
+				}
+
+				m_Size--;
+				m_Data[m_Size].~_Type();
+				return true;
+
+			}
+			return false;
+		}
+
+		bool ContainsKey(const _TKey& _key) const
 		{
 			for (size_t i = 0; i < m_Size; i++) {
 				if (m_Data[i].First() == _key)
@@ -84,7 +184,16 @@ namespace mdt {
 			return false;
 		}
 
-		bool TryGetValue(const TKey& _key, TVal& _outValue) const
+		bool ContainsKey(_TKey&& _key) const
+		{
+			for (size_t i = 0; i < m_Size; i++) {
+				if (m_Data[i].First() == _key)
+					return true;
+			}
+			return false;
+		}
+
+		bool TryGetValue(const _TKey& _key, _TVal& _outValue) const
 		{
 			for (size_t i = 0; i < m_Size; i++) {
 				if (m_Data[i].First() == _key)
@@ -94,9 +203,22 @@ namespace mdt {
 			return false;
 		}
 
-		virtual void Clear()
+		bool TryGetValue(_TKey&& _key, _TVal& _outValue) const
 		{
-			m_Data = nullptr;
+			for (size_t i = 0; i < m_Size; i++) {
+				if (m_Data[i].First() == _key) {
+					_outValue = std::move(m_Data[i].Second());
+					return true;
+				}
+			}
+			return false;
+		}
+
+		void Clear()
+		{
+			for (size_t i = 0; i < m_Size; i++)
+				m_Data[i].~_Type();
+
 			m_Size = 0;
 		}
 
@@ -105,20 +227,20 @@ namespace mdt {
 		constexpr inline size_t Capacity() const { return m_Capacity; }
 
 		// Iterator
-		constexpr virtual Iterator begin()
+		constexpr Iterator begin()
 		{
 			return Iterator(m_Data);
 		}
 
-		constexpr virtual Iterator end()
+		constexpr Iterator end()
 		{
 			return Iterator(m_Data + m_Size);
 		}
 
 		// Operator Overloads
-		const TKey& operator[](const TKey& _key) const
+		const _TKey& operator[](const _TKey& _key) const
 		{
-			TVal out;
+			_TVal out;
 			for (size_t i = 0; i < m_Size; i++) {
 				if (m_Data[i].First() == _key) {
 					return m_Data[i].Second();
@@ -128,9 +250,9 @@ namespace mdt {
 			return out;
 		}
 
-		TVal& operator[](const TKey& _key)
+		_TVal& operator[](const _TKey& _key)
 		{
-			TVal out;
+			_TVal out;
 			for (size_t i = 0; i < m_Size; i++) {
 				if (m_Data[i].First() == _key) {
 					return m_Data[i].Second();
@@ -140,14 +262,14 @@ namespace mdt {
 			return out;
 		}
 
-		void operator=(const Map<TKey, TVal>& _other)
+		void operator=(const Map<_TKey, _TVal>& _other)
 		{
 			m_Data = _other.m_Data;
 			m_Size = _other.m_Size;
 			m_Capacity = _other.m_Capacity;
 		}
 
-		friend std::ostream& operator<<(std::ostream& _stream, const Map<TKey, TVal>& _current)
+		friend std::ostream& operator<<(std::ostream& _stream, const Map<_TKey, _TVal>& _current)
 		{
 			_stream << "[ ";
 			for (size_t i = 0; i < _current.m_Size; i++) {
@@ -163,22 +285,25 @@ namespace mdt {
 	private:
 		void ReAlloc(size_t _capacity)
 		{
-			Tuple<TKey, TVal>* newBlock = new Tuple<TKey, TVal>[_capacity];
+			_Type* newBlock = Alloc<_Type>(_capacity);
 
 			if (_capacity < m_Size)
 				m_Size = _capacity;
 
 			for (size_t i = 0; i < m_Size; i++) {
-				newBlock[i] = m_Data[i];
+				newBlock[i] = std::move(m_Data[i]);
 			}
 
-			delete[] m_Data;
+			for (size_t i = 0; i < m_Size; i++)
+				m_Data[i].~_Type();
+
+			Delete(m_Data, m_Capacity * sizeof(_Type));
 			m_Data = newBlock;
 			m_Capacity = _capacity;
 		}
 
 	private:
-		Tuple<TKey, TVal>* m_Data = nullptr;
+		_Type* m_Data = nullptr;
 
 		size_t m_Size = 0;
 		size_t m_Capacity = 0;

@@ -2,7 +2,6 @@
 
 #include <ostream>
 #include <iostream>
-#include <vector>
 
 #include "Interfaces/IContainer.h"
 
@@ -86,10 +85,13 @@ namespace mdt {
 
 		// Utility
 		virtual bool Add(const T& _value) = 0;
+		virtual bool Add(T&& _value) = 0;
 		virtual bool AddRange(const IContainer<T>& _container) = 0;
 		virtual bool Remove(const T& _value) = 0;
+		virtual bool Remove(T&& _value) = 0;
 		virtual bool RemoveAt(size_t _index) = 0;
 		virtual bool Contains(const T& _value) const = 0;
+		virtual bool Contains(T&& _value) const = 0;
 		virtual void Clear() = 0;
 
 		// Accessors
@@ -101,5 +103,7 @@ namespace mdt {
 
 	protected:
 		size_t m_Size = 0;
+
+#define _SIZE	__super::m_Size
 	};
 }

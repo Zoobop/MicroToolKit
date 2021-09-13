@@ -2,154 +2,345 @@
 
 #include <iostream>
 
+
 #define LOG(x)		std::cout << x << std::endl;
 
-static int count = 0;
-
-#define DEBU
-
-template<typename T>
-__interface Interface
+struct Vector3
 {
-	void Foreach(const Param<const T&>& _param);
+	float x = 0.0f, y = 0.0f, z = 0.0f;
+
+	Vector3()
+	{
+	}
+
+	Vector3(const float& _scalar)
+		: x(_scalar), y(_scalar), z(_scalar)
+	{
+	}
+
+	Vector3(const float& _x, const float& _y, const float& _z)
+		: x(_x), y(_y), z(_z)
+	{
+	}
+
+	Vector3(const Vector3& _other)
+		: x(_other.x), y(_other.y), z(_other.z)
+	{
+		LOG("Copyed! Vec");
+	}
+
+	Vector3(Vector3&& _other) noexcept
+		: x(_other.x), y(_other.y), z(_other.z)
+	{
+		LOG("Moved! Vec");
+	}
+
+	~Vector3()
+	{
+		LOG("Destroyed! Vec");
+	}
+
+	Vector3& operator=(Vector3&& _other) noexcept
+	{
+		x = _other.x;
+		y = _other.y;
+		z = _other.z;
+
+		LOG("Moved! Vec");
+
+		return *this;
+	}
+
+	Vector3& operator=(const Vector3& _other)
+	{
+		x = _other.x;
+		y = _other.y;
+		z = _other.z;
+
+		LOG("Copyed! Vec");
+
+		return *this;
+	}
+
+	bool operator==(const Vector3& _other)
+	{
+		return x == _other.x && y == _other.y && z == _other.z;
+	}
+
+	friend std::ostream& operator<<(std::ostream& _stream, const Vector3& _current)
+	{
+		_stream << "[ " << _current.x << ", " << _current.y << ", " << _current.z << " ]";
+		return _stream;
+	}
 };
 
-struct Data
+class Player
 {
-	std::string data;
-	int* intPtr = nullptr;
-	size_t size = 0;
-
-	Data()
+public:
+	enum Class
 	{
-		size = 5;
-		intPtr = new int[size];
-		Refresh();
+		Warrior = 0,
+		Mage,
+		Assassin,
+		Guardian,
+		Hunter
+	};
 
-#ifdef DEBUG
-		count++;
-		LOG("Created!");
-#endif
+public:
+	Player()
+		: m_Name("New Player"), m_Level(0), m_Class(Warrior), m_Position(0, 0, 0)
+	{
 	}
 
-	Data(const std::string& _data)
-		: data(_data) 
+	Player(const char* _name)
+		: m_Name(_name), m_Level(1), m_Class(Warrior), m_Position(0, 0, 0)
 	{
-		intPtr = new int[data.length()];
-		size = data.length();
-		Refresh();
-
-#ifdef DEBUG
-		count++;
-		LOG("Created!");
-#endif
 	}
 
-	Data(const Data& _other)
+	Player(const char* _name, uint32_t _level)
+		: m_Name(_name), m_Level(_level), m_Class(Warrior), m_Position(0, 0, 0)
 	{
-		data = _other.data;
-		intPtr = _other.intPtr;
-		size = _other.size;
-
-#ifdef DEBUG
-		LOG("Copyed!");
-#endif
 	}
 
-	Data(Data&& _other) noexcept
+	Player(const char* _name, Class _class)
+		: m_Name(_name), m_Level(1), m_Class(_class), m_Position(0, 0, 0)
 	{
-		data = _other.data;
-		intPtr = _other.intPtr;
-		size = _other.size;
-
-		free_amem(_other.intPtr);
-
-#ifdef DEBUG
-		LOG("Moved!");
-#endif
 	}
 
-	~Data()
+	Player(const char* _name, uint32_t _level, Class _class)
+		: m_Name(_name), m_Level(_level), m_Class(_class), m_Position(0, 0, 0)
 	{
-		free_amem(intPtr);
-
-#ifdef DEBUG
-		count--;
-		LOG("Destroyed!");
-#endif
 	}
 
-	void Refresh()
+	Player(const Player& _other)
+		: m_Name(_other.m_Name), m_Level(_other.m_Level), m_Class(_other.m_Class), m_Position(_other.m_Position)
 	{
-		for (size_t i = 0; i < size; i++)
-			intPtr[i] = int();
+		LOG("Copyed! Play");
 	}
 
-	void operator=(const Data& _other)
+	Player(Player&& _other) noexcept
+		: m_Name(_other.m_Name), m_Level(_other.m_Level), m_Class(_other.m_Class), m_Position(std::move(_other.m_Position))
 	{
-		data = _other.data;
-		intPtr = _other.intPtr;
-		size = _other.size;
+		LOG("Moved! Play");
 	}
 
-	friend std::ostream& operator<<(std::ostream& _stream, const Data& _current)
+	~Player()
 	{
-		_stream << _current.data << " [ ";
+		LOG("Destroyed! Play");
+	}
 
-		if (_current.intPtr) {
-			for (size_t i = 0; i < _current.size; i++) {
-				_stream << _current.intPtr[i];
-				if (i != _current.size - 1)
-					_stream << ", ";
-			}
-		}
-		_stream << " ]" << std::endl;
+	Player& operator=(const Player& _other)
+	{
+		m_Name = _other.m_Name;
+		m_Level = _other.m_Level;
+		m_Class = _other.m_Class;
+		m_Position = _other.m_Position;
+
+		LOG("Copyed! Play");
+
+		return *this;
+	}
+
+	Player& operator=(Player&& _other) noexcept
+	{
+		m_Name = _other.m_Name;
+		m_Level = _other.m_Level;
+		m_Class = _other.m_Class;
+		m_Position = std::move(_other.m_Position);
+
+		LOG("Moved! Play");
+
+		return *this;
+	}
+
+	bool operator==(const Player& _other)
+	{
+		return m_Level == _other.m_Level && m_Class == _other.m_Class && m_Position == _other.m_Position;
+	}
+
+	friend std::ostream& operator<<(std::ostream& _stream, const Player& _current)
+	{
+		_stream << _current.m_Name << " [ Class: " << _current.m_Class << " Level: " << _current.m_Level << " ]";
 		return _stream;
 	}
 
-	friend bool operator==(const Data& _current, const Data& _other)
-	{
-		return _current.data == _other.data && _current.intPtr == _other.intPtr;
-	}
-
-	friend bool operator>(const Data& _current, const Data& _other)
-	{
-		return _current.data > _other.data && _current.intPtr > _other.intPtr;
-	}
-
-	friend bool operator<(const Data& _current, const Data& _other)
-	{
-		return _current.data < _other.data && _current.intPtr < _other.intPtr;
-	}
+protected:
+	const char* m_Name;
+	uint32_t m_Level;
+	Class m_Class;
+	Vector3 m_Position;
 };
 
+//void Example_Array()
+//{
+//	LOG("-------------------------------------------");
+//	LOG("|               Example Array             |");
+//	LOG("-------------------------------------------\n");
+//
+//	LOG("Prints all even numbers, excluding zero.\n");
+//
+//	Array<int, 10> exampleArray;
+//
+//	// Sets all values to 1
+//	exampleArray.Fill(1);
+//
+//	// Multiplies the values by the factor cubed
+//	int factor = 0;
+//	exampleArray.ForEach([&](const int& value)
+//		{
+//			const_cast<int&>(value) *= factor * factor * factor;
+//			factor++;
+//		});
+//
+//	LOG(exampleArray);
+//
+//	// Checks for even numbers
+//	for (const auto& item : exampleArray) {
+//		if (item % 2 == 0 && item != 0)
+//			LOG(item);
+//	}
+//
+//	LOG("\n");
+//}
+//
+//void Example_List()
+//{
+//	LOG("-------------------------------------------");
+//	LOG("|               Example List              |");
+//	LOG("-------------------------------------------\n");
+//
+//	LOG("Removes all values with indices divisible by 3.\n");
+//
+//	List<int> exampleList;
+//
+//	// Adds a list of {i, i, i}
+//	for (int i = 0; i < 20; i++) {
+//		exampleList.AddRange({i, i, i});
+//	}
+//
+//	LOG(exampleList);
+//
+//	// Removes the item by index thats divisible by 3
+//	for (size_t i = 0; i < exampleList.Capacity(); i++) {
+//		if (i % 3 == 0)
+//			exampleList.RemoveAt(i);
+//	}
+//
+//	LOG(exampleList);
+//
+//	LOG("\n");
+//}
+//
+//void Example_Set()
+//{
+//	LOG("-------------------------------------------");
+//	LOG("|               Example Set               |");
+//	LOG("-------------------------------------------\n");
+//
+//	LOG("Creates a Set out of the given list data.\n")
+//
+//	List<int> data = {
+//		1, 4, 6, 2, 4, 7, 4, 2, 10, 12, 3, 13,
+//		10, 14, 89, 22, 41, 90, 21, 26, 40, 82, 33, 113,
+//		651, 454, 64, 212, 42, 73, 421, 23, 30, 312, 4, 23,
+//		131, 421, 363, 542, 64, 897, 498, 12, 1430, 312, 43, 213,
+//		1, 41, 900, 231, 412, 700, 490, 266, 103, 124, 31, 133,
+//	};
+//
+//	Set<int> exampleSet(data.Capacity());
+//
+//	exampleSet.AddRange(data);
+//
+//	LOG(exampleSet.Capacity());
+//	LOG(exampleSet);
+//
+//	LOG("\n");
+//}
+//
+//void Example_Queue()
+//{
+//	LOG("-------------------------------------------");
+//	LOG("|               Example Queue             |");
+//	LOG("-------------------------------------------\n");
+//
+//	Queue<int> exampleQueue;
+//
+//	exampleQueue.Enqueue(10);
+//	exampleQueue.Enqueue(20);
+//	exampleQueue.Enqueue(30);
+//	exampleQueue.Enqueue(40);
+//	exampleQueue.Enqueue(50);
+//
+//	LOG(exampleQueue.Dequeue());
+//
+//	LOG(exampleQueue);
+//
+//	LOG("\n");
+//}
+//
+//void Example_Stack()
+//{
+//	LOG("-------------------------------------------");
+//	LOG("|               Example Stack             |");
+//	LOG("-------------------------------------------\n");
+//
+//	Stack<int> exampleStack;
+//
+//	exampleStack.Push(10);
+//	exampleStack.Push(20);
+//	exampleStack.Push(30);
+//	exampleStack.Push(40);
+//	exampleStack.Push(50);
+//
+//	LOG(exampleStack.Pop());
+//
+//	LOG(exampleStack);
+//
+//	LOG("\n");
+//}
+//
+//void Example_Map()
+//{
+//	Map<std::string, int> map(10);
+//}
+//
+//void Example_LinkedList()
+//{
+//	LinkedList<int> linkedList(10);
+//}
+//
+//void Example_BinaryTree()
+//{
+//	BinaryTree<int> binaryTree(10);
+//}
 
 int main()
 {
-	Array<Data, 5> array;
-	List<Data> list(10);
-	Set<Data> set(10);
-	Map<std::string, Data> map(10);
-	Queue<Data> queue(10);
-	Stack<Data> stack(10);
-	LinkedList<Data> linkedList;
-	BinaryTree<Data> binaryTree;
+	//Example_Array();
+	//Example_List();
+	//Example_Set();
+	//Example_Queue();
+	//Example_Stack();
 
-	Data data1("Data 1");
-	Data data2("Data 2");
-	Data data3("Data 3");
-	Data data4("Data 4");
-	Data data5("Data 5");
+	Map<std::string, Player> map(10);
 
-	binaryTree.ForEach([&list](const Data& x)
-		{
-			list.Add(x);
-		});
+	map.Emplace("Warrior", Player{"Bellona", 20, Player::Warrior});
+	map.Add("Assassin", { "Ravana", 20, Player::Assassin });
+	map.Add("Mage", { "Zeus", 20, Player::Mage });
+	map.Add("Hunter", { "Hou Yi", 20, Player::Hunter });
+	map.Add("Guardian", { "Cabrakan", 20, Player::Guardian });
+	map.RemoveKey("Warrior");
 
-	binaryTree.Insert(data1);
-	binaryTree.Insert(data2);
-	binaryTree.Insert(data3);
-	binaryTree.Insert(data4);
+	for (auto& pair : map)
+		LOG(pair);
 
-	LOG(binaryTree);
+	LOG(map.ContainsKey("Hunter"));
+	Player player;
+	LOG(map.TryGetValue("Guardian", player));
+	LOG(player);
+	map.Clear();
+
+	LOG(map);
+
+	//std::cin.get();
 }

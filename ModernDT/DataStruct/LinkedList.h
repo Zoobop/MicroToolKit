@@ -14,7 +14,6 @@ namespace mdt {
 		{
 			T _value;
 			Node<T>* _next = nullptr;
-			Node<T>* _previous = nullptr;
 
 			Node(const T& _value)
 				: _value(_value) {}
@@ -22,7 +21,6 @@ namespace mdt {
 			~Node()
 			{
 				free_smem(_next);
-				free_smem(_previous);
 			}
 		};
 
@@ -31,23 +29,22 @@ namespace mdt {
 		using Iterator = ContainerIterator<LinkedList<T>>;
 
 	public:
-		friend List<T>;
-		friend Set<T>;
-		friend Queue<T>;
-		friend Stack<T>;
+		friend class List<T>;
+		friend class Set<T>;
+		friend class Queue<T>;
+		friend class Stack<T>;
 
 	public:
 		LinkedList() {}
 
 		LinkedList(const T& _value)
-			: m_Head(new Node<T>(_value)), m_Tail(m_Head), m_Size(1) {}
+			: m_Head(new Node<T>(_value)), m_Size(1) {}
 
 		// Utility
 		bool Push(const T& _value)
 		{
 			if (!m_Head) {
 				m_Head = new Node<T>(_value);
-				m_Tail = m_Head;
 				m_Size = 1;
 				return true;
 			}
@@ -61,9 +58,9 @@ namespace mdt {
 			
 			node = new Node<T>(_value);
 			prev->_next = node;
-			node->_previous = prev;
-			m_Tail = node;
 
+			node = nullptr;
+			prev = nullptr;
 			free_smem(node);
 			free_smem(prev);
 
@@ -89,35 +86,49 @@ namespace mdt {
 
 		T& Pop()
 		{
-			T value = m_Tail->_value;
-			Node<T>* node = m_Tail;
-			Node<T>* previous = m_Tail->_previous;
-			previous->_next = nullptr;
-			node->_previous = nullptr;
+			if (m_Size > 0) {
+				Node<T>* node = m_Head;
+				Node<T>* prev = nullptr;
+				while (node) {
+					if (!node->_next) {
+						break;
+					}
+					prev = node;
+					node = node->_next;
+				}
 
-			m_Tail = previous;
+				T& value = node->_value;
+				prev->_next = nullptr;
 
-			free_smem(node);
-			free_smem(previous);
+				node = nullptr;
+				prev = nullptr;
+				free_smem(node);
+				free_smem(prev);
 
-			m_Size--;
-			return value;
+				m_Size--;
+				return value;
+			}
+
+			T empty;
+			return empty;
 		}
 
 		bool Remove(const T& _value)
 		{
-			for (Node<T>* node = m_Head; node; node = node->_next) {
-				if (node->_value = _value) {
+			Node<T>* node = m_Head;
+			Node<T>* prev = nullptr;
+			while (node) {
+				if (node->_value == _value) {
 					Node<T>* next = node->_next;
-					Node<T>* previous = node->_previous;
 					
-					next->_previous = previous;
-					previous->_next = next;
+					prev->_next = next;
 
-					free_smem(next);
-					free_smem(previous);
+					node = nullptr;
+					free_smem(node);
 					return true;
 				}
+				prev = node;
+				node = node->_next;
 			}
 			return false;
 		}
@@ -139,7 +150,6 @@ namespace mdt {
 		// Accessors
 		constexpr inline size_t Capacity() const override { return m_Size; }
 		constexpr inline const T& Head() const { return m_Head->_value; }
-		constexpr inline const T& Tail() const { return m_Tail->_value; }
 
 		// Iterators
 		constexpr Iterator begin()
@@ -205,7 +215,7 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		friend std::ostream& operator<<(std::ostream& _stream, const LinkedList<T>& _current)
+		friend std::ostream& operator<<(std::ostream& _stream, LinkedList<T>& _current)
 		{
 			_stream << _current.ToList();
 			return _stream;
@@ -220,7 +230,6 @@ namespace mdt {
 
 	private:
 		Node<T>* m_Head = nullptr;
-		Node<T>* m_Tail = nullptr;
 		size_t m_Size = 0;
 
 		mutable List<T> m_Data;
