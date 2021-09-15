@@ -74,7 +74,7 @@ namespace mdt {
 		}
 		virtual bool Add(T&& _value) override
 		{
-			if (!Contains(_value)) {
+			if (!Contains(std::move(_value))) {
 				if (_SIZE >= m_Capacity) {
 					ReAlloc(m_Capacity + m_Capacity / 2);
 				}

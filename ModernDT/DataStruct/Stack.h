@@ -55,7 +55,7 @@ namespace mdt {
 
 		bool Push(const T& _value)
 		{
-			if (m_Size <= m_Capacity) {
+			if (m_Size >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
 			}
 
@@ -67,7 +67,7 @@ namespace mdt {
 
 		bool Push(T&& _value)
 		{
-			if (m_Size <= m_Capacity) {
+			if (m_Size >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
 			}
 

@@ -1,9 +1,14 @@
 #include "ModernDT.h"
 
-#include <iostream>
+#include <array>
+#include <list>
+#include <queue>
+#include <stack>
+#include <unordered_set>
+#include <unordered_map>
 
-
-#define LOG(x)		std::cout << x << std::endl;
+#define BENCHMARK_PRIMATIVE
+#define BENCHMARK_PLAYER
 
 struct Vector3
 {
@@ -26,18 +31,24 @@ struct Vector3
 	Vector3(const Vector3& _other)
 		: x(_other.x), y(_other.y), z(_other.z)
 	{
+#ifdef DEBUG
 		LOG("Copyed! Vec");
+#endif
 	}
 
 	Vector3(Vector3&& _other) noexcept
 		: x(_other.x), y(_other.y), z(_other.z)
 	{
+#ifdef DEBUG
 		LOG("Moved! Vec");
+#endif
 	}
 
 	~Vector3()
 	{
+#ifdef DEBUG
 		LOG("Destroyed! Vec");
+#endif
 	}
 
 	Vector3& operator=(Vector3&& _other) noexcept
@@ -46,7 +57,9 @@ struct Vector3
 		y = _other.y;
 		z = _other.z;
 
+#ifdef DEBUG
 		LOG("Moved! Vec");
+#endif
 
 		return *this;
 	}
@@ -57,7 +70,9 @@ struct Vector3
 		y = _other.y;
 		z = _other.z;
 
+#ifdef DEBUG
 		LOG("Copyed! Vec");
+#endif
 
 		return *this;
 	}
@@ -115,18 +130,24 @@ public:
 	Player(const Player& _other)
 		: m_Name(_other.m_Name), m_Level(_other.m_Level), m_Class(_other.m_Class), m_Position(_other.m_Position)
 	{
+#ifdef DEBUG
 		LOG("Copyed! Play");
+#endif
 	}
 
 	Player(Player&& _other) noexcept
 		: m_Name(_other.m_Name), m_Level(_other.m_Level), m_Class(_other.m_Class), m_Position(std::move(_other.m_Position))
 	{
+#ifdef DEBUG
 		LOG("Moved! Play");
+#endif
 	}
 
 	~Player()
 	{
+#ifdef DEBUG
 		LOG("Destroyed! Play");
+#endif
 	}
 
 	Player& operator=(const Player& _other)
@@ -135,9 +156,9 @@ public:
 		m_Level = _other.m_Level;
 		m_Class = _other.m_Class;
 		m_Position = _other.m_Position;
-
+#ifdef DEBUG
 		LOG("Copyed! Play");
-
+#endif
 		return *this;
 	}
 
@@ -147,8 +168,9 @@ public:
 		m_Level = _other.m_Level;
 		m_Class = _other.m_Class;
 		m_Position = std::move(_other.m_Position);
-
+#ifdef DEBUG
 		LOG("Moved! Play");
+#endif
 
 		return *this;
 	}
@@ -314,6 +336,120 @@ protected:
 //	BinaryTree<int> binaryTree(10);
 //}
 
+
+// std
+
+template<typename T, size_t _Size>
+void Function(std::array<T, _Size>& _array)
+{
+	for (size_t count = 0; count < 1000; count++) {
+		for (size_t i = 0; i < _array.size(); i++) {
+			_array[i] = T();
+		}
+	}
+}
+
+template<typename T>
+void Function(std::list<T>& _list)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_list.emplace_back(T());
+	}
+}
+
+template<typename T>
+void Function(std::vector<T>& _vector)
+{
+	for (size_t i = 0; i < 1000000; i++) {
+		_vector.emplace_back(T());
+	}
+}
+
+template<typename T>
+void Function(std::unordered_set<T>& _set)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_set.insert(T());
+	}
+}
+
+template<typename T1, typename T2>
+void Function(std::unordered_map<T1, T2>& _map)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_map.insert({ T1(), T2() });
+	}
+}
+
+template<typename T>
+void Function(std::stack<T>& _stack)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_stack.push(T());
+	}
+}
+
+template<typename T>
+void Function(std::queue<T>& _queue)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_queue.push(T());
+	}
+}
+
+// New API
+
+template<typename T, size_t _Size>
+void Function(Array<T, _Size>& _array)
+{
+	for (size_t count = 0; count < 1000; count++) {
+		for (size_t i = 0; i < _array.Capacity(); i++) {
+			_array[i] = T();
+		}
+	}
+}
+
+template<typename T>
+void Function(List<T>& _list)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_list.Emplace(T());
+	}
+}
+
+template<typename T>
+void Function(Set<T>& _set)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_set.Add(T());
+	}
+}
+
+template<typename T1, typename T2>
+void Function(Map<T1, T2>& _map)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_map.Add(T1(), T2());
+	}
+}
+
+template<typename T>
+void Function(Stack<T>& _stack)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_stack.Push(T());
+	}
+}
+
+template<typename T>
+void Function(Queue<T>& _queue)
+{
+	for (int i = 0; i < 1000000; i++) {
+		_queue.Enqueue(T());
+	}
+}
+
+
 int main()
 {
 	//Example_Array();
@@ -322,25 +458,169 @@ int main()
 	//Example_Queue();
 	//Example_Stack();
 
-	Map<std::string, Player> map(10);
+#ifdef BENCHMARK_PLAYER
 
-	map.Emplace("Warrior", Player{"Bellona", 20, Player::Warrior});
-	map.Add("Assassin", { "Ravana", 20, Player::Assassin });
-	map.Add("Mage", { "Zeus", 20, Player::Mage });
-	map.Add("Hunter", { "Hou Yi", 20, Player::Hunter });
-	map.Add("Guardian", { "Cabrakan", 20, Player::Guardian });
-	map.RemoveKey("Warrior");
+	LOG("Benchmark with Player class:\n");
 
-	for (auto& pair : map)
-		LOG(pair);
+	List<Player> List;
+	std::list<Player> list;
+	std::vector<Player> vector;
 
-	LOG(map.ContainsKey("Hunter"));
-	Player player;
-	LOG(map.TryGetValue("Guardian", player));
-	LOG(player);
-	map.Clear();
+	Benchmark::Start("List");
+	Function(List);
+	Benchmark::Stop();
 
-	LOG(map);
+	Benchmark::Start("std::list");
+	Function(list);
+	Benchmark::Stop();
 
+	Benchmark::Start("std::vector");
+	Function(vector);
+	Benchmark::Stop();
+
+
+	Array<Player, 100> Array;
+	std::array<Player, 100> array;
+
+	Benchmark::Start("Array");
+	Function(Array);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::array");
+	Function(array);
+	Benchmark::Stop();
+
+#if 0
+	Set<int> Set;
+	std::unordered_set<int> set;
+
+	Benchmark::Start("Set");
+	Function(Set);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::unordered_set");
+	Function(set);
+	Benchmark::Stop();
+
+	Map<int, float> Map;
+	std::unordered_map<int, float> map;
+
+	Benchmark::Start("Map");
+	Function(Map);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::unordered_map");
+	Function(map);
+	Benchmark::Stop();
+#endif
+
+	Stack<Player> Stack;
+	std::stack<Player> stack;
+
+	Benchmark::Start("Stack");
+	Function(Stack);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::stack");
+	Function(stack);
+	Benchmark::Stop();
+
+
+	Queue<Player> Queue;
+	std::queue<Player> queue;
+
+	Benchmark::Start("Queue");
+	Function(Queue);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::queue");
+	Function(queue);
+	Benchmark::Stop();
+
+	LOG("");
+#endif
+
+#ifdef BENCHMARK_PRIMATIVE
+
+	LOG("Benchmark with Primative Type:\n");
+
+	mdt::List<int> intList;
+	std::list<int> intlist;
+	std::vector<int> intvector;
+
+	Benchmark::Start("List");
+	Function(intList);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::list");
+	Function(intlist);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::vector");
+	Function(intvector);
+	Benchmark::Stop();
+
+
+	mdt::Array<int, 100> intArray;
+	std::array<int, 100> intarray;
+
+	Benchmark::Start("Array");
+	Function(intArray);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::array");
+	Function(intarray);
+	Benchmark::Stop();
+
+#if 0
+	Set<int> intSet;
+	std::unordered_set<int> intset;
+
+	Benchmark::Start("Set");
+	Function(intSet);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::unordered_set");
+	Function(intset);
+	Benchmark::Stop();
+
+	Map<int, int> intMap;
+	std::unordered_map<int, int> intmap;
+
+	Benchmark::Start("Map");
+	Function(intMap);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::unordered_map");
+	Function(intmap);
+	Benchmark::Stop();
+#endif
+
+	mdt::Stack<int> intStack;
+	std::stack<int> intstack;
+
+	Benchmark::Start("Stack");
+	Function(intStack);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::stack");
+	Function(intstack);
+	Benchmark::Stop();
+
+
+	mdt::Queue<int> intQueue;
+	std::queue<int> intqueue;
+
+	Benchmark::Start("Queue");
+	Function(intQueue);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::queue");
+	Function(intqueue);
+	Benchmark::Stop();
+
+	LOG("");
+
+#endif
 	//std::cin.get();
 }

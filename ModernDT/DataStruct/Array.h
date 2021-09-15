@@ -14,17 +14,18 @@ namespace mdt {
 	public:
 		Array()
 		{
-			Clear();
 		}
 
 		Array(std::initializer_list<T>&& _initList)
-			: m_Data(Verify(_initList))
 		{
-		}
-
-		~Array()
-		{
-			
+			size_t i = 0;
+			for (auto&& item : _initList) {
+				if (i < S) {
+					m_Data[i] = std::move(item);
+					i++;
+				}
+				else break;
+			}
 		}
 
 		// Utility
@@ -61,6 +62,11 @@ namespace mdt {
 				m_Data[i] = _container.Data()[i];
 			}
 			return true;
+		}
+
+		bool Swap(Array<T, S>& _other)
+		{
+			return false;
 		}
 
 		bool Contains(const T& _value) const
@@ -112,7 +118,7 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		T& operator[](size_t _index)
+		T& operator[](size_t& _index)
 		{
 			if (_index >= S) {
 				__debugbreak();
@@ -120,7 +126,7 @@ namespace mdt {
 			return m_Data[_index];
 		}
 
-		const T& operator[](size_t _index) const
+		const T& operator[](size_t& _index) const
 		{
 			if (_index >= S) {
 				__debugbreak();
@@ -140,6 +146,21 @@ namespace mdt {
 			}
 		}
 
+		void operator=(const Array<T, S>& _array)
+		{
+			for (size_t i = 0; i < S; i++) {
+				m_Data[i] = _array.m_Data[i];
+			}
+		}
+
+		void operator=(Array<T, S>&& _array)
+		{
+			for (size_t i = 0; i < S; i++) {
+				m_Data[i] = _array.m_Data[i];
+			}
+			_array.Clear();
+		}
+
 		friend std::ostream& operator<<(std::ostream& _stream, const Array<T, S>& _current)
 		{
 			_stream << "[ ";
@@ -154,13 +175,13 @@ namespace mdt {
 		}
 
 	private:
-		T* Verify(std::initializer_list<T>&& _initList)
+		T Verify(std::initializer_list<T>&& _initList)
 		{
 			if (_initList.size() <= S) {
 				return _initList;
 			}
 
-			T* list = new T[S];
+			T list[S];
 			size_t i = 0;
 			for (auto& item : _initList) {
 				if (i < S) {

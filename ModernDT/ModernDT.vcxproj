@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Benchmark.h" />
     <ClInclude Include="Core\Memory.h" />
     <ClInclude Include="DataStruct\Array.h" />
     <ClInclude Include="DataStruct\BinaryTree.h" />
@@ -28,6 +29,7 @@
     <ClInclude Include="ModernDT.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Core\Benchmark.cpp" />
     <ClCompile Include="Lab.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

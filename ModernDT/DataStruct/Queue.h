@@ -55,7 +55,7 @@ namespace mdt {
 
 		void Enqueue(const T& _value)
 		{
-			if (m_Size <= m_Capacity) {
+			if (m_Size >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
 			}
 
@@ -65,7 +65,7 @@ namespace mdt {
 
 		void Enqueue(T&& _value)
 		{
-			if (m_Size <= m_Capacity) {
+			if (m_Size >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
 			}
 
@@ -161,6 +161,14 @@ namespace mdt {
 			m_Data = _other.m_Data;
 			m_Size = _other.m_Size;
 			m_Capacity = _other.m_Capacity;
+		}
+
+		void operator=(Queue<T>&& _other)
+		{
+			m_Data = _other.m_Data;
+			m_Size = _other.m_Size;
+			m_Capacity = _other.m_Capacity;
+			_other.m_Data = nullptr;
 		}
 
 		friend std::ostream& operator<<(std::ostream& _stream, const Queue<T>& _current)

@@ -18,8 +18,12 @@ namespace mdt {
 			Node(const T& _value)
 				: _value(_value) {}
 
+			Node(T&& _value)
+				: _value(std::move(_value)) {}
+
 			~Node()
 			{
+				_next = nullptr;
 				free_smem(_next);
 			}
 		};
@@ -39,6 +43,24 @@ namespace mdt {
 
 		LinkedList(const T& _value)
 			: m_Head(new Node<T>(_value)), m_Size(1) {}
+
+		LinkedList(const LinkedList<T>& _other)
+			: m_Head(_other.m_Head), m_Size(_other.m_Size) {}
+
+		LinkedList(T&& _value)
+			: m_Head(new Node<T>(std::move(_value))), m_Size(1) {}
+
+		LinkedList(LinkedList<T>&& _other)
+			: m_Head(_other.m_Head), m_Size(_other.m_Size) 
+		{
+			_other.m_Head = nullptr;
+		}
+
+		~LinkedList()
+		{
+			Clear();
+			Delete(m_Head, sizeof(Node<T>));
+		}
 
 		// Utility
 		bool Push(const T& _value)
@@ -68,6 +90,33 @@ namespace mdt {
 			return true;
 		}
 
+		bool Push(T&& _value)
+		{
+			if (!m_Head) {
+				m_Head = new Node<T>(std::move((T&&)_value));
+				m_Size = 1;
+				return true;
+			}
+
+			Node<T>* node = m_Head;
+			Node<T>* prev = nullptr;
+			while (node) {
+				prev = node;
+				node = node->_next;
+			}
+
+			node = new Node<T>(std::move((T&&)_value));
+			prev->_next = node;
+
+			node = nullptr;
+			prev = nullptr;
+			free_smem(node);
+			free_smem(prev);
+
+			m_Size++;
+			return true;
+		}
+
 		bool PushRange(const IContainer<T>& _container)
 		{
 			for (const auto& item : _container.Data()) {
@@ -76,15 +125,15 @@ namespace mdt {
 			return true;
 		}
 
-		bool PushRange(const std::initializer_list<T>& _initList)
+		bool PushRange(std::initializer_list<T>&& _initList)
 		{
 			for (const auto& item : _initList) {
-				Push(item);
+				Push(std::move((T&&)item));
 			}
 			return true;
 		}
 
-		T& Pop()
+		T Pop()
 		{
 			if (m_Size > 0) {
 				Node<T>* node = m_Head;
@@ -96,21 +145,12 @@ namespace mdt {
 					prev = node;
 					node = node->_next;
 				}
-
-				T& value = node->_value;
 				prev->_next = nullptr;
 
-				node = nullptr;
-				prev = nullptr;
-				free_smem(node);
-				free_smem(prev);
-
 				m_Size--;
-				return value;
+				return node->_value;
 			}
-
-			T empty;
-			return empty;
+			return T();
 		}
 
 		bool Remove(const T& _value)
@@ -120,11 +160,23 @@ namespace mdt {
 			while (node) {
 				if (node->_value == _value) {
 					Node<T>* next = node->_next;
-					
-					prev->_next = next;
+					if (prev) prev->_next = next;
+					return true;
+				}
+				prev = node;
+				node = node->_next;
+			}
+			return false;
+		}
 
-					node = nullptr;
-					free_smem(node);
+		bool Remove(T&& _value)
+		{
+			Node<T>* node = m_Head;
+			Node<T>* prev = nullptr;
+			while (node) {
+				if (node->_value == _value) {
+					Node<T>* next = node->_next;
+					if (prev) prev->_next = next;
 					return true;
 				}
 				prev = node;
@@ -142,9 +194,33 @@ namespace mdt {
 			return false;
 		}
 
+		bool Contains(T&& _value) const
+		{
+			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
+				if (node->_value == _value)
+					return true;
+			}
+			return false;
+		}
+
 		void Clear()
 		{
+			Node<T>* node = m_Head;
+			Node<T>* prev = nullptr;
+			while (node) {
+				if (!node->_next) {
+					node->~Node();
+					break;
+				}
+				prev = node;
+				node = node->_next;
+				prev->~Node();
+			}
 
+			m_Head = nullptr;
+			m_Size = 0;
+
+			m_Data.Clear();
 		}
 
 		// Accessors
