@@ -26,9 +26,9 @@ namespace mdt {
 	}
 
 	template<typename _Type>
-	_Type* Alloc(size_t _size)
+	void* Alloc(size_t _size)
 	{
-		return (_Type*)::operator new(_size * sizeof(_Type));
+		return ::operator new(_size * sizeof(_Type));
 	}
 
 	template<typename _Type>

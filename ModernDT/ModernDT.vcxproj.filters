@@ -18,7 +18,7 @@
     <ClInclude Include="DataStruct\BinaryTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStruct\Container.h">
+    <ClInclude Include="Interfaces\IStruct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataStruct\List.h">
@@ -61,6 +61,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Benchmark.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces\ISort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces\IHashTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\DoubleNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\SingleNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\HashNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

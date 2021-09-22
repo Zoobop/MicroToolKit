@@ -1,46 +1,27 @@
 #pragma once
-#include "Container.h"
+#include "Interfaces/IStruct.h"
+#include "Utility/DoubleNode.h"
 
 namespace mdt {
 
-	template<typename T>
-	class BinaryTree : public IContainer<T>, public IConvert<T>
+	template<typename _Type>
+	class BinaryTree : public IContainer<_Type>, public IConvert<_Type>
 	{
-	private:
-		template<typename T>
-		struct Node
-		{
-			T _value;
-			Node<T>* _left = nullptr;
-			Node<T>* _right = nullptr;
-
-			Node(const T& _value)
-				: _value(_value) {}
-
-			~Node()
-			{
-				_left = nullptr;
-				_right = nullptr;
-				free_smem(_left);
-				free_smem(_right);
-			}
-		};
+	public:
+		using ValueType = _Type;
+		using Iterator = ContainerIterator<BinaryTree<_Type>>;
 
 	public:
-		using ValueType = T;
-		using Iterator = ContainerIterator<BinaryTree<T>>;
-
-	public:
-		friend List<T>;
-		friend Set<T>;
-		friend Stack<T>;
-		friend Queue<T>;
+		friend class List<_Type>;
+		friend class Set<_Type>;
+		friend class Stack<_Type>;
+		friend class Queue<_Type>;
 
 	public:
 		BinaryTree() {}
 
-		BinaryTree(const T& _root)
-			: m_Root(new Node<T>(_root)), m_Size(1) {}
+		BinaryTree(const _Type& _root)
+			: m_Root(new DoubleNode<_Type>(_root)), m_Size(1) {}
 
 		~BinaryTree()
 		{
@@ -48,17 +29,17 @@ namespace mdt {
 		}
 
 		// Utility
-		bool Insert(const T& _value)
+		bool Insert(const _Type& _value)
 		{
 			if (!m_Root) {
-				m_Root = new Node<T>(_value);
+				m_Root = new DoubleNode<_Type>(_value);
 				m_Size++;
 				return true;
 			}
 			else {
 
-				Node<T>* parent = nullptr;
-				Node<T>* child = m_Root;
+				DoubleNode<_Type>* parent = nullptr;
+				DoubleNode<_Type>* child = m_Root;
 
 				while (child) {
 					if (_value <= child->_value) {
@@ -72,10 +53,10 @@ namespace mdt {
 				}
 
 				if (_value < parent->_value) {
-					parent->_left = new Node<T>(_value);
+					parent->_left = new DoubleNode<_Type>(_value);
 				}
 				else {
-					parent->_right = new Node<T>(_value);
+					parent->_right = new DoubleNode<_Type>(_value);
 				}
 
 				parent = nullptr;
@@ -90,7 +71,7 @@ namespace mdt {
 			return false;
 		}
 
-		bool InsertRange(const IContainer<T>& _container)
+		bool InsertRange(const IContainer<_Type>& _container)
 		{
 			for (const auto& item : _container.Data()) {
 				Insert(item);
@@ -98,7 +79,7 @@ namespace mdt {
 			return true;
 		}
 
-		bool InsertRange(const std::initializer_list<T>& _initList)
+		bool InsertRange(const std::initializer_list<_Type>& _initList)
 		{
 			for (const auto& item : _initList) {
 				Insert(item);
@@ -107,11 +88,11 @@ namespace mdt {
 		}
 
 
-		bool Remove(const T& _value)
+		bool Remove(const _Type& _value)
 		{
 			bool found = false;
-			Node<T>* parent = nullptr;
-			Node<T>* child = m_Root;
+			DoubleNode<_Type>* parent = nullptr;
+			DoubleNode<_Type>* child = m_Root;
 
 			while (child) {
 				if (_value < child->_value) {
@@ -143,8 +124,8 @@ namespace mdt {
 							parent->_right = child->_right;
 					}
 					else {
-						Node<T>* parentLargest = child;
-						Node<T>* largest = child->_left;
+						DoubleNode<_Type>* parentLargest = child;
+						DoubleNode<_Type>* largest = child->_left;
 						while (largest) {
 							parentLargest = largest;
 							largest = largest->_right;
@@ -173,10 +154,10 @@ namespace mdt {
 			return false;
 		}
 
-		bool Contains(const T& _value) const
+		bool Contains(const _Type& _value) const
 		{
-			Node<T>* parent = nullptr;
-			Node<T>* child = m_Root;
+			DoubleNode<_Type>* parent = nullptr;
+			DoubleNode<_Type>* child = m_Root;
 
 			while (child) {
 				if (child->_value == _value) {
@@ -221,45 +202,45 @@ namespace mdt {
 		}
 
 		// Accessors
-		constexpr inline T& Root() const { return m_Root->_value; }
+		constexpr inline _Type& Root() const { return m_Root->_value; }
 		constexpr inline size_t Capacity() const override { return m_Size; }
 
 		// IConvert
-		virtual List<T> ToList() override
+		virtual List<_Type> ToList() override
 		{
-			List<T> list(m_Size);
-			ForEach([&](const T& _value)
+			List<_Type> list(m_Size);
+			ForEach([&](const _Type& _value)
 				{
 					list.Add(_value);
 				});
 			return list;
 		}
 
-		virtual Set<T> ToSet() override
+		virtual Set<_Type> ToSet() override
 		{
-			Set<T> set(m_Size);
+			Set<_Type> set(m_Size);
 			return set;
 		}
 
-		virtual Stack<T> ToStack() override
+		virtual Stack<_Type> ToStack() override
 		{
-			Stack<T> stack(m_Size);
+			Stack<_Type> stack(m_Size);
 			return stack;
 		}
 
-		virtual Queue<T> ToQueue() override
+		virtual Queue<_Type> ToQueue() override
 		{
-			Queue<T> queue(m_Size);
+			Queue<_Type> queue(m_Size);
 			return queue;
 		}
 
 		// IContainer
-		virtual void ForEach(const Param<const T&>& _param) override
+		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
 			Traverse(m_Root, _param);
 		}
 
-		constexpr virtual T* Data() const override
+		constexpr virtual _Type* Data() const override
 		{
 			m_Data.Clear();
 			Collect(m_Root);
@@ -267,14 +248,14 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		friend std::ostream& operator<<(std::ostream& _stream, BinaryTree<T>& _current)
+		friend std::ostream& operator<<(std::ostream& _stream, BinaryTree<_Type>& _current)
 		{
 			_stream << _current.ToList();
 			return _stream;
 		}
 
 	private:
-		void Traverse(const Node<T>* _current, const Param<const T&>& _param)
+		void Traverse(const DoubleNode<_Type>* _current, const Param<const _Type&>& _param)
 		{
 			if (_current) {
 				_param(_current->_value);
@@ -283,7 +264,7 @@ namespace mdt {
 			}
 		}
 
-		void Collect(const Node<T>* _current) const
+		void Collect(const DoubleNode<_Type>* _current) const
 		{
 			if (_current) {
 				m_Data.Add(_current->_value);
@@ -292,7 +273,7 @@ namespace mdt {
 			}
 		}
 
-		void FreeNodes(const Node<T>* _current)
+		void FreeNodes(const DoubleNode<_Type>* _current)
 		{
 			if (_current) {
 				FreeNodes(_current->_left);
@@ -303,9 +284,9 @@ namespace mdt {
 		}
 
 	private:
-		Node<T>* m_Root = nullptr;
+		DoubleNode<_Type>* m_Root = nullptr;
 		size_t m_Size = 0;
 
-		mutable List<T> m_Data;
+		mutable List<_Type> m_Data;
 	};
 }

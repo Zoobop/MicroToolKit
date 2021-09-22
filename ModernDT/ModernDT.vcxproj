@@ -13,9 +13,10 @@
   <ItemGroup>
     <ClInclude Include="Core\Benchmark.h" />
     <ClInclude Include="Core\Memory.h" />
+    <ClInclude Include="Interfaces\ISort.h" />
     <ClInclude Include="DataStruct\Array.h" />
     <ClInclude Include="DataStruct\BinaryTree.h" />
-    <ClInclude Include="DataStruct\Container.h" />
+    <ClInclude Include="Interfaces\IStruct.h" />
     <ClInclude Include="DataStruct\LinkedList.h" />
     <ClInclude Include="DataStruct\List.h" />
     <ClInclude Include="DataStruct\Map.h" />
@@ -27,6 +28,10 @@
     <ClInclude Include="Interfaces\IContainer.h" />
     <ClInclude Include="Interfaces\IConvert.h" />
     <ClInclude Include="ModernDT.h" />
+    <ClInclude Include="Utility\DoubleNode.h" />
+    <ClInclude Include="Interfaces\IHashTable.h" />
+    <ClInclude Include="Utility\HashNode.h" />
+    <ClInclude Include="Utility\SingleNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Benchmark.cpp" />

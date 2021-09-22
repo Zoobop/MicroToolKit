@@ -7,8 +7,8 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#define BENCHMARK_PRIMATIVE
-#define BENCHMARK_PLAYER
+//#define BENCHMARK_PRIMATIVE
+//#define BENCHMARK_PLAYER
 
 struct Vector3
 {
@@ -421,7 +421,7 @@ template<typename T>
 void Function(Set<T>& _set)
 {
 	for (int i = 0; i < 1000000; i++) {
-		_set.Add(T());
+		_set.Insert(T());
 	}
 }
 
@@ -449,6 +449,19 @@ void Function(Queue<T>& _queue)
 	}
 }
 
+template<typename T>
+void PrintVector(std::vector<T> _vector)
+{
+	for (const auto& item : _vector)
+		LOG(item);
+}
+
+newhash_t TestHash(const uint32_t& _obj, size_t _capacity)
+{
+	newhash_t size = (newhash_t)(sizeof(uint32_t) + sizeof(newhash_t)) * (newhash_t)pow(_obj, 1.5);
+	newhash_t factor = (newhash_t)((float)size - (float)_obj + ((float)size * 0.5f));
+	return factor % _capacity;
+}
 
 int main()
 {
@@ -572,7 +585,7 @@ int main()
 	Function(intarray);
 	Benchmark::Stop();
 
-#if 0
+
 	Set<int> intSet;
 	std::unordered_set<int> intset;
 
@@ -584,6 +597,7 @@ int main()
 	Function(intset);
 	Benchmark::Stop();
 
+#if 0
 	Map<int, int> intMap;
 	std::unordered_map<int, int> intmap;
 
@@ -622,5 +636,25 @@ int main()
 	LOG("");
 
 #endif
+
+	Set<uint32_t> set;
+	set.Reserve(100000);
+	std::unordered_set<uint32_t> stdset;
+	stdset.reserve(100000);
+
+	Benchmark::Start("Set");
+	for (uint32_t i = 0; i < 100000; i++) {
+		set.Insert(i);
+	}
+	Benchmark::Stop();
+
+	Benchmark::Start("std::unordered_set");
+	for (uint32_t i = 0; i < 100000; i++) {
+		stdset.insert(i);
+	}
+	Benchmark::Stop();
+
+	//LOG(set);
+
 	//std::cin.get();
 }

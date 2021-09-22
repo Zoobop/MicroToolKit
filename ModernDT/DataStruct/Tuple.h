@@ -17,18 +17,28 @@ namespace mdt {
 		{
 		}
 
+		Tuple(const _T1& _first, _T2&& _second) noexcept
+			: m_First(_first), m_Second(_second)
+		{
+		}
+
+		Tuple(_T1&& _first, const _T2& _second) noexcept
+			: m_First(_first), m_Second(_second)
+		{
+		}
+
+		Tuple(_T1&& _first, _T2&& _second) noexcept
+			: m_First(_first), m_Second(_second)
+		{
+		}
+
 		Tuple(const Tuple<_T1, _T2>& _other)
 			: m_First(_other.m_First), m_Second(_other.m_Second)
 		{
 		}
 
 		Tuple(Tuple<_T1, _T2>&& _other) noexcept
-			: m_First(std::move(_other.m_First)), m_Second(std::move(_other.m_Second))
-		{
-		}
-
-		Tuple(_T1&& _first, _T2&& _second) noexcept
-			: m_First(std::move(_first)), m_Second(std::move(_second))
+			: m_First(_other.m_First), m_Second(_other.m_Second)
 		{
 		}
 

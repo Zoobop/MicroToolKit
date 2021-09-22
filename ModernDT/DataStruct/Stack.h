@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Container.h"
+#include "Interfaces/IStruct.h"
 
 namespace mdt {
 
@@ -217,7 +217,7 @@ namespace mdt {
 	private:
 		void ReAlloc(size_t _capacity)
 		{
-			T* newBlock = Alloc<T>(_capacity);
+			T* newBlock = (T*)Alloc<T>(_capacity);
 
 			if (_capacity < m_Size)
 				m_Size = _capacity;
@@ -229,7 +229,7 @@ namespace mdt {
 			for (size_t i = 0; i < m_Size; i++)
 				m_Data[i].~T();
 
-			Delete(m_Data, m_Capacity * sizeof(T));
+			Delete(m_Data, m_Capacity);
 			m_Data = newBlock;
 			m_Capacity = _capacity;
 		}

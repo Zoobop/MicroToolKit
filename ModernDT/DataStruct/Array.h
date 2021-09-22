@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Container.h"
+#include "Interfaces/IStruct.h"
 
 namespace mdt {
 
@@ -118,7 +118,7 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		T& operator[](size_t& _index)
+		T& operator[](const size_t& _index)
 		{
 			if (_index >= S) {
 				__debugbreak();
@@ -126,7 +126,7 @@ namespace mdt {
 			return m_Data[_index];
 		}
 
-		const T& operator[](size_t& _index) const
+		const T& operator[](const size_t& _index) const
 		{
 			if (_index >= S) {
 				__debugbreak();

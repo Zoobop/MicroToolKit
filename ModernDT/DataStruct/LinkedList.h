@@ -1,56 +1,36 @@
 #pragma once
 
-#include "Container.h"
+#include "Interfaces/IStruct.h"
 #include "Interfaces/IConvert.h"
+#include "Utility/SingleNode.h"
 
 namespace mdt {
 
-	template<typename T>
-	class LinkedList : public IContainer<T>, public IConvert<T>
+	template<typename _Type>
+	class LinkedList : public IContainer<_Type>, public IConvert<_Type>
 	{
-	private:
-		template<typename T>
-		struct Node
-		{
-			T _value;
-			Node<T>* _next = nullptr;
-
-			Node(const T& _value)
-				: _value(_value) {}
-
-			Node(T&& _value)
-				: _value(std::move(_value)) {}
-
-			~Node()
-			{
-				_next = nullptr;
-				free_smem(_next);
-			}
-		};
+	public:
+		using ValueType = _Type;
+		using Iterator = ContainerIterator<LinkedList<_Type>>;
 
 	public:
-		using ValueType = T;
-		using Iterator = ContainerIterator<LinkedList<T>>;
-
-	public:
-		friend class List<T>;
-		friend class Set<T>;
-		friend class Queue<T>;
-		friend class Stack<T>;
+		friend class List<_Type>;
+		friend class Queue<_Type>;
+		friend class Stack<_Type>;
 
 	public:
 		LinkedList() {}
 
-		LinkedList(const T& _value)
-			: m_Head(new Node<T>(_value)), m_Size(1) {}
+		LinkedList(const _Type& _value)
+			: m_Head(new SingleNode<_Type>(_value)), m_Size(1) {}
 
-		LinkedList(const LinkedList<T>& _other)
+		LinkedList(const LinkedList<_Type>& _other)
 			: m_Head(_other.m_Head), m_Size(_other.m_Size) {}
 
-		LinkedList(T&& _value)
-			: m_Head(new Node<T>(std::move(_value))), m_Size(1) {}
+		LinkedList(_Type&& _value)
+			: m_Head(new SingleNode<_Type>(std::move(_value))), m_Size(1) {}
 
-		LinkedList(LinkedList<T>&& _other)
+		LinkedList(LinkedList<_Type>&& _other)
 			: m_Head(_other.m_Head), m_Size(_other.m_Size) 
 		{
 			_other.m_Head = nullptr;
@@ -59,26 +39,26 @@ namespace mdt {
 		~LinkedList()
 		{
 			Clear();
-			Delete(m_Head, sizeof(Node<T>));
+			Delete(m_Head, sizeof(SingleNode<_Type>));
 		}
 
 		// Utility
-		bool Push(const T& _value)
+		bool Push(const _Type& _value)
 		{
 			if (!m_Head) {
-				m_Head = new Node<T>(_value);
+				m_Head = new SingleNode<_Type>(_value);
 				m_Size = 1;
 				return true;
 			}
 			
-			Node<T>* node = m_Head;
-			Node<T>* prev = nullptr;
+			SingleNode<_Type>* node = m_Head;
+			SingleNode<_Type>* prev = nullptr;
 			while (node) {
 				prev = node;
 				node = node->_next;
 			}
 			
-			node = new Node<T>(_value);
+			node = new SingleNode<_Type>(_value);
 			prev->_next = node;
 
 			node = nullptr;
@@ -90,22 +70,22 @@ namespace mdt {
 			return true;
 		}
 
-		bool Push(T&& _value)
+		bool Push(_Type&& _value)
 		{
 			if (!m_Head) {
-				m_Head = new Node<T>(std::move((T&&)_value));
+				m_Head = new SingleNode<_Type>(std::move((_Type&&)_value));
 				m_Size = 1;
 				return true;
 			}
 
-			Node<T>* node = m_Head;
-			Node<T>* prev = nullptr;
+			SingleNode<_Type>* node = m_Head;
+			SingleNode<_Type>* prev = nullptr;
 			while (node) {
 				prev = node;
 				node = node->_next;
 			}
 
-			node = new Node<T>(std::move((T&&)_value));
+			node = new SingleNode<_Type>(std::move((_Type&&)_value));
 			prev->_next = node;
 
 			node = nullptr;
@@ -117,7 +97,7 @@ namespace mdt {
 			return true;
 		}
 
-		bool PushRange(const IContainer<T>& _container)
+		bool PushRange(const IContainer<_Type>& _container)
 		{
 			for (const auto& item : _container.Data()) {
 				Push(item);
@@ -125,19 +105,19 @@ namespace mdt {
 			return true;
 		}
 
-		bool PushRange(std::initializer_list<T>&& _initList)
+		bool PushRange(std::initializer_list<_Type>&& _initList)
 		{
 			for (const auto& item : _initList) {
-				Push(std::move((T&&)item));
+				Push(std::move((_Type&&)item));
 			}
 			return true;
 		}
 
-		T Pop()
+		_Type Pop()
 		{
 			if (m_Size > 0) {
-				Node<T>* node = m_Head;
-				Node<T>* prev = nullptr;
+				SingleNode<_Type>* node = m_Head;
+				SingleNode<_Type>* prev = nullptr;
 				while (node) {
 					if (!node->_next) {
 						break;
@@ -150,16 +130,16 @@ namespace mdt {
 				m_Size--;
 				return node->_value;
 			}
-			return T();
+			return _Type();
 		}
 
-		bool Remove(const T& _value)
+		bool Remove(const _Type& _value)
 		{
-			Node<T>* node = m_Head;
-			Node<T>* prev = nullptr;
+			SingleNode<_Type>* node = m_Head;
+			SingleNode<_Type>* prev = nullptr;
 			while (node) {
 				if (node->_value == _value) {
-					Node<T>* next = node->_next;
+					SingleNode<_Type>* next = node->_next;
 					if (prev) prev->_next = next;
 					return true;
 				}
@@ -169,13 +149,13 @@ namespace mdt {
 			return false;
 		}
 
-		bool Remove(T&& _value)
+		bool Remove(_Type&& _value)
 		{
-			Node<T>* node = m_Head;
-			Node<T>* prev = nullptr;
+			SingleNode<_Type>* node = m_Head;
+			SingleNode<_Type>* prev = nullptr;
 			while (node) {
 				if (node->_value == _value) {
-					Node<T>* next = node->_next;
+					SingleNode<_Type>* next = node->_next;
 					if (prev) prev->_next = next;
 					return true;
 				}
@@ -185,18 +165,18 @@ namespace mdt {
 			return false;
 		}
 
-		bool Contains(const T& _value) const
+		bool Contains(const _Type& _value) const
 		{
-			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
+			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
 				if (node->_value == _value)
 					return true;
 			}
 			return false;
 		}
 
-		bool Contains(T&& _value) const
+		bool Contains(_Type&& _value) const
 		{
-			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
+			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
 				if (node->_value == _value)
 					return true;
 			}
@@ -205,16 +185,16 @@ namespace mdt {
 
 		void Clear()
 		{
-			Node<T>* node = m_Head;
-			Node<T>* prev = nullptr;
+			SingleNode<_Type>* node = m_Head;
+			SingleNode<_Type>* prev = nullptr;
 			while (node) {
 				if (!node->_next) {
-					node->~Node();
+					node->~SingleNode();
 					break;
 				}
 				prev = node;
 				node = node->_next;
-				prev->~Node();
+				prev->~SingleNode();
 			}
 
 			m_Head = nullptr;
@@ -225,7 +205,8 @@ namespace mdt {
 
 		// Accessors
 		constexpr inline size_t Capacity() const override { return m_Size; }
-		constexpr inline const T& Head() const { return m_Head->_value; }
+		constexpr inline const _Type& Head() const { return m_Head->_value; }
+		constexpr inline _Type& Head() { return m_Head->_value; }
 
 		// Iterators
 		constexpr Iterator begin()
@@ -239,51 +220,42 @@ namespace mdt {
 		}
 
 		// IConvert
-		virtual List<T> ToList() override
+		virtual List<_Type> ToList() override
 		{
-			List<T> list(m_Size);
-			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
+			List<_Type> list(m_Size);
+			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
 				list.Add(node->_value);
 			}
 			return list;
 		}
 
-		virtual Set<T> ToSet() override
+		virtual Stack<_Type> ToStack() override
 		{
-			Set<T> set(m_Size);
-			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
-				set.Add(node->_value);
-			}
-			return set;
-		}
-
-		virtual Stack<T> ToStack() override
-		{
-			Stack<T> stack(m_Size);
-			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
+			Stack<_Type> stack(m_Size);
+			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
 				stack.Push(node->_value);
 			}
 			return stack;
 		}
 
-		virtual Queue<T> ToQueue() override
+		virtual Queue<_Type> ToQueue() override
 		{
-			Queue<T> queue(m_Size);
-			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
+			Queue<_Type> queue(m_Size);
+			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
 				queue.Enqueue(node->_value);
 			}
 			return queue;
 		}
 
 		// IContainer
-		virtual void ForEach(const Param<const T&>& _param) override
+		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
-			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
+			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
 				_param(node->_value);
 			}
 		}
 
-		constexpr virtual T* Data() const override
+		constexpr virtual _Type* Data() const override
 		{
 			m_Data.Clear();
 			Collect();
@@ -291,7 +263,7 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		friend std::ostream& operator<<(std::ostream& _stream, LinkedList<T>& _current)
+		friend std::ostream& operator<<(std::ostream& _stream, LinkedList<_Type>& _current)
 		{
 			_stream << _current.ToList();
 			return _stream;
@@ -299,16 +271,16 @@ namespace mdt {
 	private:
 		void Collect() const
 		{
-			for (Node<T>* node = m_Head; node != nullptr; node = node->_next) {
+			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
 				m_Data.Add(node->_value);
 			}
 		}
 
 	private:
-		Node<T>* m_Head = nullptr;
+		SingleNode<_Type>* m_Head = nullptr;
 		size_t m_Size = 0;
 
-		mutable List<T> m_Data;
+		mutable List<_Type> m_Data;
 	};
 
 }

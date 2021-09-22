@@ -1,10 +1,11 @@
 #pragma once
-#include "Container.h"
+#include "Interfaces/IStruct.h"
+#include "Interfaces/ISort.h"
 
 namespace mdt {
 
 	template<typename T>
-	class List : public DataContainer<T>, public IContainer<T>
+	class List : public DataContainer<T>, public IContainer<T>, public ISort<T>
 	{
 	public:
 		using Iterator = DataContainer<T>::Iterator;
@@ -32,6 +33,19 @@ namespace mdt {
 			ReAlloc(size);
 			for (const auto& _item : _initList)
 				Add(std::move((T&&)_item));
+		}
+
+		List(const std::vector<T>& _vector)
+			: m_Data(const_cast<T*>(_vector.data())), m_Capacity(_vector.capacity())
+		{
+			_SIZE = _vector.size();
+		}
+
+		List(std::vector<T>&& _vector)
+			: m_Data(const_cast<T*>(_vector.data())), m_Capacity(_vector.capacity())
+		{
+			_SIZE = _vector.size();
+			_vector.clear();
 		}
 
 		List(const List<T>& _other)
@@ -212,6 +226,31 @@ namespace mdt {
 
 		constexpr virtual T* Data() const override { return m_Data; }
 
+		// ISort
+		virtual void Sort(const Dynamic<bool, const T&, const T&> _predicate = GreatorThan<T>) override
+		{
+			for (size_t i = 0, j = i + 1; i < _SIZE; i++, j++) {
+				if (_predicate(m_Data[i], m_Data[j])) {
+					T temp = std::move(m_Data[i]);
+					m_Data[i] = std::move(m_Data[j]);
+					m_Data[j] = std::move(temp);
+				}
+			}
+		}
+
+		virtual void RSort(const Dynamic<bool, const T&, const T&> _predicate = GreatorThan<T>) override
+		{
+			for (size_t i = 0; i < _SIZE; i++) {
+				for (size_t j = i + 1; j < _SIZE; j++) {
+					if (_predicate(m_Data[i], m_Data[j])) {
+						T temp = std::move(m_Data[i]);
+						m_Data[i] = std::move(m_Data[j]);
+						m_Data[j] = std::move(temp);
+					}
+				}
+			}
+		}
+
 		// Accessors
 		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
@@ -229,7 +268,7 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		const T& operator[](size_t _index) const 
+		const T& operator[](size_t& _index) const 
 		{
 			if (_index >= m_Capacity) {
 				__debugbreak();
@@ -237,7 +276,7 @@ namespace mdt {
 			return m_Data[_index];
 		}
 
-		T& operator[](size_t _index) 
+		T& operator[](size_t& _index) 
 		{ 
 			if (_index >= m_Capacity) {
 				__debugbreak();
@@ -261,14 +300,14 @@ namespace mdt {
 					_stream << ", ";
 			}
 
-			_stream << " ]" << std::endl;
+			_stream << " ]";
 			return _stream;
 		}
 
 	private:
 		void ReAlloc(size_t _capacity)
 		{
-			T* newBlock = Alloc<T>(_capacity);
+			T* newBlock = (T*)Alloc<T>(_capacity);
 
 			if (_capacity < _SIZE)
 				_SIZE = _capacity;

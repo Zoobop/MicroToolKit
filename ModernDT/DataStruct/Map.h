@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Tuple.h"
-#include "Container.h"
+#include "Interfaces/IStruct.h"
 
 namespace mdt {
 
