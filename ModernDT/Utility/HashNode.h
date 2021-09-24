@@ -1,4 +1,5 @@
 #pragma once
+#include "mdtpch.h"
 
 namespace mdt {
 
@@ -15,7 +16,12 @@ namespace mdt {
 	{
 		_Type _value;
 		Ctrl _control = Ctrl::kEmpty;
-		HashNode<_Type>* _next = (HashNode<_Type>*)0xcdcdcdcdcdcdcdcd;
+		HashNode<_Type>* _next = nullptr;
+
+		HashNode()
+			: _control(Ctrl::kEmpty)
+		{
+		}
 
 		HashNode(const _Type& _value)
 			: _value(_value), _control(Ctrl::kFull)

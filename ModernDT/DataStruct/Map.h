@@ -2,311 +2,307 @@
 
 #include "Tuple.h"
 #include "Interfaces/IStruct.h"
+#include "Interfaces/IHashTable.h"
 
 namespace mdt {
 
-	template<typename _TKey, typename _TVal>
-	class Map
+	template<typename _Type, typename _KeyType = newhash_t>
+	class Map : public IHashTable<_Type, _KeyType>
 	{
 	public:
-		using _Type = Tuple<_TKey, _TVal>;
-		using ValueType = _Type;
-		using Iterator = ContainerIterator<Map<_TKey, _TVal>>;
+		using Iterator = ContainerIterator<Map<_Type, _KeyType>>;
+		using _HashType = typename IHashTable<_Type, _KeyType>::_HashType;
+		using hashptr_t = typename IHashTable<_Type, _KeyType>::hashptr_t;
+
+	public:
+		friend class IContainer<_Type>;
+		friend class IHashTable<_Type, _KeyType>;
 
 	public:
 		Map()
+			: IHashTable<_Type, _KeyType>()
 		{
-			ReAlloc(2);
+			__super::SetHash(Hash_Temp<_Type, _KeyType>);
 		}
 
-		Map(size_t _size)
-			: m_Capacity(_size)
+		Map(const Dynamic<_KeyType, const _Type&, size_t>& _hashFunc)
+			: IHashTable<_Type, _KeyType>()
 		{
-			ReAlloc(m_Capacity);
+			__super::SetHash(_hashFunc);
 		}
 
-		Map(const Map<_TKey, _TVal>& _other)
-			: m_Capacity(_other.m_Capacity)
+		Map(const size_t& _capacity, const float& _loadFactor)
+			: IHashTable<_Type, _KeyType>(_capacity, _loadFactor)
 		{
-			m_Data = _other.m_Data;
+			__super::SetHash(Hash_Temp<_Type, _KeyType>);
 		}
 
-		Map(Map<_TKey, _TVal>&& _other)
-			: m_Capacity(_other.m_Capacity)
+		Map(const size_t& _size)
+			: IHashTable<_Type, _KeyType>(_size)
 		{
-			m_Data = _other.m_Data;
+			__super::SetHash(Hash_Temp<_Type, _KeyType>);
+		}
+
+		Map(const Map<_Type>& _other)
+		{
+			_DATA = _other.m_Data;
+			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
+		}
+
+		Map(Map<_Type>&& _other) noexcept
+		{
+			_DATA = _other.m_Data;
+			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
+
 			_other.m_Data = nullptr;
+			_other.m_Capacity = 0;
+			_other.m_Size = 0;
+			_other.m_LoadFactor = 0;
+			_other.m_HashFunction.Clear();
 		}
 
 		~Map()
 		{
 			Clear();
-			Delete(m_Data, m_Capacity);
+			Delete(_DATA, _CAPACITY);
 		}
 
-		// Utility
-		bool Add(const _TKey& _key, const _TVal& _value)
+		// Override Methods
+		virtual bool Insert(const _Type& _value) override
 		{
-			if (!ContainsKey(_key)) {
-				if (m_Size >= m_Capacity) {
-					ReAlloc(m_Capacity + m_Capacity / 2);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				REALLOC(_CAPACITY * _CAPACITY - _CAPACITY);
+			}
+
+			_KeyType hash = __super::Hash(_value);
+			HashNode<_Type>* node = &_DATA[hash];
+			HashNode<_Type>* prev = nullptr;
+			while (node) {
+				if (node == (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+					node = new HashNode<_Type>(_value);
+					break;
 				}
-
-				new(&m_Data[m_Size]) _Type(_key, _value);
-				m_Size++;
-
-				return true;
-			}
-			return false;
-		}
-
-		bool Add(_TKey&& _key, _TVal&& _value)
-		{
-			if (!ContainsKey(_key)) {
-				if (m_Size >= m_Capacity) {
-					ReAlloc(m_Capacity + m_Capacity / 2);
+				if (node->_control != Ctrl::kFull) {
+					node->_control = Ctrl::kFull;
+					node->_value = _value;
+					break;
 				}
-
-				new(&m_Data[m_Size]) _Type(_key, _value);
-				m_Size++;
-
-				return true;
+				prev = node;
+				node = node->_next;
 			}
-			return false;
-		}
+			if (prev) prev->_next = node;
 
+			node = nullptr;
+			delete node;
 
-		bool Add(const _Type& _tuple)
-		{
-			if (m_Size >= m_Capacity) {
-				ReAlloc(m_Capacity + m_Capacity / 2);
-			}
-
-			if (!ContainsKey(_tuple.First())) {
-				m_Data[m_Size] = _tuple;
-			}
-			else {
-				for (size_t i = 0; i < m_Size; i++) {
-					if (m_Data[i].First() == _tuple.First()) {
-						m_Data[i] = _tuple;
-						break;
-					}
-				}
-			}
-			m_Size++;
+			_SIZE++;
 			return true;
 		}
 
-		bool Add(_Type&& _tuple)
+		virtual bool Insert(_Type&& _value) override
 		{
-			if (m_Size >= m_Capacity) {
-				ReAlloc(m_Capacity + m_Capacity / 2);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				REALLOC(_CAPACITY * _CAPACITY - _CAPACITY);
 			}
 
-			if (!ContainsKey(_tuple.First())) {
-				new(&m_Data[m_Size]) _Type(_tuple);
-			}
-			else {
-				for (size_t i = 0; i < m_Size; i++) {
-					if (m_Data[i].First() == _tuple.First()) {
-						m_Data[i] = std::move(_tuple);
-						break;
-					}
+			_KeyType hash = __super::Hash(_value);
+			HashNode<_Type>* node = &_DATA[hash];
+			HashNode<_Type>* prev = nullptr;
+			while (node) {
+				if (node == (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+					node = new HashNode<_Type>(_value);
+					break;
 				}
+				if (node->_control != Ctrl::kFull) {
+					node->_control = Ctrl::kFull;
+					node->_value = _value;
+					break;
+				}
+				prev = node;
+				node = node->_next;
 			}
-			m_Size++;
+			if (prev) prev->_next = node;
+
+			node = nullptr;
+			delete node;
+
+			_SIZE++;
 			return true;
 		}
 
-		template<typename ... _Args>
-		_Type& Emplace(_Args&&... args)
+		virtual bool InsertRange(const IContainer<_Type>& _container) override
 		{
-			if (m_Size >= m_Capacity) {
-				ReAlloc(m_Capacity + m_Capacity / 2);
-			}
-
-			new(&m_Data[m_Size]) _Type(std::forward<_Args>(args)...);
-			return m_Data[m_Size++];
-		}
-
-		bool RemoveKey(const _TKey& _key)
-		{
-			if (ContainsKey(_key)) {
-				size_t currentIndex = 0;
-				while (currentIndex < m_Size) {
-					if (m_Data[currentIndex].First() == _key) {
-						currentIndex++;
-						while (currentIndex < m_Size) {
-							m_Data[currentIndex - 1] = std::move(m_Data[currentIndex]);
-							currentIndex++;
-						}
-					}
-					currentIndex++;
-				}
-
-				m_Size--;
-				m_Data[m_Size].~_Type();
+			if (_container.Data()) {
+				size_t size = _container.Capacity();
+				for (size_t i = 0; i < size; i++)
+					Insert(_container.Data()[i]);
 				return true;
-
 			}
 			return false;
 		}
 
-		bool RemoveKey(_TKey&& _key)
+		virtual bool InsertRange(std::initializer_list<_Type>&& _initList) override
 		{
-			if (ContainsKey(_key)) {
-				size_t currentIndex = 0;
-				while (currentIndex < m_Size) {
-					if (m_Data[currentIndex].First() == _key) {
-						currentIndex++;
-						while (currentIndex < m_Size) {
-							m_Data[currentIndex - 1] = std::move(m_Data[currentIndex]);
-							currentIndex++;
-						}
-					}
-					currentIndex++;
-				}
-
-				m_Size--;
-				m_Data[m_Size].~_Type();
+			if (_initList.size() > 0) {
+				for (auto& item : _initList)
+					Insert(std::move(item));
 				return true;
-
 			}
 			return false;
 		}
 
-		bool ContainsKey(const _TKey& _key) const
+		virtual bool InsertRange(const std::vector<_Type>& _vector) override
 		{
-			for (size_t i = 0; i < m_Size; i++) {
-				if (m_Data[i].First() == _key)
-					return true;
+			if (_vector.data()) {
+				size_t size = _vector.size();
+				for (size_t i = 0; i < size; i++)
+					Insert(_vector.data()[i]);
+				return true;
 			}
 			return false;
 		}
 
-		bool ContainsKey(_TKey&& _key) const
+		virtual bool Find(const _Type& _value) const override
 		{
-			for (size_t i = 0; i < m_Size; i++) {
-				if (m_Data[i].First() == _key)
-					return true;
+			_KeyType hash = __super::Hash(_value);
+			if (_DATA[hash]._control != Ctrl::kEmpty) {
+				if (_DATA[hash]._value == _value) return true;
 			}
 			return false;
 		}
 
-		bool TryGetValue(const _TKey& _key, _TVal& _outValue) const
+		virtual bool Find(_Type&& _value) const override
 		{
-			for (size_t i = 0; i < m_Size; i++) {
-				if (m_Data[i].First() == _key)
-					_outValue = m_Data[i].Second();
-					return true;
+			_KeyType hash = __super::Hash(_value);
+			if (_DATA[hash]._control != Ctrl::kEmpty) {
+				if (_DATA[hash]._value == _value) return true;
 			}
 			return false;
 		}
 
-		bool TryGetValue(_TKey&& _key, _TVal& _outValue) const
+		virtual bool Erase(const _Type& _obj) override
 		{
-			for (size_t i = 0; i < m_Size; i++) {
-				if (m_Data[i].First() == _key) {
-					_outValue = std::move(m_Data[i].Second());
-					return true;
-				}
-			}
 			return false;
 		}
 
-		void Clear()
+		virtual bool Erase(_Type&& _obj) override
 		{
-			for (size_t i = 0; i < m_Size; i++)
-				m_Data[i].~_Type();
-
-			m_Size = 0;
+			return false;
 		}
+
+		virtual bool EraseKey(const _KeyType& _obj) override
+		{
+			return false;
+		}
+
+		virtual bool EraseKey(_KeyType&& _obj) override
+		{
+			return false;
+		}
+
+		virtual void Clear() override
+		{
+			for (size_t i = 0; i < _SIZE; i++) {
+				_DATA[i].~_HashType();
+			}
+
+			_SIZE = 0;
+		}
+
+		void ForEach(const Param<const _HashType&>& _param)
+		{
+			for (size_t i = 0; i < _SIZE; i++) {
+				_param(_DATA[i]);
+			}
+		}
+
+		void ForEach(const Param<const _Type&>& _param)
+		{
+			for (size_t i = 0; i < _SIZE; i++) {
+				_param(_DATA[i]._value);
+			}
+		}
+
+		constexpr _HashType* Data() const { return _DATA; }
 
 		// Accessors
-		constexpr inline size_t Size() const { return m_Size; }
-		constexpr inline size_t Capacity() const { return m_Capacity; }
+		constexpr inline size_t Capacity() const { return _CAPACITY; }
 
 		// Iterator
 		constexpr Iterator begin()
 		{
-			return Iterator(m_Data);
+			return Iterator(_DATA);
 		}
 
 		constexpr Iterator end()
 		{
-			return Iterator(m_Data + m_Size);
+			return Iterator(_DATA + _SIZE);
 		}
 
 		// Operator Overloads
-		const _TKey& operator[](const _TKey& _key) const
+		const _Type& operator[](size_t _index) const
 		{
-			_TVal out;
-			for (size_t i = 0; i < m_Size; i++) {
-				if (m_Data[i].First() == _key) {
-					return m_Data[i].Second();
+			if (_index >= _CAPACITY) {
+				__debugbreak();
+			}
+			return _DATA[_index];
+		}
+
+		_Type& operator[](size_t _index)
+		{
+			if (_index >= _CAPACITY) {
+				__debugbreak();
+			}
+			return _DATA[_index];
+		}
+
+		void operator=(const Map<_Type>& _other)
+		{
+			_DATA = _other.m_Data;
+			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
+		}
+
+		void operator=(Map<_Type>&& _other) noexcept
+		{
+			delete[] _DATA;
+
+			_DATA = _other.m_Data;
+			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
+
+			_other.m_Data = nullptr;
+			_other.m_Capacity = 0;
+			_other.m_Size = 0;
+			_other.m_LoadFactor = 0;
+			_other.m_HashFunction.Clear();
+		}
+
+		friend std::ostream& operator<<(std::ostream& _stream, const Map<_Type>& _current)
+		{
+			for (size_t i = 0; i < _current.m_Capacity; i++) {
+				auto iter = &_current.m_Data[i];
+				if (iter->_control != Ctrl::kFull) continue;
+				_stream << i << ": ";
+				while (iter != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+					if (iter->_control == Ctrl::kFull)
+						_stream << *iter;
+					iter = iter->_next;
 				}
+				_stream << "\n";
 			}
-			__debugbreak();
-			return out;
-		}
-
-		_TVal& operator[](const _TKey& _key)
-		{
-			_TVal out;
-			for (size_t i = 0; i < m_Size; i++) {
-				if (m_Data[i].First() == _key) {
-					return m_Data[i].Second();
-				}
-			}
-			__debugbreak();
-			return out;
-		}
-
-		void operator=(const Map<_TKey, _TVal>& _other)
-		{
-			m_Data = _other.m_Data;
-			m_Size = _other.m_Size;
-			m_Capacity = _other.m_Capacity;
-		}
-
-		friend std::ostream& operator<<(std::ostream& _stream, const Map<_TKey, _TVal>& _current)
-		{
-			_stream << "[ ";
-			for (size_t i = 0; i < _current.m_Size; i++) {
-				_stream << _current.m_Data[i];
-				if (i != _current.m_Size - 1)
-					_stream << ", ";
-			}
-
-			_stream << " ]" << std::endl;
 			return _stream;
 		}
-
-	private:
-		void ReAlloc(size_t _capacity)
-		{
-			_Type* newBlock = Alloc<_Type>(_capacity);
-
-			if (_capacity < m_Size)
-				m_Size = _capacity;
-
-			for (size_t i = 0; i < m_Size; i++) {
-				newBlock[i] = std::move(m_Data[i]);
-			}
-
-			for (size_t i = 0; i < m_Size; i++)
-				m_Data[i].~_Type();
-
-			Delete(m_Data, m_Capacity * sizeof(_Type));
-			m_Data = newBlock;
-			m_Capacity = _capacity;
-		}
-
-	private:
-		_Type* m_Data = nullptr;
-
-		size_t m_Size = 0;
-		size_t m_Capacity = 0;
 	};
 
 }

@@ -1,4 +1,6 @@
+#include "mdtpch.h"
 #include "ModernDT.h"
+#include "Interfaces/IHashable.h"
 
 #include <array>
 #include <list>
@@ -89,7 +91,7 @@ struct Vector3
 	}
 };
 
-class Player
+class Player : public IHashable<>
 {
 public:
 	enum Class
@@ -150,6 +152,18 @@ public:
 #endif
 	}
 
+	inline const char* GetName() const { return m_Name; }
+	inline uint32_t GetLevel() const { return m_Level; }
+	inline Class GetClass() const { return m_Class; }
+	inline Vector3 GetPosition() const { return m_Position; }
+
+	newhash_t GetHash() const override
+	{
+		newhash_t size = (newhash_t)(sizeof(Player) + sizeof(newhash_t)) + m_Level;
+		newhash_t factor = (newhash_t)((float)size - (float)m_Class + ((float)size * 0.5f));
+		return factor;
+	}
+
 	Player& operator=(const Player& _other)
 	{
 		m_Name = _other.m_Name;
@@ -193,152 +207,7 @@ protected:
 	Vector3 m_Position;
 };
 
-//void Example_Array()
-//{
-//	LOG("-------------------------------------------");
-//	LOG("|               Example Array             |");
-//	LOG("-------------------------------------------\n");
-//
-//	LOG("Prints all even numbers, excluding zero.\n");
-//
-//	Array<int, 10> exampleArray;
-//
-//	// Sets all values to 1
-//	exampleArray.Fill(1);
-//
-//	// Multiplies the values by the factor cubed
-//	int factor = 0;
-//	exampleArray.ForEach([&](const int& value)
-//		{
-//			const_cast<int&>(value) *= factor * factor * factor;
-//			factor++;
-//		});
-//
-//	LOG(exampleArray);
-//
-//	// Checks for even numbers
-//	for (const auto& item : exampleArray) {
-//		if (item % 2 == 0 && item != 0)
-//			LOG(item);
-//	}
-//
-//	LOG("\n");
-//}
-//
-//void Example_List()
-//{
-//	LOG("-------------------------------------------");
-//	LOG("|               Example List              |");
-//	LOG("-------------------------------------------\n");
-//
-//	LOG("Removes all values with indices divisible by 3.\n");
-//
-//	List<int> exampleList;
-//
-//	// Adds a list of {i, i, i}
-//	for (int i = 0; i < 20; i++) {
-//		exampleList.AddRange({i, i, i});
-//	}
-//
-//	LOG(exampleList);
-//
-//	// Removes the item by index thats divisible by 3
-//	for (size_t i = 0; i < exampleList.Capacity(); i++) {
-//		if (i % 3 == 0)
-//			exampleList.RemoveAt(i);
-//	}
-//
-//	LOG(exampleList);
-//
-//	LOG("\n");
-//}
-//
-//void Example_Set()
-//{
-//	LOG("-------------------------------------------");
-//	LOG("|               Example Set               |");
-//	LOG("-------------------------------------------\n");
-//
-//	LOG("Creates a Set out of the given list data.\n")
-//
-//	List<int> data = {
-//		1, 4, 6, 2, 4, 7, 4, 2, 10, 12, 3, 13,
-//		10, 14, 89, 22, 41, 90, 21, 26, 40, 82, 33, 113,
-//		651, 454, 64, 212, 42, 73, 421, 23, 30, 312, 4, 23,
-//		131, 421, 363, 542, 64, 897, 498, 12, 1430, 312, 43, 213,
-//		1, 41, 900, 231, 412, 700, 490, 266, 103, 124, 31, 133,
-//	};
-//
-//	Set<int> exampleSet(data.Capacity());
-//
-//	exampleSet.AddRange(data);
-//
-//	LOG(exampleSet.Capacity());
-//	LOG(exampleSet);
-//
-//	LOG("\n");
-//}
-//
-//void Example_Queue()
-//{
-//	LOG("-------------------------------------------");
-//	LOG("|               Example Queue             |");
-//	LOG("-------------------------------------------\n");
-//
-//	Queue<int> exampleQueue;
-//
-//	exampleQueue.Enqueue(10);
-//	exampleQueue.Enqueue(20);
-//	exampleQueue.Enqueue(30);
-//	exampleQueue.Enqueue(40);
-//	exampleQueue.Enqueue(50);
-//
-//	LOG(exampleQueue.Dequeue());
-//
-//	LOG(exampleQueue);
-//
-//	LOG("\n");
-//}
-//
-//void Example_Stack()
-//{
-//	LOG("-------------------------------------------");
-//	LOG("|               Example Stack             |");
-//	LOG("-------------------------------------------\n");
-//
-//	Stack<int> exampleStack;
-//
-//	exampleStack.Push(10);
-//	exampleStack.Push(20);
-//	exampleStack.Push(30);
-//	exampleStack.Push(40);
-//	exampleStack.Push(50);
-//
-//	LOG(exampleStack.Pop());
-//
-//	LOG(exampleStack);
-//
-//	LOG("\n");
-//}
-//
-//void Example_Map()
-//{
-//	Map<std::string, int> map(10);
-//}
-//
-//void Example_LinkedList()
-//{
-//	LinkedList<int> linkedList(10);
-//}
-//
-//void Example_BinaryTree()
-//{
-//	BinaryTree<int> binaryTree(10);
-//}
-
-
-// std
-
+#ifdef BENCHMARK_PRIMATIVE or BENCHMARK_PLAYER
 template<typename T, size_t _Size>
 void Function(std::array<T, _Size>& _array)
 {
@@ -429,7 +298,7 @@ template<typename T1, typename T2>
 void Function(Map<T1, T2>& _map)
 {
 	for (int i = 0; i < 1000000; i++) {
-		_map.Add(T1(), T2());
+		_map.Insert(T1(), T2());
 	}
 }
 
@@ -455,21 +324,19 @@ void PrintVector(std::vector<T> _vector)
 	for (const auto& item : _vector)
 		LOG(item);
 }
+// std
 
-newhash_t TestHash(const uint32_t& _obj, size_t _capacity)
+#endif
+
+newhash_t TestHash(const Player& _obj, size_t _capacity)
 {
-	newhash_t size = (newhash_t)(sizeof(uint32_t) + sizeof(newhash_t)) * (newhash_t)pow(_obj, 1.5);
-	newhash_t factor = (newhash_t)((float)size - (float)_obj + ((float)size * 0.5f));
+	newhash_t size = (newhash_t)(sizeof(Player) + sizeof(newhash_t)) + _obj.GetLevel();
+	newhash_t factor = (newhash_t)((float)size - (float)_obj.GetClass() + ((float)size * 0.5f));
 	return factor % _capacity;
 }
 
 int main()
 {
-	//Example_Array();
-	//Example_List();
-	//Example_Set();
-	//Example_Queue();
-	//Example_Stack();
 
 #ifdef BENCHMARK_PLAYER
 
@@ -504,8 +371,9 @@ int main()
 	Benchmark::Stop();
 
 #if 0
-	Set<int> Set;
-	std::unordered_set<int> set;
+	Set<Player> Set;
+	Set.SetHash(TestHash);
+	std::unordered_set<Player> set;
 
 	Benchmark::Start("Set");
 	Function(Set);
@@ -515,8 +383,8 @@ int main()
 	Function(set);
 	Benchmark::Stop();
 
-	Map<int, float> Map;
-	std::unordered_map<int, float> map;
+	Map<int, Player> Map;
+	std::unordered_map<int, Player> map;
 
 	Benchmark::Start("Map");
 	Function(Map);
@@ -555,7 +423,7 @@ int main()
 
 #ifdef BENCHMARK_PRIMATIVE
 
-	LOG("Benchmark with Primative Type:\n");
+	LOG("Benchmark with Primative Type: (int)\n");
 
 	mdt::List<int> intList;
 	std::list<int> intlist;
@@ -586,27 +454,35 @@ int main()
 	Benchmark::Stop();
 
 
-	Set<int> intSet;
+	mdt::Set<int> intSet;
 	std::unordered_set<int> intset;
 
 	Benchmark::Start("Set");
-	Function(intSet);
+	for (int i = 0; i < 1000000; i++) {
+		intSet.Insert(i);
+	}
 	Benchmark::Stop();
 
 	Benchmark::Start("std::unordered_set");
-	Function(intset);
+	for (int i = 0; i < 1000000; i++) {
+		intset.insert(i);
+	}
 	Benchmark::Stop();
 
 #if 0
-	Map<int, int> intMap;
+	Map<int> intMap;
 	std::unordered_map<int, int> intmap;
 
 	Benchmark::Start("Map");
-	Function(intMap);
+	for (int i = 0; i < 100000; i++) {
+		intMap.Insert(i);
+	}
 	Benchmark::Stop();
 
 	Benchmark::Start("std::unordered_map");
-	Function(intmap);
+	for (int i = 0; i < 100000; i++) {
+		intmap.insert(std::pair<int, int>(i, i));
+	}
 	Benchmark::Stop();
 #endif
 
@@ -637,24 +513,91 @@ int main()
 
 #endif
 
-	Set<uint32_t> set;
+	Set<int> set;
 	set.Reserve(100000);
-	std::unordered_set<uint32_t> stdset;
-	stdset.reserve(100000);
+	//std::unordered_set<Player> stdset;
+	//stdset.reserve(100000);
 
 	Benchmark::Start("Set");
-	for (uint32_t i = 0; i < 100000; i++) {
-		set.Insert(i);
+	for (uint32_t i = 0; i < 100; i++) {
+		set.Insert(i * i);
 	}
 	Benchmark::Stop();
 
-	Benchmark::Start("std::unordered_set");
-	for (uint32_t i = 0; i < 100000; i++) {
-		stdset.insert(i);
-	}
-	Benchmark::Stop();
+	//Benchmark::Start("std::unordered_set");
+	//for (uint32_t i = 0; i < 10; i++) {
+	//	stdset.insert(Player());
+	//}
+	//Benchmark::Stop();
 
-	//LOG(set);
+	LOG(set);
+
+	LOG("");
+
+	bool test = false;
+
+	Benchmark::Start("Find: 64");
+	test = set.Find(64);
+	Benchmark::Stop();
+	if (test) {
+		LOG("Found Target!");
+	}
+	else {
+		LOG("Not Found!");
+	}
+
+	Benchmark::Start("Find: 99");
+	test = set.Find(99);
+	Benchmark::Stop();
+	if (test) {
+		LOG("Found Target!");
+	}
+	else {
+		LOG("Not Found!");
+	}
+
+	Benchmark::Start("Find: 100");
+	test = set.Find(100);
+	Benchmark::Stop();
+	if (test) {
+		LOG("Found Target!");
+	}
+	else {
+		LOG("Not Found!");
+	}
+
+	Benchmark::Start("Find: 6724");
+	test = set.Find(6724);
+	Benchmark::Stop();
+	if (test) {
+		LOG("Found Target!");
+	}
+	else {
+		LOG("Not Found!");
+	}
+
+	Benchmark::Start("Erase: 6724");
+	test = set.Erase(6724);
+	Benchmark::Stop();
+	if (test) {
+		LOG("Erased Target!");
+	}
+	else {
+		LOG("Not Found!");
+	}
+
+	Benchmark::Start("EraseKey: 91180");
+	test = set.EraseKey(91180);
+	Benchmark::Stop();
+	if (test) {
+		LOG("Erased Target!");
+	}
+	else {
+		LOG("Not Found!");
+	}
+
+	LOG("");
+	LOG(set);
 
 	//std::cin.get();
 }

@@ -1,3 +1,4 @@
+#include "mdtpch.h"
 #include "Benchmark.h"
 
 using namespace std::literals::chrono_literals;

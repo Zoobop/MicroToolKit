@@ -1,23 +1,22 @@
 #pragma once
 
+#include "mdtpch.h"
 #include "Utility/HashNode.h"
 #include "DataStruct/LinkedList.h"
 
 namespace mdt {
 
-	typedef uint64_t newhash_t;
-
-	template<typename _Type, typename _KeyType = newhash_t>
+	template<typename _Type, typename _KeyType>
 	_KeyType Hash_Temp(const _Type& _obj, size_t _capacity)
 	{
-		return _KeyType;
+		return _KeyType();
 	}
 
 	template<>
 	newhash_t Hash_Temp(const int& _obj, size_t _capacity)
 	{
 		newhash_t size = (newhash_t)(sizeof(int) + sizeof(newhash_t)) * (newhash_t)pow(_obj, 1.5);
-		newhash_t factor = (newhash_t)round((float)size - (float)_obj + ((float)size * 0.5f));
+		newhash_t factor = (newhash_t)((float)size - (float)_obj + ((float)size * 0.5f));
 		return factor % _capacity;
 	}
 
@@ -25,7 +24,7 @@ namespace mdt {
 	newhash_t Hash_Temp(const uint32_t& _obj, size_t _capacity)
 	{
 		newhash_t size = (newhash_t)(sizeof(uint32_t) + sizeof(newhash_t)) * (newhash_t)pow(_obj, 1.5);
-		newhash_t factor = (newhash_t)round((float)size - (float)_obj + ((float)size * 0.5f));
+		newhash_t factor = (newhash_t)((float)size - (float)_obj + ((float)size * 0.5f));
 		return factor % _capacity;
 	}
 
@@ -33,7 +32,7 @@ namespace mdt {
 	newhash_t Hash_Temp(const float& _obj, size_t _capacity)
 	{
 		newhash_t size = (newhash_t)(sizeof(float) + sizeof(newhash_t)) * (newhash_t)(pow(_obj, 1.4) * 2.1);
-		newhash_t factor = (newhash_t)round((float)size - (float)_obj + ((float)size * 0.5f));
+		newhash_t factor = (newhash_t)((float)size - (float)_obj + ((float)size * 0.5f));
 		return factor % _capacity;
 	}
 
@@ -42,7 +41,7 @@ namespace mdt {
 	newhash_t Hash_Temp(const double& _obj, size_t _capacity)
 	{
 		newhash_t size = (newhash_t)(sizeof(double) + sizeof(newhash_t)) * (newhash_t)(pow(_obj, 1.36) * 2.4);
-		newhash_t factor = (newhash_t)round((float)size - (float)_obj + ((float)size * 0.5f));
+		newhash_t factor = (newhash_t)((float)size - (float)_obj + ((float)size * 0.5f));
 		return factor % _capacity;
 	}
 
@@ -70,7 +69,7 @@ namespace mdt {
 	public:
 		IHashTable()
 		{
-			ReAlloc(10);
+			ReAlloc(50);
 		}
 
 		IHashTable(const size_t& _capacity)
@@ -107,10 +106,12 @@ namespace mdt {
 		//template<typename ... _Args>
 		//virtual _Type& Emplace(_Args&&... _args) = 0;
 
-		virtual bool Remove(const _Type& _obj) = 0;
-		virtual bool Remove(_Type&& _obj) = 0;
 		virtual bool Find(const _Type& _obj) const = 0;
 		virtual bool Find(_Type&& _obj) const = 0;
+		virtual bool Erase(const _Type& _obj) = 0;
+		virtual bool Erase(_Type&& _obj) = 0;
+		virtual bool EraseKey(const _KeyType& _obj) = 0;
+		virtual bool EraseKey(_KeyType&& _obj) = 0;
 
 		virtual void Clear() = 0;
 
@@ -161,5 +162,6 @@ namespace mdt {
 #define _CAPACITY		__super::m_Capacity
 #define _SIZE			__super::m_Size
 #define _LOADFACTOR		__super::m_LoadFactor
+#define _HASHFUNC		__super::m_HashFunction
 	};
 }

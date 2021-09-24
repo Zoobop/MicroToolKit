@@ -12,7 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Benchmark.h" />
+    <ClInclude Include="mdtpch.h" />
     <ClInclude Include="Core\Memory.h" />
+    <ClInclude Include="Core\Typedef.h" />
+    <ClInclude Include="Interfaces\IHashable.h" />
     <ClInclude Include="Interfaces\ISort.h" />
     <ClInclude Include="DataStruct\Array.h" />
     <ClInclude Include="DataStruct\BinaryTree.h" />
@@ -93,6 +96,8 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)ModernDT;$(SolutionDir)ModernDT\DataStructs;</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>mdtpch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

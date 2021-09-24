@@ -4,7 +4,11 @@
 #include <chrono>
 #include <thread>
 
+#ifdef _DEBUG
 #define LOG(x)		std::cout << x << "\n";
+#else
+#define LOG(x)
+#endif
 
 using TIME = std::chrono::steady_clock::time_point;
 

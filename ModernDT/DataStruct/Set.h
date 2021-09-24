@@ -5,11 +5,12 @@
 
 namespace mdt {
 
-	template<typename _Type, typename _KeyType = newhash_t>
-	class Set : public IHashTable<_Type, _KeyType>
+	template<typename _Type>
+	class Set : public IHashTable<_Type, newhash_t>
 	{
 	public:
-		using Iterator = ContainerIterator<Set<_Type, _KeyType>>;
+		using _KeyType = newhash_t;
+		using Iterator = ContainerIterator<Set<_Type>>;
 		using _HashType = typename IHashTable<_Type, _KeyType>::_HashType;
 		using hashptr_t = typename IHashTable<_Type, _KeyType>::hashptr_t;
 
@@ -60,6 +61,8 @@ namespace mdt {
 			_DATA = _other.m_Data;
 			_CAPACITY = _other.m_Capacity;
 			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
 		}
 
 		Set(Set<_Type>&& _other) noexcept
@@ -67,10 +70,14 @@ namespace mdt {
 			_DATA = _other.m_Data;
 			_CAPACITY = _other.m_Capacity;
 			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
 
 			_other.m_Data = nullptr;
 			_other.m_Capacity = 0;
 			_other.m_Size = 0;
+			_other.m_LoadFactor = 0;
+			_other.m_HashFunction.Clear();
 		}
 
 		~Set()
@@ -87,11 +94,11 @@ namespace mdt {
 			}
 
 			_KeyType hash = __super::Hash(_value);
-			HashNode<_Type>* node = &_DATA[hash];
-			HashNode<_Type>* prev = nullptr;
+			_HashType* node = &_DATA[hash];
+			_HashType* prev = nullptr;
 			while (node) {
 				if (node == (hashptr_t)0xcdcdcdcdcdcdcdcd) {
-					node = new HashNode<_Type>(_value);
+					node = new _HashType(_value);
 					break;
 				}
 				if (node->_control != Ctrl::kFull) {
@@ -118,11 +125,11 @@ namespace mdt {
 			}
 
 			_KeyType hash = __super::Hash(_value);
-			HashNode<_Type>* node = &_DATA[hash];
-			HashNode<_Type>* prev = nullptr;
+			_HashType* node = &_DATA[hash];
+			_HashType* prev = nullptr;
 			while (node) {
 				if (node == (hashptr_t)0xcdcdcdcdcdcdcdcd) {
-					node = new HashNode<_Type>(_value);
+					node = new _HashType(_value);
 					break;
 				}
 				if (node->_control != Ctrl::kFull) {
@@ -174,21 +181,15 @@ namespace mdt {
 			return false;
 		}
 
-		virtual bool Remove(const _Type& _value) override
-		{
-			return false;
-		}
-
-		virtual bool Remove(_Type&& _value) override
-		{
-			return false;
-		}
-
 		virtual bool Find(const _Type& _value) const override
 		{
 			_KeyType hash = __super::Hash(_value);
-			if (_DATA[hash]._control != Ctrl::kEmpty) {
-				if (_DATA[hash]._value == _value) return true;
+			_HashType* node = &_DATA[hash];
+			while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				if (node->_control != Ctrl::kEmpty) {
+					if (node->_value == _value) return true;
+				}
+				node = node->_next;
 			}
 			return false;
 		}
@@ -196,8 +197,77 @@ namespace mdt {
 		virtual bool Find(_Type&& _value) const override
 		{
 			_KeyType hash = __super::Hash(_value);
-			if (_DATA[hash]._control != Ctrl::kEmpty) {
-				if (_DATA[hash]._value == _value) return true;
+			_HashType* node = &_DATA[hash];
+			while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				if (node->_control != Ctrl::kEmpty) {
+					if (node->_value == _value) return true;
+				}
+				node = node->_next;
+			}
+			return false;
+		}
+
+		virtual bool Erase(const _Type& _obj) override
+		{
+			_KeyType hash = __super::Hash(_obj);
+			_HashType* node = &_DATA[hash];
+			_HashType* prev = nullptr;
+			while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				if (node->_value == _obj) {
+					node->_control = Ctrl::kDeleted;
+					if (prev) prev->_next = node;
+					return true;
+				}
+				prev = node;
+				node = node->_next;
+			}
+			return false;
+		}
+
+		virtual bool Erase(_Type&& _obj) override
+		{
+			_KeyType hash = __super::Hash(_obj);
+			_HashType* node = &_DATA[hash];
+			_HashType* prev = nullptr;
+			while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				if (node->_value == _obj) {
+					node->_control = Ctrl::kDeleted;
+					if (prev) prev->_next = node->_next;
+					return true;
+				}
+				prev = node;
+				node = node->_next;
+			}
+			return false;
+		}
+
+		virtual bool EraseKey(const _KeyType& _key) override
+		{
+			if (_key < _CAPACITY && _key >= 0) {
+				_HashType* node = &_DATA[_key];
+				if (node == nullptr || 
+					node == (hashptr_t)0xcdcdcdcdcdcdcdcd || 
+					node->_control != Ctrl::kFull) 
+					return false;
+				while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+					node->_control = Ctrl::kDeleted;
+					node = node->_next;
+				}
+				return true;
+			}
+			return false;
+		}
+
+		virtual bool EraseKey(_KeyType&& _key) override
+		{
+			if (_key < _CAPACITY && _key >= 0) {
+				_HashType* node = &_DATA[_key];
+				if (node == nullptr || node == (hashptr_t)0xcdcdcdcdcdcdcdcd || node->_control != Ctrl::kFull) return false;
+				while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+					node->_control = Ctrl::kDeleted;
+					node = node->_next;
+				}
+				return true;
 			}
 			return false;
 		}
@@ -261,8 +331,10 @@ namespace mdt {
 		void operator=(const Set<_Type>& _other)
 		{
 			_DATA = _other.m_Data;
-			_SIZE = _other.m_Size;
 			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
 		}
 
 		void operator=(Set<_Type>&& _other) noexcept
@@ -270,12 +342,16 @@ namespace mdt {
 			delete[] _DATA;
 
 			_DATA = _other.m_Data;
-			_SIZE = _other.m_Size;
 			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
 
 			_other.m_Data = nullptr;
 			_other.m_Capacity = 0;
 			_other.m_Size = 0;
+			_other.m_LoadFactor = 0;
+			_other.m_HashFunction.Clear();
 		}
 
 		friend std::ostream& operator<<(std::ostream& _stream, const Set<_Type>& _current)
@@ -284,7 +360,7 @@ namespace mdt {
 				auto iter = &_current.m_Data[i];
 				if (iter->_control != Ctrl::kFull) continue;
 				_stream << i << ": ";
-				while (iter != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				while (iter && iter != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
 					if (iter->_control == Ctrl::kFull)
 						_stream << *iter;
 					iter = iter->_next;
