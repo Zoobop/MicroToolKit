@@ -4,13 +4,13 @@
 
 namespace mdt {
 
-	template<typename T>
-	class List : public DataContainer<T>, public IContainer<T>, public ISort<T>
+	template<typename _Type>
+	class List : public DataContainer<_Type>, public IContainer<_Type>, public ISort<_Type>
 	{
 	public:
-		using Iterator = DataContainer<T>::Iterator;
+		using Iterator = DataContainer<_Type>::Iterator;
 
-		friend class IContainer<T>;
+		friend class IContainer<_Type>;
 
 	public:
 		List() 
@@ -24,7 +24,7 @@ namespace mdt {
 			ReAlloc(m_Capacity);
 		}
 
-		List(std::initializer_list<T>&& _initList)
+		List(std::initializer_list<_Type>&& _initList)
 		{
 			size_t size = 0;
 			for (const auto& _item : _initList)
@@ -32,29 +32,29 @@ namespace mdt {
 
 			ReAlloc(size);
 			for (const auto& _item : _initList)
-				Add(std::move((T&&)_item));
+				Add(std::move((_Type&&)_item));
 		}
 
-		List(const std::vector<T>& _vector)
-			: m_Data(const_cast<T*>(_vector.data())), m_Capacity(_vector.capacity())
+		List(const std::vector<_Type>& _vector)
+			: m_Data(const_cast<_Type*>(_vector.data())), m_Capacity(_vector.capacity())
 		{
 			_SIZE = _vector.size();
 		}
 
-		List(std::vector<T>&& _vector)
-			: m_Data(const_cast<T*>(_vector.data())), m_Capacity(_vector.capacity())
+		List(std::vector<_Type>&& _vector)
+			: m_Data(const_cast<_Type*>(_vector.data())), m_Capacity(_vector.capacity())
 		{
 			_SIZE = _vector.size();
 			_vector.clear();
 		}
 
-		List(const List<T>& _other)
+		List(const List<_Type>& _other)
 			: m_Data(_other.m_Data), m_Capacity(_other.m_Capacity)
 		{
 			_SIZE = _other.m_Size;
 		}
 
-		List(List<T>&& _other) noexcept
+		List(List<_Type>&& _other) noexcept
 			: m_Capacity(_other.m_Capacity)
 		{
 			m_Data = _other.m_Data;
@@ -66,11 +66,11 @@ namespace mdt {
 		~List()
 		{
 			Clear();
-			Delete(m_Data, m_Capacity * sizeof(T));
+			Delete(m_Data, m_Capacity * sizeof(_Type));
 		}
 
 		// Override Methods
-		virtual bool Add(const T& _value) override
+		virtual bool Add(const _Type& _value) override
 		{
 			if (_SIZE >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
@@ -81,7 +81,7 @@ namespace mdt {
 
 			return true;
 		}
-		virtual bool Add(T&& _value) override
+		virtual bool Add(_Type&& _value) override
 		{
 			if (_SIZE >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
@@ -94,17 +94,17 @@ namespace mdt {
 		}
 
 		template<typename ... _Args>
-		T& Emplace(_Args&&... args)
+		_Type& Emplace(_Args&&... args)
 		{
 			if (_SIZE >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
 			}
 
-			new(&m_Data[_SIZE]) T(std::forward<_Args>(args)...);
+			new(&m_Data[_SIZE]) _Type(std::forward<_Args>(args)...);
 			return m_Data[_SIZE++];
 		}
 
-		virtual bool AddRange(const IContainer<T>& _container) override
+		virtual bool AddRange(const IContainer<_Type>& _container) override
 		{
 			if (_container.Data()) {
 				size_t size = _container.Capacity();
@@ -115,7 +115,7 @@ namespace mdt {
 			return false;
 		}
 
-		virtual bool AddRange(std::initializer_list<T>&& _initList)
+		virtual bool AddRange(std::initializer_list<_Type>&& _initList)
 		{
 			if (_initList.size() > 0) {
 				for (auto& item : _initList)
@@ -125,7 +125,7 @@ namespace mdt {
 			return false;
 		}
 
-		virtual bool AddRange(const std::vector<T>& _vector)
+		virtual bool AddRange(const std::vector<_Type>& _vector)
 		{
 			if (_vector.data()) {
 				size_t size = _vector.size();
@@ -136,7 +136,7 @@ namespace mdt {
 			return false;
 		}
 
-		virtual bool Remove(const T& _value) override
+		virtual bool Remove(const _Type& _value) override
 		{
 			if (_SIZE > 0) {
 				size_t currentIndex = 0;
@@ -152,14 +152,14 @@ namespace mdt {
 				}
 
 				_SIZE--;
-				m_Data[_SIZE].~T();
+				m_Data[_SIZE].~_Type();
 				return true;
 
 			}
 			return false;
 		}
 
-		virtual bool Remove(T&& _value) override
+		virtual bool Remove(_Type&& _value) override
 		{
 			if (_SIZE > 0) {
 				size_t currentIndex = 0;
@@ -175,7 +175,7 @@ namespace mdt {
 				}
 
 				_SIZE--;
-				m_Data[_SIZE].~T();
+				m_Data[_SIZE].~_Type();
 				return true;
 
 			}
@@ -190,7 +190,7 @@ namespace mdt {
 			return false;
 		}
 
-		virtual bool Contains(const T& _value) const override
+		virtual bool Contains(const _Type& _value) const override
 		{
 			for (size_t i = 0; i < _SIZE; i++) {
 				if (m_Data[i] == _value)
@@ -199,7 +199,7 @@ namespace mdt {
 			return false;
 		}
 
-		virtual bool Contains(T&& _value) const override
+		virtual bool Contains(_Type&& _value) const override
 		{
 			for (size_t i = 0; i < _SIZE; i++) {
 				if (m_Data[i] == _value)
@@ -211,39 +211,39 @@ namespace mdt {
 		virtual void Clear() override
 		{
 			for (size_t i = 0; i < _SIZE; i++)
-				m_Data[i].~T();
+				m_Data[i].~_Type();
 
 			_SIZE = 0;
 		}
 
 		// IContainer
-		virtual void ForEach(const Param<const T&>& _param) override
+		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
 			for (size_t i = 0; i < _SIZE; i++) {
 				_param(m_Data[i]);
 			}
 		}
 
-		constexpr virtual T* Data() const override { return m_Data; }
+		constexpr virtual _Type* Data() const override { return m_Data; }
 
 		// ISort
-		virtual void Sort(const Dynamic<bool, const T&, const T&> _predicate = GreatorThan<T>) override
+		virtual void Sort(const Dynamic<bool, const _Type&, const _Type&> _predicate = GreatorThan<_Type>) override
 		{
 			for (size_t i = 0, j = i + 1; i < _SIZE; i++, j++) {
 				if (_predicate(m_Data[i], m_Data[j])) {
-					T temp = std::move(m_Data[i]);
+					_Type temp = std::move(m_Data[i]);
 					m_Data[i] = std::move(m_Data[j]);
 					m_Data[j] = std::move(temp);
 				}
 			}
 		}
 
-		virtual void RSort(const Dynamic<bool, const T&, const T&> _predicate = GreatorThan<T>) override
+		virtual void RSort(const Dynamic<bool, const _Type&, const _Type&> _predicate = GreatorThan<_Type>) override
 		{
 			for (size_t i = 0; i < _SIZE; i++) {
 				for (size_t j = i + 1; j < _SIZE; j++) {
 					if (_predicate(m_Data[i], m_Data[j])) {
-						T temp = std::move(m_Data[i]);
+						_Type temp = std::move(m_Data[i]);
 						m_Data[i] = std::move(m_Data[j]);
 						m_Data[j] = std::move(temp);
 					}
@@ -268,7 +268,7 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		const T& operator[](size_t& _index) const 
+		const _Type& operator[](size_t& _index) const 
 		{
 			if (_index >= m_Capacity) {
 				__debugbreak();
@@ -276,7 +276,7 @@ namespace mdt {
 			return m_Data[_index];
 		}
 
-		T& operator[](size_t& _index) 
+		_Type& operator[](size_t& _index) 
 		{ 
 			if (_index >= m_Capacity) {
 				__debugbreak();
@@ -284,14 +284,14 @@ namespace mdt {
 			return m_Data[_index];
 		}
 
-		void operator=(const List<T>& _other)
+		void operator=(const List<_Type>& _other)
 		{
 			m_Data = _other.m_Data;
 			_SIZE = _other._SIZE;
 			m_Capacity = _other.m_Capacity;
 		}
 
-		friend std::ostream& operator<<(std::ostream& _stream, const List<T>& _current)
+		friend std::ostream& operator<<(std::ostream& _stream, const List<_Type>& _current)
 		{
 			_stream << "[ ";
 			for (size_t i = 0; i < _current.m_Size; i++) {
@@ -307,7 +307,7 @@ namespace mdt {
 	private:
 		void ReAlloc(size_t _capacity)
 		{
-			T* newBlock = (T*)Alloc<T>(_capacity);
+			_Type* newBlock = (_Type*)Alloc<_Type>(_capacity);
 
 			if (_capacity < _SIZE)
 				_SIZE = _capacity;
@@ -317,15 +317,15 @@ namespace mdt {
 			}
 
 			for (size_t i = 0; i < _SIZE; i++)
-				m_Data[i].~T();
+				m_Data[i].~_Type();
 
-			Delete(m_Data, m_Capacity * sizeof(T));
+			Delete(m_Data, m_Capacity * sizeof(_Type));
 			m_Data = newBlock;
 			m_Capacity = _capacity;
 		}
 
 	private:
-		T* m_Data = nullptr;
+		_Type* m_Data = nullptr;
 	
 		size_t m_Capacity = 0;
 	};

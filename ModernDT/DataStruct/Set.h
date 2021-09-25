@@ -97,7 +97,7 @@ namespace mdt {
 			_HashType* node = &_DATA[hash];
 			_HashType* prev = nullptr;
 			while (node) {
-				if (node == (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				if (node == _NULLNODE) {
 					node = new _HashType(_value);
 					break;
 				}
@@ -106,6 +106,9 @@ namespace mdt {
 					node->_value = _value;
 					break;
 				}
+				if (node->_value == _value &&
+					node->_control == Ctrl::kFull)
+					return false;
 				prev = node;
 				node = node->_next;
 			}
@@ -128,7 +131,7 @@ namespace mdt {
 			_HashType* node = &_DATA[hash];
 			_HashType* prev = nullptr;
 			while (node) {
-				if (node == (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				if (node == _NULLNODE) {
 					node = new _HashType(_value);
 					break;
 				}
@@ -137,6 +140,9 @@ namespace mdt {
 					node->_value = _value;
 					break;
 				}
+				if (node->_value == _value &&
+					node->_control == Ctrl::kFull)
+					return false;
 				prev = node;
 				node = node->_next;
 			}
@@ -185,7 +191,7 @@ namespace mdt {
 		{
 			_KeyType hash = __super::Hash(_value);
 			_HashType* node = &_DATA[hash];
-			while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+			while (node && node != _NULLNODE) {
 				if (node->_control != Ctrl::kEmpty) {
 					if (node->_value == _value) return true;
 				}
@@ -198,7 +204,7 @@ namespace mdt {
 		{
 			_KeyType hash = __super::Hash(_value);
 			_HashType* node = &_DATA[hash];
-			while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+			while (node && node != _NULLNODE) {
 				if (node->_control != Ctrl::kEmpty) {
 					if (node->_value == _value) return true;
 				}
@@ -212,7 +218,7 @@ namespace mdt {
 			_KeyType hash = __super::Hash(_obj);
 			_HashType* node = &_DATA[hash];
 			_HashType* prev = nullptr;
-			while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+			while (node && node != _NULLNODE) {
 				if (node->_value == _obj) {
 					node->_control = Ctrl::kDeleted;
 					if (prev) prev->_next = node;
@@ -229,7 +235,7 @@ namespace mdt {
 			_KeyType hash = __super::Hash(_obj);
 			_HashType* node = &_DATA[hash];
 			_HashType* prev = nullptr;
-			while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+			while (node && node != _NULLNODE) {
 				if (node->_value == _obj) {
 					node->_control = Ctrl::kDeleted;
 					if (prev) prev->_next = node->_next;
@@ -246,10 +252,10 @@ namespace mdt {
 			if (_key < _CAPACITY && _key >= 0) {
 				_HashType* node = &_DATA[_key];
 				if (node == nullptr || 
-					node == (hashptr_t)0xcdcdcdcdcdcdcdcd || 
+					node == _NULLNODE || 
 					node->_control != Ctrl::kFull) 
 					return false;
-				while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				while (node && node != _NULLNODE) {
 					node->_control = Ctrl::kDeleted;
 					node = node->_next;
 				}
@@ -262,8 +268,8 @@ namespace mdt {
 		{
 			if (_key < _CAPACITY && _key >= 0) {
 				_HashType* node = &_DATA[_key];
-				if (node == nullptr || node == (hashptr_t)0xcdcdcdcdcdcdcdcd || node->_control != Ctrl::kFull) return false;
-				while (node && node != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				if (node == nullptr || node == _NULLNODE || node->_control != Ctrl::kFull) return false;
+				while (node && node != _NULLNODE) {
 					node->_control = Ctrl::kDeleted;
 					node = node->_next;
 				}
@@ -312,22 +318,6 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		const _Type& operator[](size_t _index) const
-		{
-			if (_index >= _CAPACITY) {
-				__debugbreak();
-			}
-			return _DATA[_index];
-		}
-
-		_Type& operator[](size_t _index)
-		{
-			if (_index >= _CAPACITY) {
-				__debugbreak();
-			}
-			return _DATA[_index];
-		}
-
 		void operator=(const Set<_Type>& _other)
 		{
 			_DATA = _other.m_Data;
@@ -360,7 +350,7 @@ namespace mdt {
 				auto iter = &_current.m_Data[i];
 				if (iter->_control != Ctrl::kFull) continue;
 				_stream << i << ": ";
-				while (iter && iter != (hashptr_t)0xcdcdcdcdcdcdcdcd) {
+				while (iter && iter != _NULLNODE) {
 					if (iter->_control == Ctrl::kFull)
 						_stream << *iter;
 					iter = iter->_next;

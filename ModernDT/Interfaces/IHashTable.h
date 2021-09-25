@@ -36,7 +36,6 @@ namespace mdt {
 		return factor % _capacity;
 	}
 
-
 	template<>
 	newhash_t Hash_Temp(const double& _obj, size_t _capacity)
 	{
@@ -45,6 +44,13 @@ namespace mdt {
 		return factor % _capacity;
 	}
 
+	template<>
+	newhash_t Hash_Temp(const char& _obj, size_t _capacity)
+	{
+		newhash_t size = (newhash_t)(sizeof(char) + sizeof(newhash_t)) * (newhash_t)pow(_obj, 1.5);
+		newhash_t factor = (newhash_t)((float)size - (float)_obj + ((float)size * 0.5f));
+		return factor % _capacity;
+	}
 
 	template<>
 	newhash_t Hash_Temp(const std::string& _obj, size_t _capacity)
@@ -65,6 +71,8 @@ namespace mdt {
 	public:
 		using _HashType = HashNode<_Type>;
 		using hashptr_t = HashNode<_Type>*;
+
+#define _NULLNODE	(hashptr_t)0xcdcdcdcdcdcdcdcd
 
 	public:
 		IHashTable()

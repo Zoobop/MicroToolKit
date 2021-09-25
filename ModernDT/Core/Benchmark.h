@@ -18,11 +18,12 @@ namespace mdt {
 	{
 	public:
 		static void Start(const char* _timerName = "");
+		static void Stamp(const char* _stampName = "");
 		static void Stop();
 
 	private:
 		static const char* s_TimerName;
-		static TIME s_Timestep;
+		static TIME s_Timestamp;
 		static TIME s_StartTime;
 		static TIME s_StopTime;
 		static bool s_Running;

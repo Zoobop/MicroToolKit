@@ -216,12 +216,6 @@ namespace mdt {
 			return list;
 		}
 
-		virtual Set<_Type> ToSet() override
-		{
-			Set<_Type> set(m_Size);
-			return set;
-		}
-
 		virtual Stack<_Type> ToStack() override
 		{
 			Stack<_Type> stack(m_Size);

@@ -34,6 +34,7 @@
     <ClInclude Include="Utility\DoubleNode.h" />
     <ClInclude Include="Interfaces\IHashTable.h" />
     <ClInclude Include="Utility\HashNode.h" />
+    <ClInclude Include="Utility\MultiNode.h" />
     <ClInclude Include="Utility\SingleNode.h" />
   </ItemGroup>
   <ItemGroup>

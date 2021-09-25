@@ -9,8 +9,8 @@
 #include <unordered_set>
 #include <unordered_map>
 
-//#define BENCHMARK_PRIMATIVE
-//#define BENCHMARK_PLAYER
+#define BENCHMARK_PRIMATIVE
+#define BENCHMARK_PLAYER
 
 struct Vector3
 {
@@ -82,6 +82,11 @@ struct Vector3
 	bool operator==(const Vector3& _other)
 	{
 		return x == _other.x && y == _other.y && z == _other.z;
+	}
+
+	friend bool operator==(const Vector3& _current, const Vector3& _other)
+	{
+		return _current.x == _other.x && _current.y == _other.y && _current.z == _other.z;
 	}
 
 	friend std::ostream& operator<<(std::ostream& _stream, const Vector3& _current)
@@ -194,6 +199,11 @@ public:
 		return m_Level == _other.m_Level && m_Class == _other.m_Class && m_Position == _other.m_Position;
 	}
 
+	friend bool operator==(const Player& _current, const Player& _other)
+	{
+		return _current.m_Level == _other.m_Level && _current.m_Class == _other.m_Class && _current.m_Position == _other.m_Position;
+	}
+
 	friend std::ostream& operator<<(std::ostream& _stream, const Player& _current)
 	{
 		_stream << _current.m_Name << " [ Class: " << _current.m_Class << " Level: " << _current.m_Level << " ]";
@@ -207,7 +217,28 @@ protected:
 	Vector3 m_Position;
 };
 
+newhash_t TestHash(const Player& _obj, size_t _capacity)
+{
+	newhash_t size = (newhash_t)(sizeof(Player) + sizeof(newhash_t)) + _obj.GetLevel();
+	newhash_t factor = (newhash_t)((float)size - (float)_obj.GetClass() + ((float)size * 0.5f));
+	return factor % _capacity;
+}
+
+namespace std {
+
+	template<>
+	struct hash<Player>
+	{
+		std::size_t operator()(const Player& _player) const
+		{
+			return TestHash(_player, 1000000);
+		}
+	};
+
+}
+
 #ifdef BENCHMARK_PRIMATIVE or BENCHMARK_PLAYER
+
 template<typename T, size_t _Size>
 void Function(std::array<T, _Size>& _array)
 {
@@ -328,13 +359,6 @@ void PrintVector(std::vector<T> _vector)
 
 #endif
 
-newhash_t TestHash(const Player& _obj, size_t _capacity)
-{
-	newhash_t size = (newhash_t)(sizeof(Player) + sizeof(newhash_t)) + _obj.GetLevel();
-	newhash_t factor = (newhash_t)((float)size - (float)_obj.GetClass() + ((float)size * 0.5f));
-	return factor % _capacity;
-}
-
 int main()
 {
 
@@ -358,6 +382,7 @@ int main()
 	Function(vector);
 	Benchmark::Stop();
 
+	LOG("");
 
 	Array<Player, 100> Array;
 	std::array<Player, 100> array;
@@ -370,10 +395,11 @@ int main()
 	Function(array);
 	Benchmark::Stop();
 
-#if 0
 	Set<Player> Set;
 	Set.SetHash(TestHash);
 	std::unordered_set<Player> set;
+
+	LOG("");
 
 	Benchmark::Start("Set");
 	Function(Set);
@@ -383,6 +409,9 @@ int main()
 	Function(set);
 	Benchmark::Stop();
 
+	LOG("");
+
+#if 0
 	Map<int, Player> Map;
 	std::unordered_map<int, Player> map;
 
@@ -393,6 +422,8 @@ int main()
 	Benchmark::Start("std::unordered_map");
 	Function(map);
 	Benchmark::Stop();
+
+	LOG("");
 #endif
 
 	Stack<Player> Stack;
@@ -406,6 +437,7 @@ int main()
 	Function(stack);
 	Benchmark::Stop();
 
+	LOG("");
 
 	Queue<Player> Queue;
 	std::queue<Player> queue;
@@ -418,11 +450,11 @@ int main()
 	Function(queue);
 	Benchmark::Stop();
 
-	LOG("");
+	LOG("\n");
 #endif
 
 #ifdef BENCHMARK_PRIMATIVE
-
+#if 1
 	LOG("Benchmark with Primative Type: (int)\n");
 
 	mdt::List<int> intList;
@@ -441,6 +473,7 @@ int main()
 	Function(intvector);
 	Benchmark::Stop();
 
+	LOG("");
 
 	mdt::Array<int, 100> intArray;
 	std::array<int, 100> intarray;
@@ -453,6 +486,7 @@ int main()
 	Function(intarray);
 	Benchmark::Stop();
 
+	LOG("");
 
 	mdt::Set<int> intSet;
 	std::unordered_set<int> intset;
@@ -469,6 +503,8 @@ int main()
 	}
 	Benchmark::Stop();
 
+	LOG("");
+
 #if 0
 	Map<int> intMap;
 	std::unordered_map<int, int> intmap;
@@ -484,6 +520,8 @@ int main()
 		intmap.insert(std::pair<int, int>(i, i));
 	}
 	Benchmark::Stop();
+
+	LOG("");
 #endif
 
 	mdt::Stack<int> intStack;
@@ -497,6 +535,7 @@ int main()
 	Function(intstack);
 	Benchmark::Stop();
 
+	LOG("");
 
 	mdt::Queue<int> intQueue;
 	std::queue<int> intqueue;
@@ -509,95 +548,300 @@ int main()
 	Function(intqueue);
 	Benchmark::Stop();
 
+	LOG("\n");
+#endif
+
+#if 1
+	LOG("Benchmark with Primative Type: (char)\n");
+
+	mdt::List<char> charList;
+	std::list<char> charlist;
+	std::vector<char> charvector;
+
+	Benchmark::Start("List");
+	Function(charList);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::list");
+	Function(charlist);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::vector");
+	Function(charvector);
+	Benchmark::Stop();
+
 	LOG("");
+
+	mdt::Array<char, 100> charArray;
+	std::array<char, 100> chararray;
+
+	Benchmark::Start("Array");
+	Function(charArray);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::array");
+	Function(chararray);
+	Benchmark::Stop();
+
+	LOG("");
+
+	mdt::Set<char> charSet;
+	std::unordered_set<char> charset;
+
+	Benchmark::Start("Set");
+	for (int i = 0; i < 1000000; i++) {
+		charSet.Insert((char)i);
+	}
+	Benchmark::Stop();
+
+	Benchmark::Start("std::unordered_set");
+	for (int i = 0; i < 1000000; i++) {
+		charset.insert((char)i);
+	}
+	Benchmark::Stop();
+
+	LOG("");
+
+#if 0
+	Map<int> intMap;
+	std::unordered_map<int, int> intmap;
+
+	Benchmark::Start("Map");
+	for (int i = 0; i < 100000; i++) {
+		intMap.Insert(i);
+	}
+	Benchmark::Stop();
+
+	Benchmark::Start("std::unordered_map");
+	for (int i = 0; i < 100000; i++) {
+		intmap.insert(std::pair<int, int>(i, i));
+	}
+	Benchmark::Stop();
+
+	LOG("");
+#endif
+
+	mdt::Stack<char> charStack;
+	std::stack<char> charstack;
+
+	Benchmark::Start("Stack");
+	Function(charStack);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::stack");
+	Function(charstack);
+	Benchmark::Stop();
+
+	LOG("");
+
+	mdt::Queue<char> charQueue;
+	std::queue<char> charqueue;
+
+	Benchmark::Start("Queue");
+	Function(charQueue);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::queue");
+	Function(charqueue);
+	Benchmark::Stop();
+
+	LOG("\n");
+#endif
+
+#if 0
+	LOG("Benchmark with Primative Type: (std::string)\n");
+
+	mdt::List<char> charList;
+	std::list<char> charlist;
+	std::vector<char> charvector;
+
+	Benchmark::Start("List");
+	Function(charList);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::list");
+	Function(charlist);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::vector");
+	Function(charvector);
+	Benchmark::Stop();
+
+	LOG("");
+
+	mdt::Array<char, 100> charArray;
+	std::array<char, 100> chararray;
+
+	Benchmark::Start("Array");
+	Function(charArray);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::array");
+	Function(chararray);
+	Benchmark::Stop();
+
+	LOG("");
+
+	mdt::Set<char> charSet;
+	std::unordered_set<char> charset;
+
+	Benchmark::Start("Set");
+	for (int i = 0; i < 1000000; i++) {
+		charSet.Insert((char)i);
+	}
+	Benchmark::Stop();
+
+	Benchmark::Start("std::unordered_set");
+	for (int i = 0; i < 1000000; i++) {
+		charset.insert((char)i);
+	}
+	Benchmark::Stop();
+
+	LOG("");
+
+#if 0
+	Map<int> intMap;
+	std::unordered_map<int, int> intmap;
+
+	Benchmark::Start("Map");
+	for (int i = 0; i < 100000; i++) {
+		intMap.Insert(i);
+	}
+	Benchmark::Stop();
+
+	Benchmark::Start("std::unordered_map");
+	for (int i = 0; i < 100000; i++) {
+		intmap.insert(std::pair<int, int>(i, i));
+	}
+	Benchmark::Stop();
+
+	LOG("");
+#endif
+
+	mdt::Stack<char> charStack;
+	std::stack<char> charstack;
+
+	Benchmark::Start("Stack");
+	Function(charStack);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::stack");
+	Function(charstack);
+	Benchmark::Stop();
+
+	LOG("");
+
+	mdt::Queue<char> charQueue;
+	std::queue<char> charqueue;
+
+	Benchmark::Start("Queue");
+	Function(charQueue);
+	Benchmark::Stop();
+
+	Benchmark::Start("std::queue");
+	Function(charqueue);
+	Benchmark::Stop();
+
+	LOG("");
+#endif
 
 #endif
 
-	Set<int> set;
-	set.Reserve(100000);
-	//std::unordered_set<Player> stdset;
-	//stdset.reserve(100000);
+	//Set<int> set;
+	//set.Reserve(10000);
 
-	Benchmark::Start("Set");
-	for (uint32_t i = 0; i < 100; i++) {
-		set.Insert(i * i);
-	}
-	Benchmark::Stop();
-
-	//Benchmark::Start("std::unordered_set");
-	//for (uint32_t i = 0; i < 10; i++) {
-	//	stdset.insert(Player());
+	//Benchmark::Start("Set");
+	//for (uint32_t i = 0; i < 150; i++) {
+	//	set.Insert(i * i);
 	//}
 	//Benchmark::Stop();
 
-	LOG(set);
+	//LOG("");
 
-	LOG("");
+	//bool test = false;
 
-	bool test = false;
+	//Benchmark::Start("Find: 64");
+	//test = set.Find(64);
+	//Benchmark::Stop();
+	//if (test) {
+	//	LOG("Found Target!");
+	//}
+	//else {
+	//	LOG("Not Found!");
+	//}
 
-	Benchmark::Start("Find: 64");
-	test = set.Find(64);
-	Benchmark::Stop();
-	if (test) {
-		LOG("Found Target!");
-	}
-	else {
-		LOG("Not Found!");
-	}
+	//Benchmark::Start("Insert: 64");
+	//test = set.Insert(64);
+	//Benchmark::Stop();
+	//if (test) {
+	//	LOG("Insertion Successful!");
+	//}
+	//else {
+	//	LOG("Object already in data!");
+	//}
 
-	Benchmark::Start("Find: 99");
-	test = set.Find(99);
-	Benchmark::Stop();
-	if (test) {
-		LOG("Found Target!");
-	}
-	else {
-		LOG("Not Found!");
-	}
+	//Benchmark::Start("Find: 99");
+	//test = set.Find(99);
+	//Benchmark::Stop();
+	//if (test) {
+	//	LOG("Found Target!");
+	//}
+	//else {
+	//	LOG("Not Found!");
+	//}
 
-	Benchmark::Start("Find: 100");
-	test = set.Find(100);
-	Benchmark::Stop();
-	if (test) {
-		LOG("Found Target!");
-	}
-	else {
-		LOG("Not Found!");
-	}
+	//Benchmark::Start("Find: 100");
+	//test = set.Find(100);
+	//Benchmark::Stop();
+	//if (test) {
+	//	LOG("Found Target!");
+	//}
+	//else {
+	//	LOG("Not Found!");
+	//}
 
-	Benchmark::Start("Find: 6724");
-	test = set.Find(6724);
-	Benchmark::Stop();
-	if (test) {
-		LOG("Found Target!");
-	}
-	else {
-		LOG("Not Found!");
-	}
+	//Benchmark::Start("Find: 14400");
+	//test = set.Find(14400);
+	//Benchmark::Stop();
+	//if (test) {
+	//	LOG("Found Target!");
+	//}
+	//else {
+	//	LOG("Not Found!");
+	//}
 
-	Benchmark::Start("Erase: 6724");
-	test = set.Erase(6724);
-	Benchmark::Stop();
-	if (test) {
-		LOG("Erased Target!");
-	}
-	else {
-		LOG("Not Found!");
-	}
+	//Benchmark::Start("Erase: 14400");
+	//test = set.Erase(14400);
+	//Benchmark::Stop();
+	//if (test) {
+	//	LOG("Erased Target!");
+	//}
+	//else {
+	//	LOG("Not Found!");
+	//}
 
-	Benchmark::Start("EraseKey: 91180");
-	test = set.EraseKey(91180);
-	Benchmark::Stop();
-	if (test) {
-		LOG("Erased Target!");
-	}
-	else {
-		LOG("Not Found!");
-	}
+	//Benchmark::Start("Erase: 4900");
+	//test = set.Erase(4900);
+	//Benchmark::Stop();
+	//if (test) {
+	//	LOG("Erased Target!");
+	//}
+	//else {
+	//	LOG("Not Found!");
+	//}
 
-	LOG("");
-	LOG(set);
+	//Benchmark::Start("EraseKey: 9377");
+	//test = set.EraseKey(9377);
+	//Benchmark::Stop();
+	//if (test) {
+	//	LOG("Erased Key!");
+	//}
+	//else {
+	//	LOG("Key Empty!");
+	//}
+
+	//LOG("");
+	//LOG(set);
 
 	//std::cin.get();
 }

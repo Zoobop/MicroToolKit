@@ -4,12 +4,12 @@
 
 namespace mdt {
 
-	template<typename T>
-	class Queue : public IContainer<T>
+	template<typename _Type>
+	class Queue : public IContainer<_Type>
 	{
 	public:
-		using ValueType = T;
-		using Iterator = ContainerIterator<Queue<T>>;
+		using ValueType = _Type;
+		using Iterator = ContainerIterator<Queue<_Type>>;
 
 	public:
 		Queue()
@@ -23,7 +23,7 @@ namespace mdt {
 			ReAlloc(m_Capacity);
 		}
 
-		Queue(std::initializer_list<T>&& _initList)
+		Queue(std::initializer_list<_Type>&& _initList)
 		{
 			size_t size = 0;
 			for (const auto& _item : _initList)
@@ -31,15 +31,15 @@ namespace mdt {
 
 			ReAlloc(size);
 			for (const auto& _item : _initList)
-				Enqueue(std::move((T&&)_item));
+				Enqueue(std::move((_Type&&)_item));
 		}
 
-		Queue(const Queue<T>& _other)
+		Queue(const Queue<_Type>& _other)
 			: m_Data(_other.m_Data), m_Size(_other.m_Size), m_Capacity(_other.m_Capacity)
 		{
 		}
 
-		Queue(Queue<T>&& _other) noexcept
+		Queue(Queue<_Type>&& _other) noexcept
 			: m_Capacity(_other.m_Capacity), m_Size(_other.m_Size)
 		{
 			m_Data = _other.m_Data;
@@ -50,10 +50,10 @@ namespace mdt {
 		~Queue()
 		{
 			Clear();
-			Delete(m_Data, m_Capacity * sizeof(T));
+			Delete(m_Data, m_Capacity * sizeof(_Type));
 		}
 
-		void Enqueue(const T& _value)
+		void Enqueue(const _Type& _value)
 		{
 			if (m_Size >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
@@ -63,7 +63,7 @@ namespace mdt {
 			m_Size++;
 		}
 
-		void Enqueue(T&& _value)
+		void Enqueue(_Type&& _value)
 		{
 			if (m_Size >= m_Capacity) {
 				ReAlloc(m_Capacity + m_Capacity / 2);
@@ -73,22 +73,22 @@ namespace mdt {
 			m_Size++;
 		}
 
-		T Dequeue()
+		_Type Dequeue()
 		{
-			T item;
+			_Type item;
 			if (m_Size > 0) {
 				item = m_Data[0];
 				for (size_t i = 1; i < m_Size; i++) {
 					m_Data[i - 1] = std::move(m_Data[i]);
 				}
-				m_Data[m_Size--].~T();
+				m_Data[m_Size--].~_Type();
 			}
 			return item;
 		}
 
-		T Peek() const
+		_Type Peek() const
 		{
-			T item;
+			_Type item;
 			if (m_Size > 0) {
 				item = std::move(m_Data[m_Size - 1]);
 				return item;
@@ -96,7 +96,7 @@ namespace mdt {
 			return item;
 		}
 
-		bool Contains(const T& _value) const
+		bool Contains(const _Type& _value) const
 		{
 			for (size_t i = 0; i < m_Size; i++) {
 				if (m_Data[i] == _value)
@@ -105,7 +105,7 @@ namespace mdt {
 			return false;
 		}
 
-		bool Contains(T&& _value) const
+		bool Contains(_Type&& _value) const
 		{
 			for (size_t i = 0; i < m_Size; i++) {
 				if (m_Data[i] == _value)
@@ -117,20 +117,20 @@ namespace mdt {
 		void Clear()
 		{
 			for (size_t i = 0; i < m_Size; i++)
-				m_Data[i].~T();
+				m_Data[i].~_Type();
 
 			m_Size = 0;
 		}
 
 		// IContainer
-		virtual void ForEach(const Param<const T&>& _param) override
+		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
 			for (size_t i = 0; i < m_Size; i++) {
 				_param(m_Data[i]);
 			}
 		}
 
-		constexpr virtual T* Data() const override { return m_Data; }
+		constexpr virtual _Type* Data() const override { return m_Data; }
 
 		// Accessors
 		constexpr inline size_t Size() const { return m_Size; }
@@ -148,7 +148,7 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		const T& operator[](size_t _index) const
+		const _Type& operator[](size_t _index) const
 		{
 			if (_index >= m_Capacity) {
 				__debugbreak();
@@ -156,14 +156,14 @@ namespace mdt {
 			return m_Data[_index];
 		}
 
-		void operator=(const Queue<T>& _other)
+		void operator=(const Queue<_Type>& _other)
 		{
 			m_Data = _other.m_Data;
 			m_Size = _other.m_Size;
 			m_Capacity = _other.m_Capacity;
 		}
 
-		void operator=(Queue<T>&& _other)
+		void operator=(Queue<_Type>&& _other)
 		{
 			m_Data = _other.m_Data;
 			m_Size = _other.m_Size;
@@ -171,7 +171,7 @@ namespace mdt {
 			_other.m_Data = nullptr;
 		}
 
-		friend std::ostream& operator<<(std::ostream& _stream, const Queue<T>& _current)
+		friend std::ostream& operator<<(std::ostream& _stream, const Queue<_Type>& _current)
 		{
 			_stream << "[ ";
 			for (size_t i = 0; i < _current.m_Size; i++) {
@@ -187,7 +187,7 @@ namespace mdt {
 	private:
 		void ReAlloc(size_t _capacity)
 		{
-			T* newBlock = (T*)Alloc<T>(_capacity);
+			_Type* newBlock = (_Type*)Alloc<_Type>(_capacity);
 
 			if (_capacity < m_Size)
 				m_Size = _capacity;
@@ -197,7 +197,7 @@ namespace mdt {
 			}
 
 			for (size_t i = 0; i < m_Size; i++)
-				m_Data[i].~T();
+				m_Data[i].~_Type();
 
 			Delete(m_Data, m_Capacity);
 			m_Data = newBlock;
@@ -205,7 +205,7 @@ namespace mdt {
 		}
 
 	private:
-		T* m_Data = nullptr;
+		_Type* m_Data = nullptr;
 
 		size_t m_Size = 0;
 		size_t m_Capacity = 0;

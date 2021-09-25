@@ -74,24 +74,24 @@ namespace mdt {
 		PointerType m_Ptr = nullptr;
 	};
 
-	template<typename T>
+	template<typename _Type>
 	class DataContainer
 	{
 	public:
-		using ValueType = T;
-		using Iterator = ContainerIterator<DataContainer<T>>;
+		using ValueType = _Type;
+		using Iterator = ContainerIterator<DataContainer<_Type>>;
 
 	public:
 
 		// Utility
-		virtual bool Add(const T& _value) = 0;
-		virtual bool Add(T&& _value) = 0;
-		virtual bool AddRange(const IContainer<T>& _container) = 0;
-		virtual bool Remove(const T& _value) = 0;
-		virtual bool Remove(T&& _value) = 0;
+		virtual bool Add(const _Type& _value) = 0;
+		virtual bool Add(_Type&& _value) = 0;
+		virtual bool AddRange(const IContainer<_Type>& _container) = 0;
+		virtual bool Remove(const _Type& _value) = 0;
+		virtual bool Remove(_Type&& _value) = 0;
 		virtual bool RemoveAt(size_t _index) = 0;
-		virtual bool Contains(const T& _value) const = 0;
-		virtual bool Contains(T&& _value) const = 0;
+		virtual bool Contains(const _Type& _value) const = 0;
+		virtual bool Contains(_Type&& _value) const = 0;
 		virtual void Clear() = 0;
 
 		// Accessors

@@ -6,13 +6,13 @@
 
 namespace mdt {
 
-	template<typename T>
+	template<typename _Type>
 	class IConvert
 	{
 	public:
-		virtual List<T> ToList() = 0;
-		virtual Stack<T> ToStack() = 0;
-		virtual Queue<T> ToQueue() = 0;
+		virtual List<_Type> ToList() = 0;
+		virtual Stack<_Type> ToStack() = 0;
+		virtual Queue<_Type> ToQueue() = 0;
 	};
 
 }
