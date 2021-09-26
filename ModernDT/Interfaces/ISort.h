@@ -32,8 +32,8 @@ namespace mdt {
 	class ISort
 	{
 	public:
-		virtual void Sort(const Dynamic<bool, const _Type&, const _Type&> _predicate = GreatorThan<_Type>) = 0;
-		virtual void RSort(const Dynamic<bool, const _Type&, const _Type&> _predicate = GreatorThan<_Type>) = 0;
+		virtual void Sort(const Dynamic<bool, const _Type&, const _Type&>& _predicate = GreatorThan<_Type>) = 0;
+		virtual void RSort(const Dynamic<bool, const _Type&, const _Type&>& _predicate = LessThan<_Type>) = 0;
 	};
 
 }

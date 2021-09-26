@@ -1,8 +1,8 @@
 #pragma once
 
-#include "DataStruct/List.h"
-#include "DataStruct/Stack.h"
-#include "DataStruct/Queue.h"
+#include "Structures/List.h"
+#include "Structures/Stack.h"
+#include "Structures/Queue.h"
 
 namespace mdt {
 

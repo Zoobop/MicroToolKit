@@ -2,7 +2,6 @@
 
 #include "mdtpch.h"
 #include "Utility/HashNode.h"
-#include "DataStruct/LinkedList.h"
 
 namespace mdt {
 
@@ -152,8 +151,7 @@ namespace mdt {
 			m_Capacity = _capacity;
 		}
 
-	protected:
-
+	private:
 #define HASH(obj)			__super::Hash(obj)
 #define REALLOC(capacity)	__super::ReAlloc(capacity)
 

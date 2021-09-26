@@ -9,8 +9,8 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#define BENCHMARK_PRIMATIVE
-#define BENCHMARK_PLAYER
+//#define BENCHMARK_PRIMATIVE
+//#define BENCHMARK_PLAYER
 
 struct Vector3
 {
@@ -747,101 +747,46 @@ int main()
 
 #endif
 
-	//Set<int> set;
-	//set.Reserve(10000);
+	const size_t size = 1000;
 
-	//Benchmark::Start("Set");
-	//for (uint32_t i = 0; i < 150; i++) {
-	//	set.Insert(i * i);
-	//}
-	//Benchmark::Stop();
+	Set<int> set(size);
 
-	//LOG("");
+	Benchmark::Start("Set");
+	for (int i = 0; i < 100; i++)
+		set.Insert(i * i * (int)pow(-1, i));
+	Benchmark::Stop();
 
-	//bool test = false;
+	LOG(set);
 
-	//Benchmark::Start("Find: 64");
-	//test = set.Find(64);
-	//Benchmark::Stop();
-	//if (test) {
-	//	LOG("Found Target!");
-	//}
-	//else {
-	//	LOG("Not Found!");
-	//}
+	auto result = false;
 
-	//Benchmark::Start("Insert: 64");
-	//test = set.Insert(64);
-	//Benchmark::Stop();
-	//if (test) {
-	//	LOG("Insertion Successful!");
-	//}
-	//else {
-	//	LOG("Object already in data!");
-	//}
+	Benchmark::Start("Erase -3025");
+	result = set.Erase(-3025);
+	Benchmark::Stop();
+	if (result) LOG("Success");
 
-	//Benchmark::Start("Find: 99");
-	//test = set.Find(99);
-	//Benchmark::Stop();
-	//if (test) {
-	//	LOG("Found Target!");
-	//}
-	//else {
-	//	LOG("Not Found!");
-	//}
+	Benchmark::Start("Erase 6084");
+	result = set.Erase(6084);
+	Benchmark::Stop();
+	if (result) LOG("Success");
 
-	//Benchmark::Start("Find: 100");
-	//test = set.Find(100);
-	//Benchmark::Stop();
-	//if (test) {
-	//	LOG("Found Target!");
-	//}
-	//else {
-	//	LOG("Not Found!");
-	//}
+	Benchmark::Start("Erase 8100");
+	result = set.Erase(8100);
+	Benchmark::Stop();
+	if (result) LOG("Success");
+	
+	Benchmark::Start("Erase 652");
+	result = set.EraseKey(652);
+	Benchmark::Stop();
+	if (result) LOG("Success\n");
 
-	//Benchmark::Start("Find: 14400");
-	//test = set.Find(14400);
-	//Benchmark::Stop();
-	//if (test) {
-	//	LOG("Found Target!");
-	//}
-	//else {
-	//	LOG("Not Found!");
-	//}
+	LOG(set);
 
-	//Benchmark::Start("Erase: 14400");
-	//test = set.Erase(14400);
-	//Benchmark::Stop();
-	//if (test) {
-	//	LOG("Erased Target!");
-	//}
-	//else {
-	//	LOG("Not Found!");
-	//}
+	Benchmark::Start("Clear");
+	set.Clear();
+	Benchmark::Stop();
 
-	//Benchmark::Start("Erase: 4900");
-	//test = set.Erase(4900);
-	//Benchmark::Stop();
-	//if (test) {
-	//	LOG("Erased Target!");
-	//}
-	//else {
-	//	LOG("Not Found!");
-	//}
-
-	//Benchmark::Start("EraseKey: 9377");
-	//test = set.EraseKey(9377);
-	//Benchmark::Stop();
-	//if (test) {
-	//	LOG("Erased Key!");
-	//}
-	//else {
-	//	LOG("Key Empty!");
-	//}
-
-	//LOG("");
-	//LOG(set);
+	LOG(set);
 
 	//std::cin.get();
 }

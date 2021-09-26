@@ -22,6 +22,8 @@ namespace mdt {
 		static void Stop();
 
 	private:
+		Benchmark() = delete;
+
 		static const char* s_TimerName;
 		static TIME s_Timestamp;
 		static TIME s_StartTime;

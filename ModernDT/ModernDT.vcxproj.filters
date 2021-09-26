@@ -15,40 +15,40 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DataStruct\BinaryTree.h">
+    <ClInclude Include="Structures\BinaryTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Interfaces\IStruct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStruct\List.h">
+    <ClInclude Include="Structures\List.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ModernDT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStruct\Array.h">
+    <ClInclude Include="Structures\Array.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStruct\Map.h">
+    <ClInclude Include="Structures\Map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStruct\Set.h">
+    <ClInclude Include="Structures\Set.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStruct\Tuple.h">
+    <ClInclude Include="Structures\Tuple.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStruct\Queue.h">
+    <ClInclude Include="Structures\Queue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStruct\Stack.h">
+    <ClInclude Include="Structures\Stack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Function.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataStruct\LinkedList.h">
+    <ClInclude Include="Structures\LinkedList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Interfaces\IContainer.h">

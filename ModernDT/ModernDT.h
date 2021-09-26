@@ -5,14 +5,14 @@
 #include "Core/Typedef.h"
 #include "Core/Benchmark.h"
 
-#include "DataStruct/Array.h"
-#include "DataStruct/List.h"
-#include "DataStruct/Set.h"
-#include "DataStruct/Map.h"
-#include "DataStruct/Tuple.h"
-#include "DataStruct/Stack.h"
-#include "DataStruct/Queue.h"
-#include "DataStruct/LinkedList.h"
-#include "DataStruct/BinaryTree.h"
+#include "Structures/Array.h"
+#include "Structures/List.h"
+#include "Structures/Set.h"
+#include "Structures/Map.h"
+#include "Structures/Tuple.h"
+#include "Structures/Stack.h"
+#include "Structures/Queue.h"
+#include "Structures/LinkedList.h"
+#include "Structures/BinaryTree.h"
 
 using namespace mdt;

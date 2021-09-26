@@ -5,7 +5,7 @@ namespace mdt {
 
 	enum class Ctrl : int8_t
 	{
-		kEmpty = 0x0,
+		kEmpty = -51,
 		kDeleted = 0x1,
 		kSentinel = 0x2,
 		kFull = 0x3

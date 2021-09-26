@@ -18,7 +18,7 @@ namespace mdt {
 			ReAlloc(2);
 		}
 
-		List(size_t _size)
+		List(const size_t& _size)
 			: m_Capacity(_size)
 		{
 			ReAlloc(m_Capacity);
@@ -32,7 +32,7 @@ namespace mdt {
 
 			ReAlloc(size);
 			for (const auto& _item : _initList)
-				Add(std::move((_Type&&)_item));
+				Add(std::move(_item));
 		}
 
 		List(const std::vector<_Type>& _vector)
@@ -66,7 +66,7 @@ namespace mdt {
 		~List()
 		{
 			Clear();
-			Delete(m_Data, m_Capacity * sizeof(_Type));
+			Delete(m_Data, m_Capacity);
 		}
 
 		// Override Methods
@@ -227,18 +227,7 @@ namespace mdt {
 		constexpr virtual _Type* Data() const override { return m_Data; }
 
 		// ISort
-		virtual void Sort(const Dynamic<bool, const _Type&, const _Type&> _predicate = GreatorThan<_Type>) override
-		{
-			for (size_t i = 0, j = i + 1; i < _SIZE; i++, j++) {
-				if (_predicate(m_Data[i], m_Data[j])) {
-					_Type temp = std::move(m_Data[i]);
-					m_Data[i] = std::move(m_Data[j]);
-					m_Data[j] = std::move(temp);
-				}
-			}
-		}
-
-		virtual void RSort(const Dynamic<bool, const _Type&, const _Type&> _predicate = GreatorThan<_Type>) override
+		virtual void Sort(const Dynamic<bool, const _Type&, const _Type&>& _predicate = GreatorThan<_Type>) override
 		{
 			for (size_t i = 0; i < _SIZE; i++) {
 				for (size_t j = i + 1; j < _SIZE; j++) {
@@ -251,10 +240,23 @@ namespace mdt {
 			}
 		}
 
+		virtual void RSort(const Dynamic<bool, const _Type&, const _Type&>& _predicate = GreatorThan<_Type>) override
+		{
+			for (int32_t i = _SIZE - 1; i > 0; i--) {
+				for (int32_t j = i - 1; j >= 0; j--) {
+					if (_predicate(m_Data[i], m_Data[j])) {
+						_Type temp = std::move(m_Data[i]);
+						m_Data[i] = std::move(m_Data[j]);
+						m_Data[j] = std::move(temp);
+					}
+				}
+			}
+		}
+
 		// Accessors
 		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
-		constexpr inline void SetCapacity(size_t _capacity) { m_Capacity = _capacity; }
+		constexpr inline void SetCapacity(size_t _capacity) { ReAlloc(_capacity); }
 
 		// Iterator
 		constexpr Iterator begin() override
@@ -268,7 +270,7 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		const _Type& operator[](size_t& _index) const 
+		const _Type& operator[](const size_t& _index) const 
 		{
 			if (_index >= m_Capacity) {
 				__debugbreak();
@@ -276,7 +278,7 @@ namespace mdt {
 			return m_Data[_index];
 		}
 
-		_Type& operator[](size_t& _index) 
+		_Type& operator[](const size_t& _index) 
 		{ 
 			if (_index >= m_Capacity) {
 				__debugbreak();
@@ -319,7 +321,7 @@ namespace mdt {
 			for (size_t i = 0; i < _SIZE; i++)
 				m_Data[i].~_Type();
 
-			Delete(m_Data, m_Capacity * sizeof(_Type));
+			Delete(m_Data, m_Capacity);
 			m_Data = newBlock;
 			m_Capacity = _capacity;
 		}

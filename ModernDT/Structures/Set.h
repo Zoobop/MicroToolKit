@@ -95,30 +95,62 @@ namespace mdt {
 
 			_KeyType hash = __super::Hash(_value);
 			_HashType* node = &_DATA[hash];
-			_HashType* prev = nullptr;
-			while (node) {
-				if (node == _NULLNODE) {
-					node = new _HashType(_value);
-					break;
-				}
-				if (node->_control != Ctrl::kFull) {
-					node->_control = Ctrl::kFull;
-					node->_value = _value;
-					break;
-				}
+
+			while (node && node != _NULLNODE) {
 				if (node->_value == _value &&
 					node->_control == Ctrl::kFull)
 					return false;
-				prev = node;
 				node = node->_next;
 			}
-			if (prev) prev->_next = node;
+
+			node = &_DATA[hash];
+			if (node != _NULLNODE && node->_control != Ctrl::kEmpty) {
+				auto newNode = new _HashType(_DATA[hash]._value);
+				newNode->_next = node->_next;
+				node = nullptr;
+				
+				new(&_DATA[hash]) _HashType(_value);
+				_DATA[hash]._next = newNode;
+
+				newNode = nullptr;
+				delete newNode;
+			}
+			else {
+				new(&_DATA[hash]) _HashType(_value);
+			}
 
 			node = nullptr;
 			delete node;
 
 			_SIZE++;
 			return true;
+
+			//_KeyType hash = __super::Hash(_value);
+			//_HashType* node = &_DATA[hash];
+			//_HashType* prev = nullptr;
+			//while (node) {
+			//	if (node == _NULLNODE) {
+			//		node = new _HashType(_value);
+			//		break;
+			//	}
+			//	if (node->_control != Ctrl::kFull) {
+			//		node->_control = Ctrl::kFull;
+			//		node->_value = _value;
+			//		break;
+			//	}
+			//	if (node->_value == _value &&
+			//		node->_control == Ctrl::kFull)
+			//		return false;
+			//	prev = node;
+			//	node = node->_next;
+			//}
+			//if (prev) prev->_next = node;
+
+			//node = nullptr;
+			//delete node;
+
+			//_SIZE++;
+			//return true;
 		}
 
 		virtual bool Insert(_Type&& _value) override
@@ -129,24 +161,29 @@ namespace mdt {
 
 			_KeyType hash = __super::Hash(_value);
 			_HashType* node = &_DATA[hash];
-			_HashType* prev = nullptr;
-			while (node) {
-				if (node == _NULLNODE) {
-					node = new _HashType(_value);
-					break;
-				}
-				if (node->_control != Ctrl::kFull) {
-					node->_control = Ctrl::kFull;
-					node->_value = _value;
-					break;
-				}
+
+			while (node && node != _NULLNODE) {
 				if (node->_value == _value &&
 					node->_control == Ctrl::kFull)
 					return false;
-				prev = node;
 				node = node->_next;
 			}
-			if (prev) prev->_next = node;
+
+			node = &_DATA[hash];
+			if (node != _NULLNODE && node->_control != Ctrl::kEmpty) {
+				auto newNode = new _HashType(_DATA[hash]._value);
+				newNode->_next = node->_next;
+				node = nullptr;
+
+				new(&_DATA[hash]) _HashType(_value);
+				_DATA[hash]._next = newNode;
+
+				newNode = nullptr;
+				delete newNode;
+			}
+			else {
+				new(&_DATA[hash]) _HashType(_value);
+			}
 
 			node = nullptr;
 			delete node;
@@ -217,14 +254,12 @@ namespace mdt {
 		{
 			_KeyType hash = __super::Hash(_obj);
 			_HashType* node = &_DATA[hash];
-			_HashType* prev = nullptr;
 			while (node && node != _NULLNODE) {
 				if (node->_value == _obj) {
 					node->_control = Ctrl::kDeleted;
-					if (prev) prev->_next = node;
+					_SIZE--;
 					return true;
 				}
-				prev = node;
 				node = node->_next;
 			}
 			return false;
@@ -234,14 +269,12 @@ namespace mdt {
 		{
 			_KeyType hash = __super::Hash(_obj);
 			_HashType* node = &_DATA[hash];
-			_HashType* prev = nullptr;
 			while (node && node != _NULLNODE) {
 				if (node->_value == _obj) {
 					node->_control = Ctrl::kDeleted;
-					if (prev) prev->_next = node->_next;
+					_SIZE--;
 					return true;
 				}
-				prev = node;
 				node = node->_next;
 			}
 			return false;
@@ -256,9 +289,10 @@ namespace mdt {
 					node->_control != Ctrl::kFull) 
 					return false;
 				while (node && node != _NULLNODE) {
-					node->_control = Ctrl::kDeleted;
+					node->_control = Ctrl::kEmpty;
 					node = node->_next;
 				}
+				_SIZE--;
 				return true;
 			}
 			return false;
@@ -268,11 +302,15 @@ namespace mdt {
 		{
 			if (_key < _CAPACITY && _key >= 0) {
 				_HashType* node = &_DATA[_key];
-				if (node == nullptr || node == _NULLNODE || node->_control != Ctrl::kFull) return false;
+				if (node == nullptr || 
+					node == _NULLNODE || 
+					node->_control != Ctrl::kFull) 
+					return false;
 				while (node && node != _NULLNODE) {
-					node->_control = Ctrl::kDeleted;
+					node->_control = Ctrl::kEmpty;
 					node = node->_next;
 				}
+				_SIZE--;
 				return true;
 			}
 			return false;
@@ -280,8 +318,12 @@ namespace mdt {
 
 		virtual void Clear() override
 		{
-			for (size_t i = 0; i < _SIZE; i++) {
-				_DATA[i].~_HashType();
+			for (size_t i = 0; i < _CAPACITY; i++) {
+				auto iter = &_DATA[i];
+				while (iter && iter != _NULLNODE) {
+					iter->_control = Ctrl::kEmpty;
+					iter = iter->_next;
+				}
 			}
 
 			_SIZE = 0;
@@ -348,7 +390,7 @@ namespace mdt {
 		{
 			for (size_t i = 0; i < _current.m_Capacity; i++) {
 				auto iter = &_current.m_Data[i];
-				if (iter->_control != Ctrl::kFull) continue;
+				if (iter->_control == Ctrl::kEmpty) continue;
 				_stream << i << ": ";
 				while (iter && iter != _NULLNODE) {
 					if (iter->_control == Ctrl::kFull)

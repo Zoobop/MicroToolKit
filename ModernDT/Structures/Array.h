@@ -12,9 +12,7 @@ namespace mdt {
 		using Iterator = ContainerIterator<Array<_Type, _Size>>;
 
 	public:
-		Array()
-		{
-		}
+		Array() = default;
 
 		Array(std::initializer_list<_Type>&& _initList)
 		{
@@ -66,6 +64,11 @@ namespace mdt {
 
 		bool Swap(Array<_Type, _Size>& _other)
 		{
+			for (size_t i = 0; i < _Size; i++) {
+				auto temp = std::move(m_Data[i]);
+				m_Data[i] = std::move(_other.m_Data[i]);
+				_other.m_Data[i] = std::move(temp);
+			}
 			return false;
 		}
 
@@ -90,7 +93,7 @@ namespace mdt {
 		void Clear()
 		{
 			for (size_t i = 0; i < _Size; i++) {
-				new(&m_Data[_Size]) _Type();
+				new(&m_Data[i]) _Type();
 			}
 		}
 
@@ -156,7 +159,7 @@ namespace mdt {
 		void operator=(Array<_Type, _Size>&& _array)
 		{
 			for (size_t i = 0; i < _Size; i++) {
-				m_Data[i] = _array.m_Data[i];
+				m_Data[i] = std::move(_array.m_Data[i]);
 			}
 			_array.Clear();
 		}
