@@ -18,7 +18,7 @@ namespace mdt {
 			ReAlloc(2);
 		}
 
-		List(const size_t& _size)
+		List(size_t _size)
 			: m_Capacity(_size)
 		{
 			ReAlloc(m_Capacity);
@@ -81,6 +81,7 @@ namespace mdt {
 
 			return true;
 		}
+
 		virtual bool Add(_Type&& _value) override
 		{
 			if (_SIZE >= m_Capacity) {
@@ -152,7 +153,6 @@ namespace mdt {
 				}
 
 				_SIZE--;
-				m_Data[_SIZE].~_Type();
 				return true;
 
 			}
@@ -175,7 +175,6 @@ namespace mdt {
 				}
 
 				_SIZE--;
-				m_Data[_SIZE].~_Type();
 				return true;
 
 			}
@@ -256,7 +255,7 @@ namespace mdt {
 		// Accessors
 		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
-		constexpr inline void SetCapacity(size_t _capacity) { ReAlloc(_capacity); }
+		constexpr inline void Reserve(size_t _capacity) { ReAlloc(_capacity); }
 
 		// Iterator
 		constexpr Iterator begin() override
@@ -270,16 +269,8 @@ namespace mdt {
 		}
 
 		// Operator Overloads
-		const _Type& operator[](const size_t& _index) const 
+		const _Type& operator[](size_t _index) const 
 		{
-			if (_index >= m_Capacity) {
-				__debugbreak();
-			}
-			return m_Data[_index];
-		}
-
-		_Type& operator[](const size_t& _index) 
-		{ 
 			if (_index >= m_Capacity) {
 				__debugbreak();
 			}

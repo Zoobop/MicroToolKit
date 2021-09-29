@@ -14,7 +14,20 @@ namespace mdt {
 	public:
 		Array() = default;
 
-		Array(std::initializer_list<_Type>&& _initList)
+		Array(const Array<_Type, _Size>& _other)
+			: m_Data(_other.m_Data)
+		{
+		}
+
+		Array(Array<_Type, _Size>&& _other) noexcept
+		{
+			for (auto i = 0; i < _Size; i++)
+				m_Data[i] = std::move(_other.m_Data[i]);
+
+			_other.Clear();
+		}
+
+		Array(std::initializer_list<_Type>&& _initList) noexcept
 		{
 			size_t i = 0;
 			for (auto&& item : _initList) {
@@ -27,49 +40,47 @@ namespace mdt {
 		}
 
 		// Utility
-		bool Fill(const _Type& _value)
+		void Fill(const _Type& _value)
 		{
 			for (size_t i = 0; i < _Size; i++) {
 				m_Data[i] = _value;
 			}
-			return true;
 		}
 
-		bool Fill(_Type&& _value)
+		void Fill(_Type&& _value)
 		{
 			for (size_t i = 0; i < _Size; i++) {
 				m_Data[i] = std::move(_value);
 			}
-			return true;
 		}
 
-		bool Set(std::initializer_list<_Type>&& _initList)
+		void Set(std::initializer_list<_Type>&& _initList) noexcept
 		{
 			size_t i = 0;
-			for (const auto& _item : _initList) {
-				m_Data[i] = std::move(_item);
-				i++;
+			for (auto& item : _initList) {
+				if (i < _Size) {
+					m_Data[i] = std::move(item);
+					i++;
+				}
+				else break;
 			}
-			return true;
 		}
 
-		bool Set(const IContainer<_Type>& _container)
+		void Set(const IContainer<_Type>& _container)
 		{
 			size_t size = _container.Capacity();
 			for (size_t i = 0; i < size; i++) {
 				m_Data[i] = _container.Data()[i];
 			}
-			return true;
 		}
 
-		bool Swap(Array<_Type, _Size>& _other)
+		void Swap(Array<_Type, _Size>& _other)
 		{
 			for (size_t i = 0; i < _Size; i++) {
 				auto temp = std::move(m_Data[i]);
 				m_Data[i] = std::move(_other.m_Data[i]);
 				_other.m_Data[i] = std::move(temp);
 			}
-			return false;
 		}
 
 		bool Contains(const _Type& _value) const
@@ -137,7 +148,7 @@ namespace mdt {
 			return m_Data[_index];
 		}
 
-		void operator=(std::initializer_list<_Type>&& _initList)
+		void operator=(std::initializer_list<_Type>&& _initList) noexcept
 		{
 			size_t i = 0;
 			for (auto& item : _initList) {
@@ -156,7 +167,7 @@ namespace mdt {
 			}
 		}
 
-		void operator=(Array<_Type, _Size>&& _array)
+		void operator=(Array<_Type, _Size>&& _array) noexcept
 		{
 			for (size_t i = 0; i < _Size; i++) {
 				m_Data[i] = std::move(_array.m_Data[i]);
@@ -175,26 +186,6 @@ namespace mdt {
 
 			_stream << " ]" << std::endl;
 			return _stream;
-		}
-
-	private:
-		_Type Verify(std::initializer_list<_Type>&& _initList)
-		{
-			if (_initList.size() <= _Size) {
-				return _initList;
-			}
-
-			_Type list[_Size];
-			size_t i = 0;
-			for (auto& item : _initList) {
-				if (i < _Size) {
-					list[i] = item;
-					i++;
-				}
-				else break;
-			}
-
-			return list;
 		}
 
 	private:

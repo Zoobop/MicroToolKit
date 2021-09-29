@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Benchmark.h" />
+    <ClInclude Include="Examples\Example.h" />
     <ClInclude Include="mdtpch.h" />
     <ClInclude Include="Core\Memory.h" />
     <ClInclude Include="Core\Typedef.h" />
@@ -20,6 +21,7 @@
     <ClInclude Include="Structures\Array.h" />
     <ClInclude Include="Structures\BinaryTree.h" />
     <ClInclude Include="Interfaces\IStruct.h" />
+    <ClInclude Include="Structures\Graph.h" />
     <ClInclude Include="Structures\LinkedList.h" />
     <ClInclude Include="Structures\List.h" />
     <ClInclude Include="Structures\Map.h" />
@@ -39,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Benchmark.cpp" />
-    <ClCompile Include="Lab.cpp" />
+    <ClCompile Include="Examples\QueueExample.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
