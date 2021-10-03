@@ -28,12 +28,12 @@ int main()
 	LOG("");
 
 	LOG("RSort()");
-	dummyIntList.RSort();
+	RSort(dummyIntList);
 	LOG(dummyIntList);
 	LOG("");
 
 	LOG("Sort()");
-	dummyIntList.Sort();
+	Sort(dummyIntList);
 	LOG(dummyIntList);
 	LOG("");
 
@@ -73,11 +73,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	listInt100.RSort();
+	RSort(listInt100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	listInt100.Sort();
+	Sort(listInt100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Remove(50)");
@@ -113,11 +113,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	listInt1000.RSort();
+	RSort(listInt1000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	listInt1000.Sort();
+	Sort(listInt1000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Remove(500)");
@@ -153,11 +153,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	listInt10000.RSort();
+	RSort(listInt10000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	listInt10000.Sort();
+	Sort(listInt10000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Remove(5000)");
@@ -193,11 +193,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	listInt100000.RSort();
+	RSort(listInt100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	listInt100000.Sort();
+	Sort(listInt100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Remove(50000)");
@@ -221,6 +221,8 @@ int main()
 	Benchmark::Stop();
 #endif
 
+	LOG("\n\n");
+
 #ifdef BENCHMARK_LIST_VECTOR3
 	LOG("ModernDT List Benchmarks (Vector3)");
 	LOG("------------------------------\n");
@@ -241,12 +243,12 @@ int main()
 	LOG("");
 
 	LOG("RSort()");
-	dummyVector3List.RSort();
+	RSort(dummyVector3List);
 	LOG(dummyVector3List);
 	LOG("");
 
 	LOG("Sort()");
-	dummyVector3List.Sort();
+	Sort(dummyVector3List);
 	LOG(dummyVector3List);
 	LOG("");
 
@@ -285,11 +287,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	listVec3100.RSort();
+	RSort(listVec3100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	listVec3100.Sort();
+	Sort(listVec3100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Remove({50.0, 50.0, 50.0})");
@@ -325,11 +327,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	listVec31000.RSort();
+	RSort(listVec31000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	listVec31000.Sort();
+	Sort(listVec31000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Remove({500.0, 500.0, 500.0})");
@@ -365,11 +367,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	listVec310000.RSort();
+	RSort(listVec310000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	listVec310000.Sort();
+	Sort(listVec310000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Remove({5000.0, 5000.0, 5000.0})");
@@ -404,11 +406,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	listVec3100000.RSort();
+	RSort(listVec3100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	listVec3100000.Sort();
+	Sort(listVec3100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Remove({50000.0, 50000.0, 50000.0})");

@@ -6,9 +6,8 @@ namespace mdt {
 	enum class Ctrl : int8_t
 	{
 		kEmpty = -51,
-		kDeleted = 0x1,
-		kSentinel = 0x2,
-		kFull = 0x3
+		kDeleted = 0x0,
+		kFull = 0x1
 	};
 
 	template<typename _Type>
@@ -44,9 +43,19 @@ namespace mdt {
 			return _current._value == _value;
 		}
 
+		friend bool operator!=(const HashNode<_Type>& _current, const _Type& _value)
+		{
+			return _current._value != _value;
+		}
+
 		friend bool operator==(const HashNode<_Type>& _current, const HashNode<_Type>& _other)
 		{
 			return _current._value == _other._value;
+		}
+
+		friend bool operator!=(const HashNode<_Type>& _current, const HashNode<_Type>& _other)
+		{
+			return _current._value != _other._value;
 		}
 
 		friend std::ostream& operator<<(std::ostream& _stream, const HashNode<_Type>& _current)

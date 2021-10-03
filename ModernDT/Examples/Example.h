@@ -1,8 +1,11 @@
 #pragma once
 #include "ModernDT.h"
 #include "Interfaces/IHashable.h"
+#include "Utility/Sort.h"
 
 //#define DEBUG
+
+using namespace mdt;
 
 struct Vector3 : public IHashable<>
 {
@@ -47,7 +50,7 @@ struct Vector3 : public IHashable<>
 
 	newhash_t GetHash() const override
 	{
-		newhash_t size = (newhash_t)(sizeof(Vector3) + sizeof(newhash_t)) + x - y * z;
+		newhash_t size = (newhash_t)(sizeof(Vector3) + sizeof(newhash_t) + x - y * z);
 		newhash_t factor = (newhash_t)((float)size - y + ((float)size * 0.5f));
 		return factor;
 	}
@@ -255,6 +258,13 @@ protected:
 	Vector3 m_Position;
 };
 
+template<typename _Type>
+newhash_t MDTHash(const _Type& _obj, size_t _capacity)
+{
+	return {};
+}
+
+template<>
 newhash_t MDTHash(const Player& _obj, size_t _capacity)
 {
 	newhash_t size = (newhash_t)(sizeof(Player) + sizeof(newhash_t)) + _obj.GetLevel();
@@ -262,9 +272,10 @@ newhash_t MDTHash(const Player& _obj, size_t _capacity)
 	return factor % _capacity;
 }
 
+template<>
 newhash_t MDTHash(const Vector3& _obj, size_t _capacity)
 {
-	newhash_t size = (newhash_t)(sizeof(Vector3) + sizeof(newhash_t)) + _obj.x - _obj.y * _obj.z;
+	newhash_t size = (newhash_t)(sizeof(Vector3) + sizeof(newhash_t) + _obj.x - _obj.y * _obj.z);
 	newhash_t factor = (newhash_t)((float)size - (float)_obj.y + ((float)size * 0.5f));
 	return factor % _capacity;
 }

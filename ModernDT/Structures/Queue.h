@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Interfaces/IStruct.h"
+#include "Interfaces/IDataHandler.h"
 
 namespace mdt {
 
 	template<typename _Type>
-	class Queue : public IContainer<_Type>
+	class Queue : public IExtendable<_Type>, public IDataHandler<_Type>
 	{
 	public:
 		using ValueType = _Type;
@@ -75,25 +76,24 @@ namespace mdt {
 
 		_Type Dequeue()
 		{
-			_Type item;
 			if (m_Size > 0) {
-				item = m_Data[0];
+				_Type item = m_Data[0];
 				for (size_t i = 1; i < m_Size; i++) {
 					m_Data[i - 1] = std::move(m_Data[i]);
 				}
 				m_Data[m_Size--].~_Type();
+				return item;
 			}
-			return item;
+			return {};
 		}
 
 		_Type Peek() const
 		{
-			_Type item;
 			if (m_Size > 0) {
-				item = std::move(m_Data[m_Size - 1]);
+				_Type item = std::move(m_Data[m_Size - 1]);
 				return item;
 			}
-			return item;
+			return {};
 		}
 
 		bool Contains(const _Type& _value) const
@@ -122,7 +122,7 @@ namespace mdt {
 			m_Size = 0;
 		}
 
-		// IContainer
+		// IExtendable
 		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
 			for (size_t i = 0; i < m_Size; i++) {
@@ -130,10 +130,11 @@ namespace mdt {
 			}
 		}
 
-		constexpr virtual _Type* Data() const override { return m_Data; }
+		constexpr virtual const _Type* Data() const override { return m_Data; }
+		constexpr virtual _Type* Data() override { return m_Data; }
 
 		// Accessors
-		constexpr inline size_t Size() const { return m_Size; }
+		constexpr inline size_t Size() const override { return m_Size; }
 		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
 		// Iterator

@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Interfaces/IStruct.h"
+#include "Interfaces/IDataHandler.h"
 
 namespace mdt {
 
 	template<typename _Type>
-	class Stack : public IContainer<_Type>
+	class Stack : public IExtendable<_Type>, public IDataHandler<_Type>
 	{
 	public:
 		using ValueType = _Type;
@@ -88,7 +89,7 @@ namespace mdt {
 			return m_Data[m_Size++];
 		}
 
-		bool PushRange(const IContainer<_Type>& _container)
+		bool PushRange(const IExtendable<_Type>& _container)
 		{
 			for (const auto& item : _container.Data()) {
 				Push(item);
@@ -106,24 +107,22 @@ namespace mdt {
 
 		_Type Pop()
 		{
-			_Type item;
 			if (m_Size > 0) {
-				item = std::move(m_Data[m_Size - 1]);
+				_Type item = std::move(m_Data[m_Size - 1]);
 				m_Data[m_Size - 1].~_Type();
 				m_Size--;
 				return item;
 			}
-			return item;
+			return {};
 		}
 
 		_Type Peek() const
 		{
-			_Type item;
 			if (m_Size > 0) {
-				item = std::move(m_Data[m_Size - 1]);
+				_Type item = std::move(m_Data[m_Size - 1]);
 				return item;
 			}
-			return item;
+			return {};
 		}
 
 		bool Contains(const _Type& _value) const
@@ -152,7 +151,7 @@ namespace mdt {
 			m_Size = 0;
 		}
 
-		// IContainer
+		// IExtendable
 		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
 			for (size_t i = 0; i < m_Size; i++) {
@@ -160,10 +159,11 @@ namespace mdt {
 			}
 		}
 
-		constexpr virtual _Type* Data() const override { return m_Data; }
+		constexpr virtual const _Type* Data() const override { return m_Data; }
+		constexpr virtual _Type* Data() override { return m_Data; }
 
 		// Accessors
-		constexpr inline size_t Size() const { return m_Size; }
+		constexpr inline size_t Size() const override { return m_Size; }
 		constexpr inline size_t Capacity() const override { return m_Capacity; }
 
 		// Iterator
@@ -179,14 +179,6 @@ namespace mdt {
 
 		// Operator Overloads
 		const _Type& operator[](size_t _index) const
-		{
-			if (_index >= m_Capacity) {
-				__debugbreak();
-			}
-			return m_Data[_index];
-		}
-
-		_Type& operator[](size_t _index)
 		{
 			if (_index >= m_Capacity) {
 				__debugbreak();

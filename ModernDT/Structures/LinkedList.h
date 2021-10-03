@@ -1,16 +1,17 @@
 #pragma once
 
-#include "Interfaces/IStruct.h"
+#include "Interfaces/IExtendable.h"
 #include "Interfaces/IConvert.h"
 #include "Utility/SingleNode.h"
 
 namespace mdt {
 
 	template<typename _Type>
-	class LinkedList : public IContainer<_Type>, public IConvert<_Type>
+	class LinkedList : public IExtendable<_Type>, public IConvert<_Type>
 	{
 	public:
 		using ValueType = _Type;
+		using _Node = SingleNode<_Type>;
 		using Iterator = ContainerIterator<LinkedList<_Type>>;
 
 	public:
@@ -19,52 +20,64 @@ namespace mdt {
 		friend class Stack<_Type>;
 
 	public:
-		LinkedList() {}
+		LinkedList() 
+		{
+			ReAlloc(5);
+		}
 
 		LinkedList(const _Type& _value)
-			: m_Head(new SingleNode<_Type>(_value)), m_Size(1) {}
-
-		LinkedList(const LinkedList<_Type>& _other)
-			: m_Head(_other.m_Head), m_Size(_other.m_Size) {}
+			: m_Head(new SingleNode<_Type>(_value)), m_Size(1), m_Capacity(2)
+		{
+			m_Head->_next = new _Node();
+		}
 
 		LinkedList(_Type&& _value)
-			: m_Head(new SingleNode<_Type>(std::move(_value))), m_Size(1) {}
+			: m_Head(new SingleNode<_Type>(std::move(_value))), m_Size(1), m_Capacity(2) 
+		{
+			m_Head->_next = new _Node();
+		}
+
+		LinkedList(const LinkedList<_Type>& _other)
+			: m_Head(_other.m_Head), m_Size(_other.m_Size), m_Capacity(_other.m_Capacity)
+		{
+		}
 
 		LinkedList(LinkedList<_Type>&& _other)
-			: m_Head(_other.m_Head), m_Size(_other.m_Size) 
+			: m_Head(_other.m_Head), m_Size(_other.m_Size), m_Capacity(_other.m_Capacity)
 		{
 			_other.m_Head = nullptr;
+			_other.m_Size = 0;
+			_other.m_Capacity = 0;
 		}
 
 		~LinkedList()
 		{
-			Clear();
+			CleanUp();
 			Delete(m_Head, sizeof(SingleNode<_Type>));
 		}
 
 		// Utility
 		bool Push(const _Type& _value)
 		{
-			if (!m_Head) {
-				m_Head = new SingleNode<_Type>(_value);
+			if (m_Head->_control != Ctrl::kFull) {
+				m_Head->_value = _value;
+				m_Head->_control = Ctrl::kFull;
 				m_Size = 1;
 				return true;
 			}
 			
-			SingleNode<_Type>* node = m_Head;
-			SingleNode<_Type>* prev = nullptr;
-			while (node) {
-				prev = node;
+			if (m_Size >= m_Capacity)
+				ReAlloc(m_Capacity * 2);
+
+			_Node* node = m_Head;
+			while (node->_control == Ctrl::kFull) {
 				node = node->_next;
 			}
-			
-			node = new SingleNode<_Type>(_value);
-			prev->_next = node;
+			node->_value = _value;
+			node->_control = Ctrl::kFull;
 
 			node = nullptr;
-			prev = nullptr;
 			free_smem(node);
-			free_smem(prev);
 
 			m_Size++;
 			return true;
@@ -72,32 +85,31 @@ namespace mdt {
 
 		bool Push(_Type&& _value)
 		{
-			if (!m_Head) {
-				m_Head = new SingleNode<_Type>(std::move((_Type&&)_value));
+			if (m_Head->_control != Ctrl::kFull) {
+				m_Head->_value = _value;
+				m_Head->_control = Ctrl::kFull;
 				m_Size = 1;
 				return true;
 			}
 
-			SingleNode<_Type>* node = m_Head;
-			SingleNode<_Type>* prev = nullptr;
-			while (node) {
-				prev = node;
+			if (m_Size >= m_Capacity)
+				ReAlloc(m_Capacity * 2);
+
+			_Node* node = m_Head;
+			while (node->_control == Ctrl::kFull) {
 				node = node->_next;
 			}
-
-			node = new SingleNode<_Type>(std::move((_Type&&)_value));
-			prev->_next = node;
+			node->_value = _value;
+			node->_control = Ctrl::kFull;
 
 			node = nullptr;
-			prev = nullptr;
 			free_smem(node);
-			free_smem(prev);
 
 			m_Size++;
 			return true;
 		}
 
-		bool PushRange(const IContainer<_Type>& _container)
+		bool PushRange(const IDataHandler<_Type>& _container)
 		{
 			for (const auto& item : _container.Data()) {
 				Push(item);
@@ -116,34 +128,28 @@ namespace mdt {
 		_Type Pop()
 		{
 			if (m_Size > 0) {
-				SingleNode<_Type>* node = m_Head;
-				SingleNode<_Type>* prev = nullptr;
-				while (node) {
-					if (!node->_next) {
-						break;
-					}
-					prev = node;
-					node = node->_next;
+				_Node* iter = m_Head;
+				_Node* node = nullptr;
+				while (iter->_control == Ctrl::kFull) {
+					node = iter;
+					iter = iter->_next;
 				}
-				prev->_next = nullptr;
+				node->_control = Ctrl::kDeleted;
 
 				m_Size--;
 				return node->_value;
 			}
-			return _Type();
+			return {};
 		}
 
 		bool Remove(const _Type& _value)
 		{
-			SingleNode<_Type>* node = m_Head;
-			SingleNode<_Type>* prev = nullptr;
+			_Node* node = m_Head;
 			while (node) {
 				if (node->_value == _value) {
-					SingleNode<_Type>* next = node->_next;
-					if (prev) prev->_next = next;
+					node->_control = Ctrl::kDeleted;
 					return true;
 				}
-				prev = node;
 				node = node->_next;
 			}
 			return false;
@@ -151,15 +157,12 @@ namespace mdt {
 
 		bool Remove(_Type&& _value)
 		{
-			SingleNode<_Type>* node = m_Head;
-			SingleNode<_Type>* prev = nullptr;
+			_Node* node = m_Head;
 			while (node) {
 				if (node->_value == _value) {
-					SingleNode<_Type>* next = node->_next;
-					if (prev) prev->_next = next;
+					node->_control = Ctrl::kDeleted;
 					return true;
 				}
-				prev = node;
 				node = node->_next;
 			}
 			return false;
@@ -167,7 +170,7 @@ namespace mdt {
 
 		bool Contains(const _Type& _value) const
 		{
-			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
+			for (_Node* node = m_Head; node != nullptr; node = node->_next) {
 				if (node->_value == _value)
 					return true;
 			}
@@ -176,7 +179,7 @@ namespace mdt {
 
 		bool Contains(_Type&& _value) const
 		{
-			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
+			for (_Node* node = m_Head; node != nullptr; node = node->_next) {
 				if (node->_value == _value)
 					return true;
 			}
@@ -185,28 +188,22 @@ namespace mdt {
 
 		void Clear()
 		{
-			SingleNode<_Type>* node = m_Head;
-			SingleNode<_Type>* prev = nullptr;
+			_Node* node = m_Head;
 			while (node) {
-				if (!node->_next) {
-					node->~SingleNode();
-					break;
-				}
-				prev = node;
+				node->_control = Ctrl::kDeleted;
 				node = node->_next;
-				prev->~SingleNode();
 			}
 
-			m_Head = nullptr;
 			m_Size = 0;
-
 			m_Data.Clear();
 		}
 
 		// Accessors
-		constexpr inline size_t Capacity() const override { return m_Size; }
+		constexpr inline size_t Capacity() const { return m_Size; }
+		constexpr inline size_t Size() const { return m_Size; }
 		constexpr inline const _Type& Head() const { return m_Head->_value; }
 		constexpr inline _Type& Head() { return m_Head->_value; }
+		constexpr inline void Reserve(size_t _capacity) { ReAlloc(_capacity); }
 
 		// Iterators
 		constexpr Iterator begin()
@@ -223,7 +220,7 @@ namespace mdt {
 		virtual List<_Type> ToList() override
 		{
 			List<_Type> list(m_Size);
-			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
+			for (_Node* node = m_Head; node != nullptr; node = node->_next) {
 				list.Add(node->_value);
 			}
 			return list;
@@ -232,7 +229,7 @@ namespace mdt {
 		virtual Stack<_Type> ToStack() override
 		{
 			Stack<_Type> stack(m_Size);
-			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
+			for (_Node* node = m_Head; node != nullptr; node = node->_next) {
 				stack.Push(node->_value);
 			}
 			return stack;
@@ -241,31 +238,32 @@ namespace mdt {
 		virtual Queue<_Type> ToQueue() override
 		{
 			Queue<_Type> queue(m_Size);
-			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
+			for (_Node* node = m_Head; node != nullptr; node = node->_next) {
 				queue.Enqueue(node->_value);
 			}
 			return queue;
 		}
 
-		// IContainer
+		// IExtendable
 		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
-			for (SingleNode<_Type>* node = m_Head; node != nullptr; node = node->_next) {
+			for (_Node* node = m_Head; node != nullptr; node = node->_next) {
 				_param(node->_value);
 			}
-		}
-
-		constexpr virtual _Type* Data() const override
-		{
-			m_Data.Clear();
-			Collect();
-			return m_Data.Data();
 		}
 
 		// Operator Overloads
 		friend std::ostream& operator<<(std::ostream& _stream, LinkedList<_Type>& _current)
 		{
-			_stream << _current.ToList();
+			_stream << "[ ";
+			auto node = _current.m_Head;
+			for (auto i = 0; i < _current.m_Size && node; i++) {
+				if (node->_control == Ctrl::kFull) {
+					_stream << *node;
+				}
+				node = node->_next;
+			}
+			_stream << "]";
 			return _stream;
 		}
 	private:
@@ -276,8 +274,78 @@ namespace mdt {
 			}
 		}
 
+		void CleanUp()
+		{
+			_Node* node = m_Head;
+			_Node* prev = nullptr;
+			while (node) {
+				if (!node->_next) {
+					node->~SingleNode();
+					break;
+				}
+				prev = node;
+				node = node->_next;
+				prev->~SingleNode();
+			}
+
+			m_Size = 0;
+
+			m_Data.Clear();
+		}
+
+		void ReAlloc(size_t _capacity)
+		{
+			if (m_Size < _capacity) {
+				_Node* iter = m_Head;
+				_Node* node = nullptr;
+				while (iter) {
+					node = iter;
+					iter = iter->_next;
+				}
+
+				if (node == nullptr) {
+					m_Head = new _Node();
+					node = m_Head;
+				}
+				size_t difference = fabs(_capacity - m_Capacity);
+				for (auto i = 0; i < difference; i++) {
+					_Node* newNode = new _Node();
+					node->_next = newNode;
+
+					newNode = nullptr;
+					delete newNode;
+
+					node = node->_next;
+				}
+
+				iter = nullptr;
+				node = nullptr;
+				delete iter;
+				delete node;
+			}
+			else {
+				m_Size = _capacity;
+				_Node* node = m_Head;
+
+				for (auto i = 0; i <= _capacity; i++) {
+					node = node->_next;
+				}
+
+				while (node) {
+					node->_control = Ctrl::kEmpty;
+					node = node->_next;
+				}
+
+				node = nullptr;
+				delete node;
+			}
+
+			m_Capacity = _capacity;
+		}
+
 	private:
-		SingleNode<_Type>* m_Head = nullptr;
+		_Node* m_Head = nullptr;
+		size_t m_Capacity = 0;
 		size_t m_Size = 0;
 
 		mutable List<_Type> m_Data;

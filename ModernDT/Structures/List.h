@@ -1,16 +1,16 @@
 #pragma once
 #include "Interfaces/IStruct.h"
-#include "Interfaces/ISort.h"
+#include "Interfaces/IExtendable.h"
 
 namespace mdt {
 
 	template<typename _Type>
-	class List : public DataContainer<_Type>, public IContainer<_Type>, public ISort<_Type>
+	class List : public IStruct<_Type>, public IExtendable<_Type>
 	{
 	public:
-		using Iterator = DataContainer<_Type>::Iterator;
+		using Iterator = IStruct<_Type>::Iterator;
 
-		friend class IContainer<_Type>;
+		friend class IExtendable<_Type>;
 
 	public:
 		List() 
@@ -105,7 +105,7 @@ namespace mdt {
 			return m_Data[_SIZE++];
 		}
 
-		virtual bool AddRange(const IContainer<_Type>& _container) override
+		virtual bool AddRange(const IDataHandler<_Type>& _container) override
 		{
 			if (_container.Data()) {
 				size_t size = _container.Capacity();
@@ -215,7 +215,7 @@ namespace mdt {
 			_SIZE = 0;
 		}
 
-		// IContainer
+		// IExtendable
 		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
 			for (size_t i = 0; i < _SIZE; i++) {
@@ -223,37 +223,12 @@ namespace mdt {
 			}
 		}
 
-		constexpr virtual _Type* Data() const override { return m_Data; }
+		constexpr virtual const _Type* Data() const override { return m_Data; }
 
-		// ISort
-		virtual void Sort(const Dynamic<bool, const _Type&, const _Type&>& _predicate = GreatorThan<_Type>) override
-		{
-			for (size_t i = 0; i < _SIZE; i++) {
-				for (size_t j = i + 1; j < _SIZE; j++) {
-					if (_predicate(m_Data[i], m_Data[j])) {
-						_Type temp = std::move(m_Data[i]);
-						m_Data[i] = std::move(m_Data[j]);
-						m_Data[j] = std::move(temp);
-					}
-				}
-			}
-		}
-
-		virtual void RSort(const Dynamic<bool, const _Type&, const _Type&>& _predicate = GreatorThan<_Type>) override
-		{
-			for (int32_t i = _SIZE - 1; i > 0; i--) {
-				for (int32_t j = i - 1; j >= 0; j--) {
-					if (_predicate(m_Data[i], m_Data[j])) {
-						_Type temp = std::move(m_Data[i]);
-						m_Data[i] = std::move(m_Data[j]);
-						m_Data[j] = std::move(temp);
-					}
-				}
-			}
-		}
+		constexpr virtual _Type* Data() override { return m_Data; }
 
 		// Accessors
-		constexpr inline size_t Capacity() const override { return m_Capacity; }
+		constexpr virtual inline size_t Capacity() const override { return m_Capacity; }
 
 		constexpr inline void Reserve(size_t _capacity) { ReAlloc(_capacity); }
 

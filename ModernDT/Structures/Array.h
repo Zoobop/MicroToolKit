@@ -1,11 +1,13 @@
 #pragma once
 
 #include "Interfaces/IStruct.h"
+#include "Interfaces/IExtendable.h"
+#include "Interfaces/IDataHandler.h"
 
 namespace mdt {
 
 	template<typename _Type, size_t _Size>
-	class Array : public IContainer<_Type>
+	class Array : public IExtendable<_Type>, public IDataHandler<_Type>
 	{
 	public:
 		using ValueType = _Type;
@@ -66,7 +68,7 @@ namespace mdt {
 			}
 		}
 
-		void Set(const IContainer<_Type>& _container)
+		void Set(const IExtendable<_Type>& _container)
 		{
 			size_t size = _container.Capacity();
 			for (size_t i = 0; i < size; i++) {
@@ -108,7 +110,7 @@ namespace mdt {
 			}
 		}
 
-		// IContainer
+		// IExtendable
 		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
 			for (size_t i = 0; i < _Size; i++) {
@@ -116,9 +118,11 @@ namespace mdt {
 			}
 		}
 
-		constexpr virtual _Type* Data() const override { return (_Type*)m_Data; }
+		constexpr virtual const _Type* Data() const override { return (_Type*)m_Data; }
+		constexpr virtual _Type* Data() override { return (_Type*)m_Data; }
 
 		// Accessors
+		constexpr inline size_t Size() const override { return _Size; }
 		constexpr inline size_t Capacity() const override { return _Size; }
 
 		// Iterator

@@ -13,24 +13,23 @@
   <ItemGroup>
     <ClInclude Include="Core\Benchmark.h" />
     <ClInclude Include="Examples\Example.h" />
+    <ClInclude Include="Interfaces\IDataHandler.h" />
     <ClInclude Include="mdtpch.h" />
     <ClInclude Include="Core\Memory.h" />
     <ClInclude Include="Core\Typedef.h" />
     <ClInclude Include="Interfaces\IHashable.h" />
-    <ClInclude Include="Interfaces\ISort.h" />
     <ClInclude Include="Structures\Array.h" />
     <ClInclude Include="Structures\BinaryTree.h" />
     <ClInclude Include="Interfaces\IStruct.h" />
-    <ClInclude Include="Structures\Graph.h" />
     <ClInclude Include="Structures\LinkedList.h" />
     <ClInclude Include="Structures\List.h" />
     <ClInclude Include="Structures\Map.h" />
     <ClInclude Include="Structures\Queue.h" />
     <ClInclude Include="Structures\Set.h" />
     <ClInclude Include="Structures\Stack.h" />
-    <ClInclude Include="Structures\Tuple.h" />
+    <ClInclude Include="Utility\Tuple.h" />
     <ClInclude Include="Core\Function.h" />
-    <ClInclude Include="Interfaces\IContainer.h" />
+    <ClInclude Include="Interfaces\IExtendable.h" />
     <ClInclude Include="Interfaces\IConvert.h" />
     <ClInclude Include="ModernDT.h" />
     <ClInclude Include="Utility\DoubleNode.h" />
@@ -38,10 +37,10 @@
     <ClInclude Include="Utility\HashNode.h" />
     <ClInclude Include="Utility\MultiNode.h" />
     <ClInclude Include="Utility\SingleNode.h" />
+    <ClInclude Include="Utility\Sort.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Benchmark.cpp" />
-    <ClCompile Include="Examples\QueueExample.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

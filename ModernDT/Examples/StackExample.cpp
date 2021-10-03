@@ -1,426 +1,430 @@
 #include "mdtpch.h"
 #include "Example.h"
 
-#include "Structures/Queue.h"
+#include "Structures/Stack.h"
 
-#define BENCHMARK_QUEUE_INT
-#define BENCHMARK_QUEUE_VECTOR3
+#define BENCHMARK_STACK_INT
+#define BENCHMARK_STACK_VECTOR3
 
 int main()
 {
-#ifdef BENCHMARK_QUEUE_INT
-	LOG("ModernDT Queue Benchmarks (int)");
+#ifdef BENCHMARK_STACK_INT
+	LOG("ModernDT Stack Benchmarks (int)");
 	LOG("-------------------------------\n");
 
-	mdt::Queue<int> dummyIntQueue;
+	mdt::Stack<int> dummyIntStack;
 	bool resultInt = false;
 
 	LOG("Methods:\n");
 
-	LOG("Enqueue(10 times...)");
-	for (int i = 0; i < 10; i++)
-		dummyIntQueue.Enqueue(i * 10);
-	LOG(dummyIntQueue);
+	LOG("Push(1)");
+	dummyIntStack.Push(1);
+	LOG(dummyIntStack);
+	LOG("");
+
+	LOG("PushRange({10, 20, 30, 40, 50, 60, 70, 80, 90, 100})");
+	dummyIntStack.PushRange({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
+	LOG(dummyIntStack);
 	LOG("");
 
 	LOG("RSort()");
-	mdt::RSort(dummyIntQueue);
-	LOG(dummyIntQueue);
+	mdt::RSort(dummyIntStack);
+	LOG(dummyIntStack);
 	LOG("");
 
 	LOG("Sort()");
-	mdt::Sort(dummyIntQueue);
-	LOG(dummyIntQueue);
+	mdt::Sort(dummyIntStack);
+	LOG(dummyIntStack);
 	LOG("");
 
-	LOG("Dequeue()");
-	LOG(dummyIntQueue.Dequeue());
+	LOG("Pop()");
+	LOG(dummyIntStack.Pop());
 	LOG("");
 
 	LOG("Peek()");
-	LOG(dummyIntQueue.Peek());
+	LOG(dummyIntStack.Peek());
 	LOG("");
 
 	LOG("Contains(40)");
-	resultInt = dummyIntQueue.Contains(40);
+	resultInt = dummyIntStack.Contains(40);
 	if (resultInt) LOG("Found 40\n");
 
 	LOG("Contains(49)");
-	resultInt = dummyIntQueue.Contains(49);
+	resultInt = dummyIntStack.Contains(49);
 	if (!resultInt) LOG("Couldn't find 49\n");
 
 	LOG("Clear()");
-	dummyIntQueue.Clear();
-	LOG(dummyIntQueue);
+	dummyIntStack.Clear();
+	LOG(dummyIntStack);
 	LOG("");
 
 
 
-	LOG("\nQueue: 100");
+	LOG("\nStack: 100");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<int> queueInt100;
+	mdt::Stack<int> stackInt100;
 
-	Benchmark::Start("Enqueue(100 times...)");
+	Benchmark::Start("Push(100 times...)");
 	for (auto i = 0; i < 100; i++)
-		queueInt100.Enqueue(i * 2);
+		stackInt100.Push(i * 2);
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueInt100);
+	mdt::RSort(stackInt100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueInt100);
+	mdt::Sort(stackInt100);
 	Benchmark::Stop();
 
-	Benchmark::Start("Dequeue()");
-	queueInt100.Dequeue();
+	Benchmark::Start("Pop()");
+	stackInt100.Pop();
 	Benchmark::Stop();
 
 	Benchmark::Start("Peek()");
-	queueInt100.Peek();
+	stackInt100.Peek();
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains(40)");
-	queueInt100.Contains(40);
+	stackInt100.Contains(40);
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains(49)");
-	queueInt100.Contains(49);
+	stackInt100.Contains(49);
 	Benchmark::Stop();
 
 	Benchmark::Start("Clear()");
-	queueInt100.Clear();
+	stackInt100.Clear();
 	Benchmark::Stop();
 
 
 
-	LOG("\nQueue: 1000");
+	LOG("\nStack: 1000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<int> queueInt1000;
+	mdt::Stack<int> stackInt1000;
 
-	Benchmark::Start("Enqueue(1000 times...)");
+	Benchmark::Start("Push(1000 times...)");
 	for (auto i = 0; i < 1000; i++)
-		queueInt1000.Enqueue(i * 2);
+		stackInt1000.Push(i * 2);
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueInt1000);
+	mdt::RSort(stackInt1000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueInt1000);
+	mdt::Sort(stackInt1000);
 	Benchmark::Stop();
 
-	Benchmark::Start("Dequeue()");
-	queueInt1000.Dequeue();
+	Benchmark::Start("Pop()");
+	stackInt1000.Pop();
 	Benchmark::Stop();
 
 	Benchmark::Start("Peek()");
-	queueInt1000.Peek();
+	stackInt1000.Peek();
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains(400)");
-	queueInt1000.Contains(400);
+	stackInt1000.Contains(400);
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains(490)");
-	queueInt1000.Contains(490);
+	stackInt1000.Contains(490);
 	Benchmark::Stop();
 
 	Benchmark::Start("Clear()");
-	queueInt1000.Clear();
+	stackInt1000.Clear();
 	Benchmark::Stop();
 
 
 
-	LOG("\nQueue: 10000");
+	LOG("\nStack: 10000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<int> queueInt10000;
+	mdt::Stack<int> stackInt10000;
 
-	Benchmark::Start("Enqueue(10000 times...)");
+	Benchmark::Start("Push(10000 times...)");
 	for (auto i = 0; i < 10000; i++)
-		queueInt10000.Enqueue(i * 2);
+		stackInt10000.Push(i * 2);
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueInt10000);
+	mdt::RSort(stackInt10000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueInt10000);
+	mdt::Sort(stackInt10000);
 	Benchmark::Stop();
 
-	Benchmark::Start("Dequeue()");
-	queueInt10000.Dequeue();
+	Benchmark::Start("Pop()");
+	stackInt10000.Pop();
 	Benchmark::Stop();
 
 	Benchmark::Start("Peek()");
-	queueInt10000.Peek();
+	stackInt10000.Peek();
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains(4000)");
-	queueInt10000.Contains(4000);
+	stackInt10000.Contains(4000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains(4900)");
-	queueInt10000.Contains(4900);
+	stackInt10000.Contains(4900);
 	Benchmark::Stop();
 
 	Benchmark::Start("Clear()");
-	queueInt10000.Clear();
+	stackInt10000.Clear();
 	Benchmark::Stop();
 
 
 
-	LOG("\nQueue: 100000");
+	LOG("\nStack: 100000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<int> queueInt100000;
+	mdt::Stack<int> stackInt100000;
 
-	Benchmark::Start("Enqueue(100000 times...)");
+	Benchmark::Start("Push(100000 times...)");
 	for (auto i = 0; i < 100000; i++)
-		queueInt100000.Enqueue(i * 2);
+		stackInt100000.Push(i * 2);
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueInt100000);
+	mdt::RSort(stackInt100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueInt100000);
+	mdt::Sort(stackInt100000);
 	Benchmark::Stop();
 
-	Benchmark::Start("Dequeue()");
-	queueInt100000.Dequeue();
+	Benchmark::Start("Pop()");
+	stackInt100000.Pop();
 	Benchmark::Stop();
 
 	Benchmark::Start("Peek()");
-	queueInt100000.Peek();
+	stackInt100000.Peek();
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains(40000)");
-	queueInt100000.Contains(40000);
+	stackInt100000.Contains(40000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains(49000)");
-	queueInt100000.Contains(49000);
+	stackInt100000.Contains(49000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Clear()");
-	queueInt100000.Clear();
+	stackInt100000.Clear();
 	Benchmark::Stop();
 #endif
 
 	LOG("\n\n");
 
-#ifdef BENCHMARK_QUEUE_VECTOR3
-	LOG("ModernDT Queue Benchmarks (Vector3)");
+#ifdef BENCHMARK_STACK_VECTOR3
+	LOG("ModernDT Stack Benchmarks (Vector3)");
 	LOG("------------------------------\n");
 
-	mdt::Queue<Vector3> dummyVector3Queue;
+	mdt::Stack<Vector3> dummyVector3Stack;
 	bool resultVec3 = false;
 
 	LOG("Methods:\n");
 
-	LOG("Enqueue(10 times...)");
+	LOG("Push(10 times...)");
 	for (int i = 0; i < 10; i++)
-		dummyVector3Queue.Enqueue(1);
-	LOG(dummyVector3Queue);
+		dummyVector3Stack.Push(1);
+	LOG(dummyVector3Stack);
 	LOG("");
 
 	LOG("RSort()");
-	mdt::RSort(dummyVector3Queue);
-	LOG(dummyVector3Queue);
+	mdt::RSort(dummyVector3Stack);
+	LOG(dummyVector3Stack);
 	LOG("");
 
 	LOG("Sort()");
-	mdt::Sort(dummyVector3Queue);
-	LOG(dummyVector3Queue);
+	mdt::Sort(dummyVector3Stack);
+	LOG(dummyVector3Stack);
 	LOG("");
 
-	LOG("Dequeue()");
-	LOG(dummyVector3Queue.Dequeue());
-	LOG(dummyVector3Queue);
+	LOG("Pop()");
+	LOG(dummyVector3Stack.Pop());
+	LOG(dummyVector3Stack);
 	LOG("");
 
 	LOG("Peek()");
-	LOG(dummyVector3Queue.Peek());
-	LOG(dummyVector3Queue);
+	LOG(dummyVector3Stack.Peek());
+	LOG(dummyVector3Stack);
 	LOG("");
 
 	LOG("Contains({40.0, 40.0, 40.0})");
-	resultVec3 = dummyVector3Queue.Contains(40);
+	resultVec3 = dummyVector3Stack.Contains(40);
 	if (resultVec3) LOG("Found 40\n");
 
 	LOG("Contains({49.0, 49.0, 49.0})");
-	resultVec3 = dummyVector3Queue.Contains(49);
+	resultVec3 = dummyVector3Stack.Contains(49);
 	if (!resultVec3) LOG("Couldn't find 49\n");
 
 	LOG("Clear()");
-	dummyVector3Queue.Clear();
-	LOG(dummyVector3Queue);
+	dummyVector3Stack.Clear();
+	LOG(dummyVector3Stack);
 	LOG("");
 
 
-	LOG("\nQueue: 100");
+	LOG("\nStack: 100");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<Vector3> queueVec3100;
+	mdt::Stack<Vector3> stackVec3100;
 
-	Benchmark::Start("Enqueue(100 times...)");
+	Benchmark::Start("Push(100 times...)");
 	for (auto i = 0; i < 100; i++)
-		queueVec3100.Enqueue(i * 2);
+		stackVec3100.Push(i * 2);
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueVec3100);
+	mdt::RSort(stackVec3100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueVec3100);
+	mdt::Sort(stackVec3100);
 	Benchmark::Stop();
 
-	Benchmark::Start("Dequeue()");
-	queueVec3100.Dequeue();
+	Benchmark::Start("Pop()");
+	stackVec3100.Pop();
 	Benchmark::Stop();
 
 	Benchmark::Start("Peek()");
-	queueVec3100.Peek();
+	stackVec3100.Peek();
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains({40.0, 40.0, 40.0})");
-	queueVec3100.Contains(40);
+	stackVec3100.Contains(40);
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains({49.0, 49.0, 49.0})");
-	queueVec3100.Contains(49);
+	stackVec3100.Contains(49);
 	Benchmark::Stop();
 
 	Benchmark::Start("Clear()");
-	queueVec3100.Clear();
+	stackVec3100.Clear();
 	Benchmark::Stop();
 
 
 
-	LOG("\nQueue: 1000");
+	LOG("\nStack: 1000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<Vector3> queueVec31000;
+	mdt::Stack<Vector3> stackVec31000;
 
-	Benchmark::Start("Enqueue(1000 times...)");
+	Benchmark::Start("Push(1000 times...)");
 	for (auto i = 0; i < 1000; i++)
-		queueVec31000.Enqueue(i * 2);
+		stackVec31000.Push(i * 2);
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueVec31000);
+	mdt::RSort(stackVec31000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueVec31000);
+	mdt::Sort(stackVec31000);
 	Benchmark::Stop();
 
-	Benchmark::Start("Dequeue()");
-	queueVec31000.Dequeue();
+	Benchmark::Start("Pop()");
+	stackVec31000.Pop();
 	Benchmark::Stop();
 
 	Benchmark::Start("Peek()");
-	queueVec31000.Peek();
+	stackVec31000.Peek();
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains({400.0, 400.0, 400.0})");
-	queueVec31000.Contains(400);
+	stackVec31000.Contains(400);
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains({490.0, 490.0, 490.0})");
-	queueVec31000.Contains(490);
+	stackVec31000.Contains(490);
 	Benchmark::Stop();
 
 	Benchmark::Start("Clear()");
-	queueVec31000.Clear();
+	stackVec31000.Clear();
 	Benchmark::Stop();
 
 
 
-	LOG("\nQueue: 10000");
+	LOG("\nStack: 10000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<Vector3> queueVec310000;
+	mdt::Stack<Vector3> stackVec310000;
 
-	Benchmark::Start("Enqueue(10000 times...)");
+	Benchmark::Start("Push(10000 times...)");
 	for (auto i = 0; i < 10000; i++)
-		queueVec310000.Enqueue(i * 2);
+		stackVec310000.Push(i * 2);
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueVec310000);
+	mdt::RSort(stackVec310000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueVec310000);
+	mdt::Sort(stackVec310000);
 	Benchmark::Stop();
 
-	Benchmark::Start("Dequeue()");
-	queueVec310000.Dequeue();
+	Benchmark::Start("Pop()");
+	stackVec310000.Pop();
 	Benchmark::Stop();
 
 	Benchmark::Start("Peek()");
-	queueVec310000.Peek();
+	stackVec310000.Peek();
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains({4000.0, 4000.0, 4000.0})");
-	queueVec310000.Contains(4000);
+	stackVec310000.Contains(4000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains({4900.0, 4900.0, 4900.0})");
-	queueVec310000.Contains(4900);
+	stackVec310000.Contains(4900);
 	Benchmark::Stop();
 
 	Benchmark::Start("Clear()");
-	queueVec310000.Clear();
+	stackVec310000.Clear();
 	Benchmark::Stop();
 
 
-	LOG("\nQueue: 100000");
+	LOG("\nStack: 100000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<Vector3> queueVec3100000;
+	mdt::Stack<Vector3> stackVec3100000;
 
-	Benchmark::Start("Enqueue(100000 times...)");
+	Benchmark::Start("Push(100000 times...)");
 	for (auto i = 0; i < 100000; i++)
-		queueVec3100000.Enqueue(i * 2);
+		stackVec3100000.Push(i * 2);
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueVec3100000);
+	mdt::RSort(stackVec3100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueVec3100000);
+	mdt::Sort(stackVec3100000);
 	Benchmark::Stop();
 
-	Benchmark::Start("Dequeue()");
-	queueVec3100000.Dequeue();
+	Benchmark::Start("Pop()");
+	stackVec3100000.Pop();
 	Benchmark::Stop();
 
 	Benchmark::Start("Peek()");
-	queueVec3100000.Peek();
+	stackVec3100000.Peek();
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains({40000.0, 40000.0, 40000.0})");
-	queueVec3100000.Contains(40000);
+	stackVec3100000.Contains(40000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Contains({49000.0, 49000.0, 49000.0})");
-	queueVec3100000.Contains(49000);
+	stackVec3100000.Contains(49000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Clear()");
-	queueVec3100000.Clear();
+	stackVec3100000.Clear();
 	Benchmark::Stop();
 
 #endif

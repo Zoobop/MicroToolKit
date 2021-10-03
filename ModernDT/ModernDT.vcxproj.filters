@@ -36,7 +36,7 @@
     <ClInclude Include="Structures\Set.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Structures\Tuple.h">
+    <ClInclude Include="Utility\Tuple.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Structures\Queue.h">
@@ -51,7 +51,7 @@
     <ClInclude Include="Structures\LinkedList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Interfaces\IContainer.h">
+    <ClInclude Include="Interfaces\IExtendable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Interfaces\IConvert.h">
@@ -61,9 +61,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Benchmark.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Interfaces\ISort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Interfaces\IHashTable.h">
@@ -90,18 +87,18 @@
     <ClInclude Include="Utility\MultiNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Structures\Graph.h">
+    <ClInclude Include="Examples\Example.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Examples\Example.h">
+    <ClInclude Include="Utility\Sort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces\IDataHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Benchmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Examples\QueueExample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

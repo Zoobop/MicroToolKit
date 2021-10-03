@@ -5,7 +5,7 @@
 namespace mdt {
 
 	template<typename _Type>
-	class BinaryTree : public IContainer<_Type>, public IConvert<_Type>
+	class BinaryTree : public IExtendable<_Type>, public IConvert<_Type>
 	{
 	public:
 		using ValueType = _Type;
@@ -71,7 +71,7 @@ namespace mdt {
 			return false;
 		}
 
-		bool InsertRange(const IContainer<_Type>& _container)
+		bool InsertRange(const IExtendable<_Type>& _container)
 		{
 			for (const auto& item : _container.Data()) {
 				Insert(item);
@@ -228,7 +228,7 @@ namespace mdt {
 			return queue;
 		}
 
-		// IContainer
+		// IExtendable
 		virtual void ForEach(const Param<const _Type&>& _param) override
 		{
 			Traverse(m_Root, _param);
