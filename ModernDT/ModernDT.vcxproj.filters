@@ -31,9 +31,6 @@
     <ClInclude Include="Structures\Array.h">
       <Filter>Structures</Filter>
     </ClInclude>
-    <ClInclude Include="Structures\BinaryTree.h">
-      <Filter>Structures</Filter>
-    </ClInclude>
     <ClInclude Include="Structures\LinkedList.h">
       <Filter>Structures</Filter>
     </ClInclude>

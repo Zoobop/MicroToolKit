@@ -19,7 +19,6 @@
     <ClInclude Include="Core\Typedef.h" />
     <ClInclude Include="Interfaces\IHashable.h" />
     <ClInclude Include="Structures\Array.h" />
-    <ClInclude Include="Structures\BinaryTree.h" />
     <ClInclude Include="Interfaces\IStruct.h" />
     <ClInclude Include="Structures\LinkedList.h" />
     <ClInclude Include="Structures\List.h" />
