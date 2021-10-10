@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Benchmark.h" />
+    <ClInclude Include="Debug\Benchmark.h" />
     <ClInclude Include="Examples\Example.h" />
     <ClInclude Include="Interfaces\IDataHandler.h" />
     <ClInclude Include="mdtpch.h" />
@@ -27,6 +27,7 @@
     <ClInclude Include="Structures\Queue.h" />
     <ClInclude Include="Structures\Set.h" />
     <ClInclude Include="Structures\Stack.h" />
+    <ClInclude Include="Utility\Random.h" />
     <ClInclude Include="Utility\Tuple.h" />
     <ClInclude Include="Core\Function.h" />
     <ClInclude Include="Interfaces\IExtendable.h" />
@@ -38,9 +39,6 @@
     <ClInclude Include="Utility\MultiNode.h" />
     <ClInclude Include="Utility\SingleNode.h" />
     <ClInclude Include="Utility\Sort.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Core\Benchmark.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

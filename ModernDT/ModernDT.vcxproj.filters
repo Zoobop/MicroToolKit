@@ -55,7 +55,7 @@
     <ClInclude Include="Core\Function.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Benchmark.h">
+    <ClInclude Include="Debug\Benchmark.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\Memory.h">
@@ -100,10 +100,8 @@
     <ClInclude Include="Interfaces\IExtendable.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Core\Benchmark.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
+    <ClInclude Include="Utility\Random.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
