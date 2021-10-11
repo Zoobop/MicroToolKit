@@ -27,6 +27,7 @@
     <ClInclude Include="Structures\Set.h" />
     <ClInclude Include="Structures\Stack.h" />
     <ClInclude Include="Utility\Random.h" />
+    <ClInclude Include="Utility\StringUtils.h" />
     <ClInclude Include="Utility\Tuple.h" />
     <ClInclude Include="Core\Function.h" />
     <ClInclude Include="Interfaces\IExtendable.h" />

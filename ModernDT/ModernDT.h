@@ -3,11 +3,13 @@
 #include "Core/Function.h"
 #include "Core/Memory.h"
 #include "Core/Typedef.h"
+
 #include "Debug/Benchmark.h"
 
 #include "Utility/Sort.h"
 #include "Utility/Tuple.h"
 #include "Utility/Random.h"
+#include "Utility/StringUtils.h"
 
 #include "Structures/Array.h"
 #include "Structures/List.h"
