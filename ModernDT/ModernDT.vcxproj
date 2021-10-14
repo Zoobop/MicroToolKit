@@ -111,7 +111,7 @@
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)intermediate\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
     <TargetName>ModernDT</TargetName>
-    <TargetExt>.exe</TargetExt>
+    <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
