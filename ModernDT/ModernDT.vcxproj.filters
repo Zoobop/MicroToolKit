@@ -19,7 +19,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ModernDT.h">
+    <ClInclude Include="MicroToolKit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mdtpch.h">

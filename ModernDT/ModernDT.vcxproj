@@ -37,7 +37,7 @@
     <ClInclude Include="Core\Function.h" />
     <ClInclude Include="Interfaces\IExtendable.h" />
     <ClInclude Include="Interfaces\IConvert.h" />
-    <ClInclude Include="ModernDT.h" />
+    <ClInclude Include="MicroToolKit.h" />
     <ClInclude Include="Utility\DoubleNode.h" />
     <ClInclude Include="Interfaces\IHashTable.h" />
     <ClInclude Include="Utility\HashNode.h" />
