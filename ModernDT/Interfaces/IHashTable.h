@@ -3,7 +3,7 @@
 #include "mdtpch.h"
 #include "Utility/HashNode.h"
 
-namespace mic {
+namespace mtk {
 
 	template<typename _Type, typename _KeyType>
 	_KeyType Hash_Temp(const _Type& _obj)

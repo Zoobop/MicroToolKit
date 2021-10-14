@@ -12,7 +12,7 @@ int main()
 	LOG("ModernDT LinkedList Benchmarks (int)");
 	LOG("-------------------------------\n");
 
-	mic::LinkedList<int> dummyIntLinkedList;
+	mtk::LinkedList<int> dummyIntLinkedList;
 	bool resultInt = false;
 
 	LOG("Methods:\n");
@@ -55,7 +55,7 @@ int main()
 	LOG("\nLinkedList: 100");
 	LOG("---------------------------------------------");
 
-	mic::LinkedList<int> linkedListInt100;
+	mtk::LinkedList<int> linkedListInt100;
 
 	for (auto i = 0; i < 100; i++)
 		linkedListInt100.Push(i * 2);
@@ -75,7 +75,7 @@ int main()
 	LOG("\nLinkedList: 1000");
 	LOG("---------------------------------------------");
 
-	mic::LinkedList<int> linkedListInt1000;
+	mtk::LinkedList<int> linkedListInt1000;
 
 	for (auto i = 0; i < 1000; i++)
 		linkedListInt1000.Push(i * 2);
@@ -96,7 +96,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	("Construction");
-	mic::LinkedList<int> linkedListInt10000;
+	mtk::LinkedList<int> linkedListInt10000;
 
 	("Push(10000 times...)");
 	for (auto i = 0; i < 10000; i++)
@@ -129,7 +129,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	("Construction");
-	mic::LinkedList<int> linkedListInt100000;
+	mtk::LinkedList<int> linkedListInt100000;
 	();
 
 	("Push(100000 times...)");
@@ -164,7 +164,7 @@ int main()
 	LOG("ModernDT LinkedList Benchmarks (Vector3)");
 	LOG("------------------------------\n");
 
-	mic::LinkedList<Vector3> dummyVector3LinkedList;
+	mtk::LinkedList<Vector3> dummyVector3LinkedList;
 	bool resultVec3 = false;
 
 	LOG("Methods:\n");
@@ -203,7 +203,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	("Construction");
-	mic::LinkedList<Vector3> linkedListVec3100;
+	mtk::LinkedList<Vector3> linkedListVec3100;
 	();
 
 	("Push(100 times...)");
@@ -237,7 +237,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	("Construction");
-	mic::LinkedList<Vector3> linkedListVec31000;
+	mtk::LinkedList<Vector3> linkedListVec31000;
 	();
 
 	("Push(1000 times...)");
@@ -271,7 +271,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	("Construction");
-	mic::LinkedList<Vector3> linkedListVec310000;
+	mtk::LinkedList<Vector3> linkedListVec310000;
 	();
 
 	("Push(10000 times...)");
@@ -304,7 +304,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	("Construction");
-	mic::LinkedList<Vector3> linkedListVec3100000;
+	mtk::LinkedList<Vector3> linkedListVec3100000;
 	();
 
 	("Push(100000 times...)");

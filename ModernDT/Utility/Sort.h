@@ -2,7 +2,7 @@
 #include "mdtpch.h"
 #include "Interfaces/IDataHandler.h"
 
-namespace mic {
+namespace mtk {
 
 	template<typename _Type>
 	bool GreaterThan(const _Type& _first, const _Type& _second)

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mic {
+namespace mtk {
 
 	template<typename _Type>
 	struct MultiNode

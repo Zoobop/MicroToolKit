@@ -2,7 +2,7 @@
 #include "Interfaces/IStruct.h"
 #include "Utility/DoubleNode.h"
 
-namespace mic {
+namespace mtk {
 
 	template<typename _Type>
 	class BinaryTree : public IExtendable<_Type>, public IConvert<_Type>

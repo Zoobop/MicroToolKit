@@ -12,7 +12,7 @@ int main()
 	LOG("ModernDT Stack Benchmarks (int)");
 	LOG("-------------------------------\n");
 
-	mic::Stack<int> dummyIntStack;
+	mtk::Stack<int> dummyIntStack;
 	bool resultInt = false;
 
 	LOG("Methods:\n");
@@ -28,12 +28,12 @@ int main()
 	LOG("");
 
 	LOG("RSort()");
-	mic::RSort(dummyIntStack);
+	mtk::RSort(dummyIntStack);
 	LOG(dummyIntStack);
 	LOG("");
 
 	LOG("Sort()");
-	mic::Sort(dummyIntStack);
+	mtk::Sort(dummyIntStack);
 	LOG(dummyIntStack);
 	LOG("");
 
@@ -63,7 +63,7 @@ int main()
 	LOG("\nStack: 100");
 	LOG("---------------------------------------------");
 
-	mic::Stack<int> stackInt100;
+	mtk::Stack<int> stackInt100;
 
 	Benchmark::Start("Push(100 times...)");
 	for (auto i = 0; i < 100; i++)
@@ -71,11 +71,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mic::RSort(stackInt100);
+	mtk::RSort(stackInt100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mic::Sort(stackInt100);
+	mtk::Sort(stackInt100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Pop()");
@@ -103,7 +103,7 @@ int main()
 	LOG("\nStack: 1000");
 	LOG("---------------------------------------------");
 
-	mic::Stack<int> stackInt1000;
+	mtk::Stack<int> stackInt1000;
 
 	Benchmark::Start("Push(1000 times...)");
 	for (auto i = 0; i < 1000; i++)
@@ -111,11 +111,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mic::RSort(stackInt1000);
+	mtk::RSort(stackInt1000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mic::Sort(stackInt1000);
+	mtk::Sort(stackInt1000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Pop()");
@@ -143,7 +143,7 @@ int main()
 	LOG("\nStack: 10000");
 	LOG("---------------------------------------------");
 
-	mic::Stack<int> stackInt10000;
+	mtk::Stack<int> stackInt10000;
 
 	Benchmark::Start("Push(10000 times...)");
 	for (auto i = 0; i < 10000; i++)
@@ -151,11 +151,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mic::RSort(stackInt10000);
+	mtk::RSort(stackInt10000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mic::Sort(stackInt10000);
+	mtk::Sort(stackInt10000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Pop()");
@@ -183,7 +183,7 @@ int main()
 	LOG("\nStack: 100000");
 	LOG("---------------------------------------------");
 
-	mic::Stack<int> stackInt100000;
+	mtk::Stack<int> stackInt100000;
 
 	Benchmark::Start("Push(100000 times...)");
 	for (auto i = 0; i < 100000; i++)
@@ -191,11 +191,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mic::RSort(stackInt100000);
+	mtk::RSort(stackInt100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mic::Sort(stackInt100000);
+	mtk::Sort(stackInt100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Pop()");
@@ -225,7 +225,7 @@ int main()
 	LOG("ModernDT Stack Benchmarks (Vector3)");
 	LOG("------------------------------\n");
 
-	mic::Stack<Vector3> dummyVector3Stack;
+	mtk::Stack<Vector3> dummyVector3Stack;
 	bool resultVec3 = false;
 
 	LOG("Methods:\n");
@@ -237,12 +237,12 @@ int main()
 	LOG("");
 
 	LOG("RSort()");
-	mic::RSort(dummyVector3Stack);
+	mtk::RSort(dummyVector3Stack);
 	LOG(dummyVector3Stack);
 	LOG("");
 
 	LOG("Sort()");
-	mic::Sort(dummyVector3Stack);
+	mtk::Sort(dummyVector3Stack);
 	LOG(dummyVector3Stack);
 	LOG("");
 
@@ -273,7 +273,7 @@ int main()
 	LOG("\nStack: 100");
 	LOG("---------------------------------------------");
 
-	mic::Stack<Vector3> stackVec3100;
+	mtk::Stack<Vector3> stackVec3100;
 
 	Benchmark::Start("Push(100 times...)");
 	for (auto i = 0; i < 100; i++)
@@ -281,11 +281,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mic::RSort(stackVec3100);
+	mtk::RSort(stackVec3100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mic::Sort(stackVec3100);
+	mtk::Sort(stackVec3100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Pop()");
@@ -313,7 +313,7 @@ int main()
 	LOG("\nStack: 1000");
 	LOG("---------------------------------------------");
 
-	mic::Stack<Vector3> stackVec31000;
+	mtk::Stack<Vector3> stackVec31000;
 
 	Benchmark::Start("Push(1000 times...)");
 	for (auto i = 0; i < 1000; i++)
@@ -321,11 +321,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mic::RSort(stackVec31000);
+	mtk::RSort(stackVec31000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mic::Sort(stackVec31000);
+	mtk::Sort(stackVec31000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Pop()");
@@ -353,7 +353,7 @@ int main()
 	LOG("\nStack: 10000");
 	LOG("---------------------------------------------");
 
-	mic::Stack<Vector3> stackVec310000;
+	mtk::Stack<Vector3> stackVec310000;
 
 	Benchmark::Start("Push(10000 times...)");
 	for (auto i = 0; i < 10000; i++)
@@ -361,11 +361,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mic::RSort(stackVec310000);
+	mtk::RSort(stackVec310000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mic::Sort(stackVec310000);
+	mtk::Sort(stackVec310000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Pop()");
@@ -392,7 +392,7 @@ int main()
 	LOG("\nStack: 100000");
 	LOG("---------------------------------------------");
 
-	mic::Stack<Vector3> stackVec3100000;
+	mtk::Stack<Vector3> stackVec3100000;
 
 	Benchmark::Start("Push(100000 times...)");
 	for (auto i = 0; i < 100000; i++)
@@ -400,11 +400,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mic::RSort(stackVec3100000);
+	mtk::RSort(stackVec3100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mic::Sort(stackVec3100000);
+	mtk::Sort(stackVec3100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Pop()");

@@ -2,7 +2,7 @@
 #include "mdtpch.h"
 #include "Utility/MultiNode.h"
 
-namespace mic {
+namespace mtk {
 
 #if 1
 	template<typename _Type>

@@ -1,7 +1,7 @@
 #pragma once
 #include "Structures/List.h"
 
-namespace mic {
+namespace mtk {
 
 	List<std::string_view> Split(const std::string& _string, char _delimiter = ' ')
 	{

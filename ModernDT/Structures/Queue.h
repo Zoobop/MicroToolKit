@@ -3,7 +3,7 @@
 #include "Interfaces/IStruct.h"
 #include "Interfaces/IDataHandler.h"
 
-namespace mic {
+namespace mtk {
 
 	template<typename _Type>
 	class Queue : public IExtendable<_Type>, public IDataHandler<_Type>

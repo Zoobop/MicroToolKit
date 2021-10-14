@@ -15,7 +15,7 @@ int main()
 	LOG("ModernDT Array Benchmarks (int)");
 	LOG("-------------------------------\n");
 
-	mic::Array<int, 10> dummyArray;
+	mtk::Array<int, 10> dummyArray;
 	bool result = false;
 
 	LOG("Methods:\n");
@@ -54,7 +54,7 @@ int main()
 	LOG("\nArray: 100");
 	LOG("---------------------------------------------");
 
-	mic:Array<int, 100> array100;
+	mtk:Array<int, 100> array100;
 
 	Benchmark::Start("operator[](100 times...)");
 	for (auto i = 0; i < 100; i++)
@@ -82,7 +82,7 @@ int main()
 	LOG("\nArray: 1000");
 	LOG("---------------------------------------------");
 
-	mic::Array<int, 1000> array1000;
+	mtk::Array<int, 1000> array1000;
 
 	Benchmark::Start("operator[](1000 times...)");
 	for (auto i = 0; i < 1000; i++)
@@ -110,7 +110,7 @@ int main()
 	LOG("\nArray: 10000");
 	LOG("---------------------------------------------");
 
-	mic::Array<int, 10000> array10000;
+	mtk::Array<int, 10000> array10000;
 
 	Benchmark::Start("operator[](10000 times...)");
 	for (auto i = 0; i < 10000; i++)
@@ -138,7 +138,7 @@ int main()
 	LOG("\nArray: 100000");
 	LOG("---------------------------------------------");
 
-	mic::Array<int, 100000> array100000;
+	mtk::Array<int, 100000> array100000;
 
 	Benchmark::Start("operator[](100000 times...)");
 	for (auto i = 0; i < 100000; i++)

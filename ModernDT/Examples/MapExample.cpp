@@ -12,7 +12,7 @@ int main()
 	LOG("ModernDT Map Benchmarks (char, int)");
 	LOG("-------------------------------\n");
 
-	mic::Map<char, int> dummyCharMap;
+	mtk::Map<char, int> dummyCharMap;
 
 	LOG("Methods:\n");
 
@@ -50,7 +50,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mic::Map<char, int> mapChar100;
+	mtk::Map<char, int> mapChar100;
 	Benchmark::Stop();
 
 	Benchmark::Start("Insert(100 times...)");
@@ -80,7 +80,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mic::Map<char, int> mapChar1000;
+	mtk::Map<char, int> mapChar1000;
 	Benchmark::Stop();
 
 	Benchmark::Start("Insert(1000 times...)");
@@ -110,7 +110,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mic::Map<char, int> mapChar10000;
+	mtk::Map<char, int> mapChar10000;
 	Benchmark::Stop();
 
 	Benchmark::Start("Insert(10000 times...)");
@@ -140,7 +140,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mic::Map<char, int> mapChar100000;
+	mtk::Map<char, int> mapChar100000;
 	Benchmark::Stop();
 
 	Benchmark::Start("Insert(100000 times...)");
@@ -171,7 +171,7 @@ int main()
 	LOG("ModernDT Map Benchmarks (Vector3, int)");
 	LOG("------------------------------\n");
 
-	mic::Map<Vector3, int> dummyVector3Map;
+	mtk::Map<Vector3, int> dummyVector3Map;
 
 	LOG("Methods:\n");
 
@@ -211,7 +211,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mic::Map<Vector3, int> mapVec3100(MDTHash<Vector3>);
+	mtk::Map<Vector3, int> mapVec3100(MDTHash<Vector3>);
 	Benchmark::Stop();
 
 	Benchmark::Start("Reserve(100)");
@@ -245,7 +245,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mic::Map<Vector3, int> mapVec31000(MDTHash<Vector3>);
+	mtk::Map<Vector3, int> mapVec31000(MDTHash<Vector3>);
 	Benchmark::Stop();
 
 	Benchmark::Start("Reserve(1000)");
@@ -279,7 +279,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mic::Map<Vector3, int> mapVec310000(MDTHash<Vector3>);
+	mtk::Map<Vector3, int> mapVec310000(MDTHash<Vector3>);
 	Benchmark::Stop();
 
 	Benchmark::Start("Reserve(10000)");
@@ -312,7 +312,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mic::Map<Vector3, int> mapVec3100000(MDTHash<Vector3>);
+	mtk::Map<Vector3, int> mapVec3100000(MDTHash<Vector3>);
 	Benchmark::Stop();
 
 	Benchmark::Start("Reserve(100000)");

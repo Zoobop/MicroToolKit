@@ -18,7 +18,7 @@ int main()
 	LOG("\nSize: 100");
 	LOG("---------------------------------------------");
 
-	mic::List<int> listInt100;
+	mtk::List<int> listInt100;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 50; i++)
@@ -55,7 +55,7 @@ int main()
 	LOG("\nSize: 1000");
 	LOG("---------------------------------------------");
 
-	mic::List<int> listInt1000;
+	mtk::List<int> listInt1000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 500; i++)
@@ -92,7 +92,7 @@ int main()
 	LOG("\nSize: 10000");
 	LOG("---------------------------------------------");
 
-	mic::List<int> listInt10000;
+	mtk::List<int> listInt10000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 5000; i++)
@@ -129,7 +129,7 @@ int main()
 	LOG("\nSize: 100000");
 	LOG("---------------------------------------------");
 
-	mic::List<int> listInt100000;
+	mtk::List<int> listInt100000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 50000; i++)
@@ -166,7 +166,7 @@ int main()
 	LOG("\nSize: 1000000");
 	LOG("---------------------------------------------");
 
-	mic::List<int> listInt1000000;
+	mtk::List<int> listInt1000000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 500000; i++)
@@ -209,7 +209,7 @@ int main()
 	LOG("Size: 100");
 	LOG("---------------------------------------------");
 
-	mic::List<Vector3> listVec100;
+	mtk::List<Vector3> listVec100;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 50; i++)
@@ -246,7 +246,7 @@ int main()
 	LOG("Size: 1000");
 	LOG("---------------------------------------------");
 
-	mic::List<Vector3> listVec1000;
+	mtk::List<Vector3> listVec1000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 500; i++)
@@ -283,7 +283,7 @@ int main()
 	LOG("Size: 10000");
 	LOG("---------------------------------------------");
 
-	mic::List<Vector3> listVec10000;
+	mtk::List<Vector3> listVec10000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 5000; i++)
@@ -320,7 +320,7 @@ int main()
 	LOG("Size: 100000");
 	LOG("---------------------------------------------");
 
-	mic::List<Vector3> listVec100000;
+	mtk::List<Vector3> listVec100000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 50000; i++)
@@ -357,7 +357,7 @@ int main()
 	LOG("Size: 1000000");
 	LOG("---------------------------------------------");
 
-	mic::List<Vector3> listVec1000000;
+	mtk::List<Vector3> listVec1000000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 500000; i++)
@@ -401,7 +401,7 @@ int main()
 	LOG("Size: 100");
 	LOG("---------------------------------------------");
 
-	mic::List<Player> listPlay100;
+	mtk::List<Player> listPlay100;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 50; i++)
@@ -438,7 +438,7 @@ int main()
 	LOG("Size: 1000");
 	LOG("---------------------------------------------");
 
-	mic::List<Player> listPlay1000;
+	mtk::List<Player> listPlay1000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 500; i++)
@@ -475,7 +475,7 @@ int main()
 	LOG("Size: 10000");
 	LOG("---------------------------------------------");
 
-	mic::List<Player> listPlay10000;
+	mtk::List<Player> listPlay10000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 5000; i++)
@@ -512,7 +512,7 @@ int main()
 	LOG("Size: 100000");
 	LOG("---------------------------------------------");
 
-	mic::List<Player> listPlay100000;
+	mtk::List<Player> listPlay100000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 50000; i++)
@@ -549,7 +549,7 @@ int main()
 	LOG("Size: 1000000");
 	LOG("---------------------------------------------");
 
-	mic::List<Player> listPlay1000000;
+	mtk::List<Player> listPlay1000000;
 	{
 		TEST_PROFILER("Add");
 		for (auto i = 0; i < 500000; i++)

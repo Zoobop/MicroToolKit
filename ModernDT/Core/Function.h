@@ -2,7 +2,7 @@
 
 #include <functional>
 
-namespace mic {
+namespace mtk {
 
 	using Void = std::function<void()>;
 	

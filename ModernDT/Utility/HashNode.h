@@ -1,7 +1,7 @@
 #pragma once
 #include "mdtpch.h"
 
-namespace mic {
+namespace mtk {
 
 	enum class Ctrl : int8_t
 	{

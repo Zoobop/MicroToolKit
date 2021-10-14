@@ -4,7 +4,7 @@
 #include "Interfaces/IStruct.h"
 #include "Interfaces/IHashTable.h"
 
-namespace mic {
+namespace mtk {
 
 	template<typename _KeyType, typename _Type>
 	class Map : public IHashTable<_KeyType>

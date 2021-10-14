@@ -2,7 +2,7 @@
 
 #include <tuple>
 
-namespace mic {
+namespace mtk {
 
 	template<typename _Type1, typename _Type2>
 	struct Tuple
