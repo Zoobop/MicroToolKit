@@ -16,9 +16,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Core.h" />
-    <ClInclude Include="Debug\Timer.h" />
-    <ClInclude Include="Debug\Log.h" />
-    <ClInclude Include="Examples\Example.h" />
+    <ClInclude Include="DebugUtils\Timer.h" />
+    <ClInclude Include="DebugUtils\Log.h" />
     <ClInclude Include="Interfaces\IDataHandler.h" />
     <ClInclude Include="mdtpch.h" />
     <ClInclude Include="Core\Memory.h" />
@@ -45,9 +44,6 @@
     <ClInclude Include="Utility\MultiNode.h" />
     <ClInclude Include="Utility\SingleNode.h" />
     <ClInclude Include="Utility\Sort.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Examples\ArrayExample.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

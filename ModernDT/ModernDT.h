@@ -9,8 +9,8 @@
 #include "Core/Memory.h"
 #include "Core/Typedef.h"
 
-#include "Debug/Timer.h"
-#include "Debug/Log.h"
+#include "DebugUtils/Timer.h"
+#include "DebugUtils/Log.h"
 
 #include "Structures/Array.h"
 #include "Structures/List.h"
