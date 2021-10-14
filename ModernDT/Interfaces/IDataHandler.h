@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mdt {
+namespace mic {
 
 	template<typename _Type>
 	class IDataHandler

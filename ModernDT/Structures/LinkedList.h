@@ -4,7 +4,7 @@
 #include "Interfaces/IConvert.h"
 #include "Utility/SingleNode.h"
 
-namespace mdt {
+namespace mic {
 
 	template<typename _Type>
 	class LinkedList : public IExtendable<_Type>, public IConvert<_Type>

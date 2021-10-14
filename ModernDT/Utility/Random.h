@@ -1,7 +1,7 @@
 #pragma once
 #include <random>
 
-namespace mdt {
+namespace mic {
 
 	class Random
 	{

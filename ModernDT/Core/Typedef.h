@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mdt {
+namespace mic {
 
 	typedef uint64_t newhash_t;
 

@@ -5,7 +5,7 @@
 
 //#define DEBUG
 
-using namespace mdt;
+using namespace mic;
 
 struct Vector3 : public IHashable<>
 {

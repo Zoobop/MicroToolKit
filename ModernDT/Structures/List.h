@@ -2,7 +2,7 @@
 #include "Interfaces/IStruct.h"
 #include "Interfaces/IExtendable.h"
 
-namespace mdt {
+namespace mic {
 
 	template<typename _Type>
 	class List : public IStruct<_Type>, public IExtendable<_Type>

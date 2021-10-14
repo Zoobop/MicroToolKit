@@ -5,7 +5,7 @@
 
 #include "IDataHandler.h"
 
-namespace mdt {
+namespace mic {
 
 	template<typename IStruct>
 	class ContainerIterator

@@ -5,7 +5,7 @@
 #define free_smem(x)		delete x
 #define free_amem(x)		delete[] x
 
-namespace mdt {
+namespace mic {
 
 	template<typename _Type>
 	using Scope = std::unique_ptr<_Type>;

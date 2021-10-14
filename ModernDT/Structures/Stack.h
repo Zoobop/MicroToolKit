@@ -3,7 +3,7 @@
 #include "Interfaces/IStruct.h"
 #include "Interfaces/IDataHandler.h"
 
-namespace mdt {
+namespace mic {
 
 	template<typename _Type>
 	class Stack : public IExtendable<_Type>, public IDataHandler<_Type>

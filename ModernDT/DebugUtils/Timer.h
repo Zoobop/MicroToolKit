@@ -5,7 +5,7 @@
 #include <chrono>
 #include <thread>
 
-namespace mdt {
+namespace mic {
 
 	struct nano { static const char* _abbr; }; const char* nano::_abbr = "ns";
 	struct micro { static const char* _abbr; }; const char* micro::_abbr = "us";
@@ -66,22 +66,22 @@ namespace mdt {
 		TIME m_TimeStamp;
 	};
 
-	typedef mdt::TimeHandle<1, nano>				NanosecondTimer;
-	typedef mdt::TimeHandle<1000, micro>			MicrosecondTimer;
-	typedef mdt::TimeHandle<1000000, milli>			MillisecondTimer;
-	typedef mdt::TimeHandle<1000000000, second>		SecondTimer;
-	typedef mdt::TimeHandle<6000000000, minute>		MinuteTimer;
-	typedef mdt::TimeHandle<36000000000, hour>		HourTimer;
+	typedef mic::TimeHandle<1, nano>				NanosecondTimer;
+	typedef mic::TimeHandle<1000, micro>			MicrosecondTimer;
+	typedef mic::TimeHandle<1000000, milli>			MillisecondTimer;
+	typedef mic::TimeHandle<1000000000, second>		SecondTimer;
+	typedef mic::TimeHandle<6000000000, minute>		MinuteTimer;
+	typedef mic::TimeHandle<36000000000, hour>		HourTimer;
 }
 
 #ifdef ENABLE_PROFILING
-#define PROFILER()			::mdt::MicrosecondTimer timer(__FUNCTION__)
-#define BENCHMARK()			::mdt::MillisecondTimer timer(__FUNCTION__)
-#define EASYTIMER()			::mdt::SecondTimer timer(__FUNCTION__)
+#define PROFILER()			::mic::MicrosecondTimer timer(__FUNCTION__)
+#define BENCHMARK()			::mic::MillisecondTimer timer(__FUNCTION__)
+#define EASYTIMER()			::mic::SecondTimer timer(__FUNCTION__)
 
-#define TEST_PROFILER(name)				::mdt::MicrosecondTimer timer(name)
-#define TEST_BENCHMARK(name)			::mdt::MillisecondTimer timer(name)
-#define TEST_EASYTIMER(name)			::mdt::SecondTimer timer(name)
+#define TEST_PROFILER(name)				::mic::MicrosecondTimer timer(name)
+#define TEST_BENCHMARK(name)			::mic::MillisecondTimer timer(name)
+#define TEST_EASYTIMER(name)			::mic::SecondTimer timer(name)
 #else
 #define PROFILER()
 #define BENCHMARK()

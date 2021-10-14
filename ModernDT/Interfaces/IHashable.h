@@ -1,7 +1,7 @@
 #pragma once
 #include "mdtpch.h"
 
-namespace mdt {
+namespace mic {
 
 	template<typename _HashType = newhash_t>
 	class IHashable

@@ -3,7 +3,7 @@
 #include "Core/Function.h"
 #include "Core/Memory.h"
 
-namespace mdt {
+namespace mic {
 
 	template<typename _Type>
 	class IExtendable

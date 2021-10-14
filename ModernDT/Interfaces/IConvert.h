@@ -4,7 +4,7 @@
 #include "Structures/Stack.h"
 #include "Structures/Queue.h"
 
-namespace mdt {
+namespace mic {
 
 	template<typename _Type>
 	class IConvert

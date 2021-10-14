@@ -3,7 +3,7 @@
 #include "Interfaces/IStruct.h"
 #include "Interfaces/IHashTable.h"
 
-namespace mdt {
+namespace mic {
 
 	template<typename _Type>
 	class Set : public IHashTable<_Type, newhash_t>

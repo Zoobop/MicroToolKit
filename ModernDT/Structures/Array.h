@@ -4,7 +4,7 @@
 #include "Interfaces/IExtendable.h"
 #include "Interfaces/IDataHandler.h"
 
-namespace mdt {
+namespace mic {
 
 	template<typename _Type, size_t _Size>
 	class Array : public IExtendable<_Type>, public IDataHandler<_Type>

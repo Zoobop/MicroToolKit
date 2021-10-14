@@ -12,7 +12,7 @@ int main()
 	LOG("ModernDT Queue Benchmarks (int)");
 	LOG("-------------------------------\n");
 
-	mdt::Queue<int> dummyIntQueue;
+	mic::Queue<int> dummyIntQueue;
 	bool resultInt = false;
 
 	LOG("Methods:\n");
@@ -24,12 +24,12 @@ int main()
 	LOG("");
 
 	LOG("RSort()");
-	mdt::RSort(dummyIntQueue);
+	mic::RSort(dummyIntQueue);
 	LOG(dummyIntQueue);
 	LOG("");
 
 	LOG("Sort()");
-	mdt::Sort(dummyIntQueue);
+	mic::Sort(dummyIntQueue);
 	LOG(dummyIntQueue);
 	LOG("");
 
@@ -59,7 +59,7 @@ int main()
 	LOG("\nQueue: 100");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<int> queueInt100;
+	mic::Queue<int> queueInt100;
 
 	Benchmark::Start("Enqueue(100 times...)");
 	for (auto i = 0; i < 100; i++)
@@ -67,11 +67,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueInt100);
+	mic::RSort(queueInt100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueInt100);
+	mic::Sort(queueInt100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Dequeue()");
@@ -99,7 +99,7 @@ int main()
 	LOG("\nQueue: 1000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<int> queueInt1000;
+	mic::Queue<int> queueInt1000;
 
 	Benchmark::Start("Enqueue(1000 times...)");
 	for (auto i = 0; i < 1000; i++)
@@ -107,11 +107,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueInt1000);
+	mic::RSort(queueInt1000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueInt1000);
+	mic::Sort(queueInt1000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Dequeue()");
@@ -139,7 +139,7 @@ int main()
 	LOG("\nQueue: 10000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<int> queueInt10000;
+	mic::Queue<int> queueInt10000;
 
 	Benchmark::Start("Enqueue(10000 times...)");
 	for (auto i = 0; i < 10000; i++)
@@ -147,11 +147,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueInt10000);
+	mic::RSort(queueInt10000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueInt10000);
+	mic::Sort(queueInt10000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Dequeue()");
@@ -179,7 +179,7 @@ int main()
 	LOG("\nQueue: 100000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<int> queueInt100000;
+	mic::Queue<int> queueInt100000;
 
 	Benchmark::Start("Enqueue(100000 times...)");
 	for (auto i = 0; i < 100000; i++)
@@ -187,11 +187,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueInt100000);
+	mic::RSort(queueInt100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueInt100000);
+	mic::Sort(queueInt100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Dequeue()");
@@ -221,7 +221,7 @@ int main()
 	LOG("ModernDT Queue Benchmarks (Vector3)");
 	LOG("------------------------------\n");
 
-	mdt::Queue<Vector3> dummyVector3Queue;
+	mic::Queue<Vector3> dummyVector3Queue;
 	bool resultVec3 = false;
 
 	LOG("Methods:\n");
@@ -233,12 +233,12 @@ int main()
 	LOG("");
 
 	LOG("RSort()");
-	mdt::RSort(dummyVector3Queue);
+	mic::RSort(dummyVector3Queue);
 	LOG(dummyVector3Queue);
 	LOG("");
 
 	LOG("Sort()");
-	mdt::Sort(dummyVector3Queue);
+	mic::Sort(dummyVector3Queue);
 	LOG(dummyVector3Queue);
 	LOG("");
 
@@ -269,7 +269,7 @@ int main()
 	LOG("\nQueue: 100");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<Vector3> queueVec3100;
+	mic::Queue<Vector3> queueVec3100;
 
 	Benchmark::Start("Enqueue(100 times...)");
 	for (auto i = 0; i < 100; i++)
@@ -277,11 +277,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueVec3100);
+	mic::RSort(queueVec3100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueVec3100);
+	mic::Sort(queueVec3100);
 	Benchmark::Stop();
 
 	Benchmark::Start("Dequeue()");
@@ -309,7 +309,7 @@ int main()
 	LOG("\nQueue: 1000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<Vector3> queueVec31000;
+	mic::Queue<Vector3> queueVec31000;
 
 	Benchmark::Start("Enqueue(1000 times...)");
 	for (auto i = 0; i < 1000; i++)
@@ -317,11 +317,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueVec31000);
+	mic::RSort(queueVec31000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueVec31000);
+	mic::Sort(queueVec31000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Dequeue()");
@@ -349,7 +349,7 @@ int main()
 	LOG("\nQueue: 10000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<Vector3> queueVec310000;
+	mic::Queue<Vector3> queueVec310000;
 
 	Benchmark::Start("Enqueue(10000 times...)");
 	for (auto i = 0; i < 10000; i++)
@@ -357,11 +357,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueVec310000);
+	mic::RSort(queueVec310000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueVec310000);
+	mic::Sort(queueVec310000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Dequeue()");
@@ -388,7 +388,7 @@ int main()
 	LOG("\nQueue: 100000");
 	LOG("---------------------------------------------");
 
-	mdt::Queue<Vector3> queueVec3100000;
+	mic::Queue<Vector3> queueVec3100000;
 
 	Benchmark::Start("Enqueue(100000 times...)");
 	for (auto i = 0; i < 100000; i++)
@@ -396,11 +396,11 @@ int main()
 	Benchmark::Stop();
 
 	Benchmark::Start("RSort()");
-	mdt::RSort(queueVec3100000);
+	mic::RSort(queueVec3100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Sort()");
-	mdt::Sort(queueVec3100000);
+	mic::Sort(queueVec3100000);
 	Benchmark::Stop();
 
 	Benchmark::Start("Dequeue()");

@@ -12,7 +12,7 @@ int main()
 	LOG("ModernDT Set Benchmarks (int)");
 	LOG("-------------------------------\n");
 
-	mdt::Set<int> dummyIntSet;
+	mic::Set<int> dummyIntSet;
 	bool resultInt = false;
 
 	LOG("Methods:\n");
@@ -60,7 +60,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mdt::Set<int> setInt100;
+	mic::Set<int> setInt100;
 	Benchmark::Stop();
 
 	Benchmark::Start("Insert(100 times...)");
@@ -94,7 +94,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mdt::Set<int> setInt1000;
+	mic::Set<int> setInt1000;
 	Benchmark::Stop();
 
 	Benchmark::Start("Insert(1000 times...)");
@@ -128,7 +128,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mdt::Set<int> setInt10000;
+	mic::Set<int> setInt10000;
 	Benchmark::Stop();
 
 	Benchmark::Start("Insert(10000 times...)");
@@ -162,7 +162,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mdt::Set<int> setInt100000;
+	mic::Set<int> setInt100000;
 	Benchmark::Stop();
 
 	Benchmark::Start("Insert(100000 times...)");
@@ -197,7 +197,7 @@ int main()
 	LOG("ModernDT Set Benchmarks (Vector3)");
 	LOG("------------------------------\n");
 
-	mdt::Set<Vector3> dummyVector3Set;
+	mic::Set<Vector3> dummyVector3Set;
 	bool resultVec3 = false;
 
 	LOG("Methods:\n");
@@ -244,7 +244,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mdt::Set<Vector3> setVec3100(MDTHash<Vector3>);
+	mic::Set<Vector3> setVec3100(MDTHash<Vector3>);
 	Benchmark::Stop();
 
 	Benchmark::Start("Reserve(100)");
@@ -282,7 +282,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mdt::Set<Vector3> setVec31000(MDTHash<Vector3>);
+	mic::Set<Vector3> setVec31000(MDTHash<Vector3>);
 	Benchmark::Stop();
 
 	Benchmark::Start("Reserve(1000)");
@@ -320,7 +320,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mdt::Set<Vector3> setVec310000(MDTHash<Vector3>);
+	mic::Set<Vector3> setVec310000(MDTHash<Vector3>);
 	Benchmark::Stop();
 
 	Benchmark::Start("Reserve(10000)");
@@ -357,7 +357,7 @@ int main()
 	LOG("---------------------------------------------");
 
 	Benchmark::Start("Construction");
-	mdt::Set<Vector3> setVec3100000(MDTHash<Vector3>);
+	mic::Set<Vector3> setVec3100000(MDTHash<Vector3>);
 	Benchmark::Stop();
 
 	Benchmark::Start("Reserve(100000)");
