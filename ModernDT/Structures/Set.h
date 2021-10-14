@@ -30,7 +30,7 @@ namespace mdt {
 			__super::SetHash(Hash_Temp<_Type, _KeyType>);
 		}
 
-		Set(const Dynamic<_KeyType, const _Type&, size_t>& _hashFunc)
+		Set(const Dynamic<_KeyType, const _Type&>& _hashFunc)
 		{
 			ReAlloc(50);
 			__super::SetHash(_hashFunc);
@@ -51,8 +51,7 @@ namespace mdt {
 				size++;
 
 			ReAlloc(size);
-			for (const auto& _item : _initList)
-				Insert(std::move(_item));
+			InsertRange(_initList);
 		}
 
 		Set(const Set<_Type>& _other)

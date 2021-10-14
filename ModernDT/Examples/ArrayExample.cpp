@@ -3,8 +3,11 @@
 
 #include "Structures/Array.h"
 
+#if 0
 #define BENCHMARK_ARRAY_INT
+#define BENCHMARK_ARRAY_VECTOR3
 #define BENCHMARK_ARRAY_PLAYER
+#endif
 
 int main()
 {
@@ -158,5 +161,8 @@ int main()
 	array100000.Clear();
 	Benchmark::Stop();
 #endif
+
+
+
 	//std::cin.get();
 }

@@ -52,7 +52,7 @@
     <ClInclude Include="Core\Function.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Debug\Benchmark.h">
+    <ClInclude Include="Debug\Timer.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\Memory.h">
@@ -103,5 +103,14 @@
     <ClInclude Include="Utility\StringUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Debug\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Examples\ArrayExample.cpp" />
   </ItemGroup>
 </Project>

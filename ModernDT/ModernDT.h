@@ -1,15 +1,16 @@
 #pragma once
 
+// IMPORTANT: To enable logging and profiling, use the respective preprocessors:
+// #define ENABLE_LOGGING
+// #define ENABLE_PROFILING
+
+#include "Core/Core.h"
 #include "Core/Function.h"
 #include "Core/Memory.h"
 #include "Core/Typedef.h"
 
-#include "Debug/Benchmark.h"
-
-#include "Utility/Sort.h"
-#include "Utility/Tuple.h"
-#include "Utility/Random.h"
-#include "Utility/StringUtils.h"
+#include "Debug/Timer.h"
+#include "Debug/Log.h"
 
 #include "Structures/Array.h"
 #include "Structures/List.h"
@@ -19,8 +20,12 @@
 #include "Structures/Queue.h"
 #include "Structures/LinkedList.h"
 
+#include "Utility/Sort.h"
+#include "Utility/Tuple.h"
+#include "Utility/Random.h"
+#include "Utility/StringUtils.h"
+
 #ifdef MDT_EXPERIMENTAL
 #include "Structures/BinaryTree.h"
-#endif
-
 //#include "Structures/Graph.h"
+#endif

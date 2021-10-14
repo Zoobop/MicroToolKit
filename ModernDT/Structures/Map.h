@@ -25,10 +25,17 @@ namespace mdt {
 			__super::SetHash(Hash_Temp<_KeyType, newhash_t>);
 		}
 
-		Map(const Dynamic<newhash_t, const _KeyType&, size_t>& _hashFunc)
+		Map(const Dynamic<newhash_t, const _KeyType&>& _hashFunc)
 		{
 			ReAlloc(50);
 			__super::SetHash(_hashFunc);
+		}
+
+		Map(std::initializer_list<_Pair>&& _initList) noexcept
+		{
+			ReAlloc(50);
+			__super::SetHash(Hash_Temp<_KeyType, newhash_t>);
+			InsertRange(_initList);
 		}
 
 		Map(const size_t& _capacity, const float& _loadFactor)
@@ -387,7 +394,7 @@ namespace mdt {
 			return true;
 		}
 
-		bool InsertRange(const IDataHandler<_KeyType>& _container)
+		bool InsertRange(const IDataHandler<_Pair>& _container)
 		{
 			if (_container.Data()) {
 				size_t size = _container.Capacity();
@@ -398,7 +405,7 @@ namespace mdt {
 			return false;
 		}
 
-		bool InsertRange(std::initializer_list<_KeyType>&& _initList) noexcept
+		bool InsertRange(std::initializer_list<_Pair>&& _initList) noexcept
 		{
 			if (_initList.size() > 0) {
 				for (auto& item : _initList)
@@ -408,7 +415,7 @@ namespace mdt {
 			return false;
 		}
 
-		bool InsertRange(const std::vector<_KeyType>& _vector)
+		bool InsertRange(const std::vector<_Pair>& _vector)
 		{
 			if (_vector.data()) {
 				size_t size = _vector.size();

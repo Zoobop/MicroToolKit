@@ -136,6 +136,11 @@ public:
 	{
 	}
 
+	Player(uint32_t _level)
+		: m_Name("New Player"), m_Level(_level), m_Class(Warrior), m_Position(0, 0, 0)
+	{
+	}
+
 	Player(const char* _name)
 		: m_Name(_name), m_Level(1), m_Class(Warrior), m_Position(0, 0, 0)
 	{

@@ -106,7 +106,7 @@ namespace mdt {
 		void Clear()
 		{
 			for (size_t i = 0; i < _Size; i++) {
-				new(&m_Data[i]) _Type();
+				m_Data[i].~_Type();
 			}
 		}
 

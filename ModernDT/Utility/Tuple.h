@@ -7,6 +7,8 @@ namespace mdt {
 	template<typename _Type1, typename _Type2>
 	struct Tuple
 	{
+		using _Tuple = Tuple<_Type1, _Type2>;
+
 		_Type1 _first;
 		_Type2 _second;
 
@@ -34,12 +36,12 @@ namespace mdt {
 		{
 		}
 
-		Tuple(const Tuple<_Type1, _Type2>& _other)
+		Tuple(const _Tuple& _other)
 			: _first(_other._first), _second(_other._second)
 		{
 		}
 
-		Tuple(Tuple<_Type1, _Type2>&& _other) noexcept
+		Tuple(_Tuple&& _other) noexcept
 			: _first(_other._first), _second(_other._second)
 		{
 		}
@@ -58,23 +60,54 @@ namespace mdt {
 		{
 		}
 
-		friend std::ostream& operator<<(std::ostream& _stream, const Tuple<_Type1, _Type2>& _tuple)
-		{
-			_stream << "{ " << _tuple._first << " : " << _tuple._second << " }";
-			return _stream;
-		}
-
-		void operator=(const Tuple<_Type1, _Type2>& _other)
+		void operator=(const _Tuple& _other)
 		{
 			_first = _other._first;
 			_second = _other._second;
 		}
 
-		void operator=(Tuple<_Type1, _Type2>&& _other) noexcept
+		void operator=(_Tuple&& _other) noexcept
 		{
 			_first = std::move(_other._first);
 			_second = std::move(_other._second);
 		}
+
+		friend bool operator==(const _Tuple& _left, const _Tuple& _right)
+		{
+			return _left._first == _right._first && _left._second == _right._second;
+		}
+
+		friend bool operator!=(const _Tuple& _left, const _Tuple& _right)
+		{
+			return !(_left == _right);
+		}
+
+		friend bool operator>=(const _Tuple& _left, const _Tuple& _right)
+		{
+			return _left._first >= _right._first && _left._second >= _right._second;
+		}
+
+		friend bool operator<=(const _Tuple& _left, const _Tuple& _right)
+		{
+			return _left._first <= _right._first && _left._second <= _right._second;
+		}
+
+		friend bool operator>(const _Tuple& _left, const _Tuple& _right)
+		{
+			return _left._first > _right._first && _left._second > _right._second;
+		}
+
+		friend bool operator<(const _Tuple& _left, const _Tuple& _right)
+		{
+			return _left._first < _right._first && _left._second < _right._second;
+		}
+
+		friend std::ostream& operator<<(std::ostream& _stream, const _Tuple& _tuple)
+		{
+			_stream << "{ " << _tuple._first << " : " << _tuple._second << " }";
+			return _stream;
+		}
+
 	};
 	
 	template<typename _Type>

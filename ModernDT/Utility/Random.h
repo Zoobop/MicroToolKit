@@ -12,6 +12,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			double incluCount = (!_inclusive) ? 1.0 : 0.0;
+			PROFILER();
 			std::uniform_real_distribution<double> dist(_start, _stop - incluCount);
 			return dist(gen);
 		}
@@ -22,6 +23,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			float incluCount = (!_inclusive) ? 1.0f : 0.0f;
+			PROFILER();
 			std::uniform_real_distribution<float> dist(_start, _stop - incluCount);
 			return dist(gen);
 		}
@@ -32,6 +34,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			int8_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int<int8_t> dist(_start, _stop - incluCount);
 			return dist(gen);
 		}
@@ -42,6 +45,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			int16_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int_distribution<int16_t> dist(_start, _stop - incluCount);
 			return dist(gen);
 		}
@@ -52,6 +56,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			int32_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int_distribution<int32_t> dist(_start, _stop - incluCount);
 			return dist(gen);
 		}
@@ -62,6 +67,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			int64_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int_distribution<int64_t> dist(_start, _stop - incluCount);
 			return dist(gen);
 		}
@@ -72,6 +78,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			int8_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int<int8_t> dist(0, _stop - incluCount);
 			return dist(gen);
 		}
@@ -82,6 +89,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			int16_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int_distribution<int16_t> dist(0, _stop - incluCount);
 			return dist(gen);
 		}
@@ -92,6 +100,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			int32_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int_distribution<int32_t> dist(0, _stop - incluCount);
 			return dist(gen);
 		}
@@ -102,6 +111,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			int64_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int_distribution<int64_t> dist(0, _stop - incluCount);
 			return dist(gen);
 		}
@@ -112,6 +122,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			uint8_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int<uint8_t> dist(0, _stop - incluCount);
 			return dist(gen);
 		}
@@ -122,6 +133,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			uint16_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int_distribution<uint16_t> dist(0, _stop - incluCount);
 			return dist(gen);
 		}
@@ -132,6 +144,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			uint32_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int_distribution<uint32_t> dist(0, _stop - incluCount);
 			return dist(gen);
 		}
@@ -142,6 +155,7 @@ namespace mdt {
 			std::mt19937 gen(rd());
 
 			uint64_t incluCount = (!_inclusive) ? 1 : 0;
+			PROFILER();
 			std::uniform_int_distribution<uint64_t> dist(0, _stop - incluCount);
 			return dist(gen);
 		}
