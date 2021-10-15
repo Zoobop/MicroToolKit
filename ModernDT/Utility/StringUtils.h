@@ -16,6 +16,19 @@ namespace mtk {
 		return stringData;
 	}
 
+	List<std::string_view> Split(std::string_view _string, char _delimiter = ' ')
+	{
+		List<std::string_view> stringData(_string.length());
+		PROFILER();
+		for (size_t i = 0, prev = 0; i < _string.length() + 1; i++) {
+			if (_string[i] == _delimiter || _string[i] == '\0') {
+				stringData.Emplace(_string.data() + prev, i - prev);
+				prev = i + 1;
+			}
+		}
+		return stringData;
+	}
+
 	bool IsIdentical(const std::string& _left, const std::string& _right)
 	{
 		if (_left.length() == _right.length()) {
