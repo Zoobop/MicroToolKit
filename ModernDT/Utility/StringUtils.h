@@ -16,6 +16,18 @@ namespace mtk {
 		return stringData;
 	}
 
+	bool IsIdentical(const std::string& _left, const std::string& _right)
+	{
+		if (_left.length() == _right.length()) {
+			for (auto i = 0; i < _left.length(); i++) {
+				if (_left[i] != _right[i])
+					return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
 	std::string& ToUpper(std::string& _string)
 	{
 		for (auto i = 0; i < _string.length(); i++) {

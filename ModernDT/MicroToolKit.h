@@ -12,6 +12,8 @@
 #include "DebugUtils/Timer.h"
 #include "DebugUtils/Log.h"
 
+#include "File/FileHandler.h"
+
 #include "Structures/Array.h"
 #include "Structures/List.h"
 #include "Structures/Set.h"

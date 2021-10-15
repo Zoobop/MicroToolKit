@@ -18,6 +18,7 @@
     <ClInclude Include="Core\Core.h" />
     <ClInclude Include="DebugUtils\Timer.h" />
     <ClInclude Include="DebugUtils\Log.h" />
+    <ClInclude Include="File\FileHandler.h" />
     <ClInclude Include="Interfaces\IDataHandler.h" />
     <ClInclude Include="mdtpch.h" />
     <ClInclude Include="Core\Memory.h" />

@@ -3,11 +3,13 @@
 
 #include "Structures/LinkedList.h"
 
-#if 1
+#if 0
 #define BENCHMARK_LINKEDLIST_INT
 #define BENCHMARK_LINKEDLIST_VECTOR3
 #define BENCHMARK_LINKEDLIST_PLAYER
 #endif
+
+#include "File/FileHandler.h"
 
 int main()
 {
