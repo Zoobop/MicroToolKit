@@ -8,7 +8,7 @@ namespace mtk {
 		List<std::string_view> stringData(_string.length());
 		PROFILER();
 		for (size_t i = 0, prev = 0; i < _string.length() + 1; i++) {
-			if (_string[i] == _delimiter || _string[i] == '\0' || _string[i] == '\r') {
+			if (_string[i] == _delimiter || _string[i] == '\0' || _string[i] == '\r' || _string[i] == std::string::npos) {
 				stringData.Emplace(_string.c_str() + prev, i - prev);
 				prev = i + 1;
 			}
@@ -21,7 +21,7 @@ namespace mtk {
 		List<std::string_view> stringData(_string.length());
 		PROFILER();
 		for (size_t i = 0, prev = 0; i < _string.length() + 1; i++) {
-			if (_string[i] == _delimiter || _string[i] == '\0' || _string[i] == '\r') {
+			if (_string[i] == _delimiter || _string[i] == '\0' || _string[i] == '\r' || _string[i] == std::string::npos) {
 				stringData.Emplace(_string.data() + prev, i - prev);
 				prev = i + 1;
 			}
