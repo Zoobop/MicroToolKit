@@ -186,6 +186,23 @@ namespace mtk {
 			return false;
 		}
 
+		void Reverse()
+		{
+			_Node* current = m_Head;
+			_Node* prev = nullptr, *next = nullptr;
+
+			while (current&& current->_control != Ctrl::kEmpty) {
+
+				next = current->_next;
+
+				current->_next = prev;
+				prev = current;
+
+				current = next;
+			}
+			m_Head = prev;
+		}
+
 		void Clear()
 		{
 			_Node* node = m_Head;
@@ -201,8 +218,7 @@ namespace mtk {
 		// Accessors
 		constexpr inline size_t Capacity() const { return m_Size; }
 		constexpr inline size_t Size() const { return m_Size; }
-		constexpr inline const _Type& Head() const { return m_Head->_value; }
-		constexpr inline _Type& Head() { return m_Head->_value; }
+		constexpr inline SingleNode<_Type>* Head() { return m_Head; }
 		constexpr inline void Reserve(size_t _capacity) { ReAlloc(_capacity); }
 
 		// Iterators

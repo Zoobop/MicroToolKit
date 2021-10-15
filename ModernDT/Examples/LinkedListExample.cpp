@@ -3,335 +3,176 @@
 
 #include "Structures/LinkedList.h"
 
+#if 1
 #define BENCHMARK_LINKEDLIST_INT
 #define BENCHMARK_LINKEDLIST_VECTOR3
+#define BENCHMARK_LINKEDLIST_PLAYER
+#endif
 
 int main()
 {
 #ifdef BENCHMARK_LINKEDLIST_INT
-	LOG("ModernDT LinkedList Benchmarks (int)");
-	LOG("-------------------------------\n");
+	LOG("Micro ToolKit LinkedList Benchmarks (int)");
+	LOG("-----------------------------------------");
 
-	mtk::LinkedList<int> dummyIntLinkedList;
-	bool resultInt = false;
-
-	LOG("Methods:\n");
-
-	LOG("Push(1)");
-	dummyIntLinkedList.Push(1);
-	LOG(dummyIntLinkedList);
-	LOG("");
-
-	LOG("PushRange({10, 20, 30, 40, 50, 60, 70, 80, 90, 100})");
-	dummyIntLinkedList.PushRange({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
-	LOG(dummyIntLinkedList);
-	LOG("");
-
-	LOG("Pop()");
-	LOG(dummyIntLinkedList.Pop());
-	LOG(dummyIntLinkedList);
-	LOG("");
-
-	LOG("Remove(50)");
-	dummyIntLinkedList.Remove(50);
-	LOG(dummyIntLinkedList);
-	LOG("");
-
-	LOG("Contains(40)");
-	resultInt = dummyIntLinkedList.Contains(40);
-	if (resultInt) LOG("Found 40\n");
-
-	LOG("Contains(49)");
-	resultInt = dummyIntLinkedList.Contains(49);
-	if (!resultInt) LOG("Couldn't find 49\n");
-
-	LOG("Clear()");
-	dummyIntLinkedList.Clear();
-	LOG(dummyIntLinkedList);
-	LOG("");
-
-
-
-	LOG("\nLinkedList: 100");
+	LOG("\nSize: 100");
 	LOG("---------------------------------------------");
 
 	mtk::LinkedList<int> linkedListInt100;
+	{
+		TEST_PROFILER("Push");
+		for (auto i = 0; i < 100; i++)
+			linkedListInt100.Push(i * 2);
+	}
+	{
+		TEST_PROFILER("Reverse");
+		linkedListInt100.Reverse();
+	}
+	{
+		TEST_PROFILER("Contains (True)");
+		linkedListInt100.Contains(100);
+	}
+	{
+		TEST_PROFILER("Contains (False)");
+		linkedListInt100.Contains(101);
+	}
+	{
+		TEST_PROFILER("Remove");
+		linkedListInt100.Remove(100);
+	}
+	{
+		TEST_PROFILER("Clear");
+		linkedListInt100.Clear();
+	}
+	LOG("");
 
-	for (auto i = 0; i < 100; i++)
-		linkedListInt100.Push(i * 2);
 
-	linkedListInt100.Pop();
-
-	linkedListInt100.Remove(50);
-
-	linkedListInt100.Contains(40);
-
-	linkedListInt100.Contains(49);
-
-	linkedListInt100.Clear();
-
-
-
-	LOG("\nLinkedList: 1000");
+	LOG("\nSize: 1000");
 	LOG("---------------------------------------------");
 
 	mtk::LinkedList<int> linkedListInt1000;
+	{
+		TEST_PROFILER("Push");
+		for (auto i = 0; i < 500; i++)
+			linkedListInt1000.Push(i * 2);
+	}
+	{
+		TEST_PROFILER("Reverse");
+		linkedListInt1000.Reverse();
+	}
+	{
+		TEST_PROFILER("Contains (True)");
+		linkedListInt1000.Contains(1000);
+	}
+	{
+		TEST_PROFILER("Contains (False)");
+		linkedListInt1000.Contains(1001);
+	}
+	{
+		TEST_PROFILER("Remove");
+		linkedListInt1000.Remove(1000);
+	}
+	{
+		TEST_PROFILER("Clear");
+		linkedListInt1000.Clear();
+	}
+	LOG("");
 
-	for (auto i = 0; i < 1000; i++)
-		linkedListInt1000.Push(i * 2);
 
-	linkedListInt1000.Pop();
-
-	linkedListInt1000.Remove(500);
-
-	linkedListInt1000.Contains(400);
-
-	linkedListInt1000.Contains(490);
-
-	linkedListInt1000.Clear();
-
-
-
-	LOG("\nLinkedList: 10000");
+	LOG("\nSize: 10000");
 	LOG("---------------------------------------------");
 
-	("Construction");
 	mtk::LinkedList<int> linkedListInt10000;
+	{
+		TEST_PROFILER("Push");
+		for (auto i = 0; i < 5000; i++)
+			linkedListInt10000.Push(i * 2);
+	}
+	{
+		TEST_PROFILER("Reverse");
+		linkedListInt10000.Reverse();
+	}
+	{
+		TEST_PROFILER("Contains (True)");
+		linkedListInt10000.Contains(10000);
+	}
+	{
+		TEST_PROFILER("Contains (False)");
+		linkedListInt10000.Contains(10001);
+	}
+	{
+		TEST_PROFILER("Remove");
+		linkedListInt10000.Remove(10000);
+	}
+	{
+		TEST_PROFILER("Clear");
+		linkedListInt10000.Clear();
+	}
+	LOG("");
 
-	("Push(10000 times...)");
-	for (auto i = 0; i < 10000; i++)
-		linkedListInt10000.Push(i * 2);
-	();
 
-	("Pop()");
-	linkedListInt10000.Pop();
-	();
-
-	("Remove(5000)");
-	linkedListInt10000.Remove(5000);
-	();
-
-	("Contains(4000)");
-	linkedListInt10000.Contains(4000);
-	();
-
-	("Contains(4900)");
-	linkedListInt10000.Contains(4900);
-	();
-
-	("Clear()");
-	linkedListInt10000.Clear();
-	();
-
-
-
-	LOG("\nLinkedList: 100000");
+	LOG("\nSize: 100000");
 	LOG("---------------------------------------------");
 
-	("Construction");
 	mtk::LinkedList<int> linkedListInt100000;
-	();
-
-	("Push(100000 times...)");
-	for (auto i = 0; i < 100000; i++)
-		linkedListInt100000.Push(i * 2);
-	();
-
-	("Pop()");
-	linkedListInt100000.Pop();
-	();
-
-	("Remove(50000)");
-	linkedListInt100000.Remove(50000);
-	();
-
-	("Contains(40000)");
-	linkedListInt100000.Contains(40000);
-	();
-
-	("Contains(49000)");
-	linkedListInt100000.Contains(49000);
-	();
-
-	("Clear()");
-	linkedListInt100000.Clear();
-	();
-#endif
-
-	LOG("\n\n");
-
-#ifdef BENCHMARK_LINKEDLIST_VECTOR3
-	LOG("ModernDT LinkedList Benchmarks (Vector3)");
-	LOG("------------------------------\n");
-
-	mtk::LinkedList<Vector3> dummyVector3LinkedList;
-	bool resultVec3 = false;
-
-	LOG("Methods:\n");
-
-	LOG("Push(10 times...)");
-	for (float i = 0.0f; i < 10.0f; i++)
-		dummyVector3LinkedList.Push(i * 10.0f);
-	LOG(dummyVector3LinkedList);
-	LOG("");
-
-	LOG("Pop()");
-	LOG(dummyVector3LinkedList.Pop());
-	LOG(dummyVector3LinkedList);
-	LOG("");
-
-	LOG("Remove(50)");
-	LOG(dummyVector3LinkedList.Remove(50));
-	LOG(dummyVector3LinkedList);
-	LOG("");
-
-	LOG("Contains({40.0, 40.0, 40.0})");
-	resultVec3 = dummyVector3LinkedList.Contains(40);
-	if (resultVec3) LOG("Found 40\n");
-
-	LOG("Contains({49.0, 49.0, 49.0})");
-	resultVec3 = dummyVector3LinkedList.Contains(49);
-	if (!resultVec3) LOG("Couldn't find 49\n");
-
-	LOG("Clear()");
-	dummyVector3LinkedList.Clear();
-	LOG(dummyVector3LinkedList);
+	{
+		TEST_PROFILER("Push");
+		for (auto i = 0; i < 50000; i++)
+			linkedListInt100000.Push(i * 2);
+	}
+	{
+		TEST_PROFILER("Reverse");
+		linkedListInt100000.Reverse();
+	}
+	{
+		TEST_PROFILER("Contains (True)");
+		linkedListInt100000.Contains(100000);
+	}
+	{
+		TEST_PROFILER("Contains (False)");
+		linkedListInt100000.Contains(100001);
+	}
+	{
+		TEST_PROFILER("Remove");
+		linkedListInt100000.Remove(100000);
+	}
+	{
+		TEST_PROFILER("Clear");
+		linkedListInt100000.Clear();
+	}
 	LOG("");
 
 
-	LOG("\nLinkedList: 100");
+	LOG("\nSize: 1000000");
 	LOG("---------------------------------------------");
 
-	("Construction");
-	mtk::LinkedList<Vector3> linkedListVec3100;
-	();
-
-	("Push(100 times...)");
-	for (float i = 0.0f; i < 100.0f; i++)
-		linkedListVec3100.Push(i * 2);
-	();
-
-	("Pop()");
-	linkedListVec3100.Pop();
-	();
-
-	("Remove(50)");
-	linkedListVec3100.Remove(50);
-	();
-
-	("Contains({40.0, 40.0, 40.0})");
-	linkedListVec3100.Contains(40);
-	();
-
-	("Contains({49.0, 49.0, 49.0})");
-	linkedListVec3100.Contains(49);
-	();
-
-	("Clear()");
-	linkedListVec3100.Clear();
-	();
-
-
-
-	LOG("\nLinkedList: 1000");
-	LOG("---------------------------------------------");
-
-	("Construction");
-	mtk::LinkedList<Vector3> linkedListVec31000;
-	();
-
-	("Push(1000 times...)");
-	for (float i = 0.0f; i < 1000.0f; i++)
-		linkedListVec31000.Push(i * 2.0f);
-	();
-
-	("Pop()");
-	linkedListVec31000.Pop();
-	();
-
-	("Remove(500)");
-	linkedListVec31000.Remove(500);
-	();
-
-	("Contains({400.0, 400.0, 400.0})");
-	linkedListVec31000.Contains(400);
-	();
-
-	("Contains({490.0, 490.0, 490.0})");
-	linkedListVec31000.Contains(490);
-	();
-
-	("Clear()");
-	linkedListVec31000.Clear();
-	();
-
-
-
-	LOG("\nLinkedList: 10000");
-	LOG("---------------------------------------------");
-
-	("Construction");
-	mtk::LinkedList<Vector3> linkedListVec310000;
-	();
-
-	("Push(10000 times...)");
-	for (float i = 0.0f; i < 10000.0f; i++)
-		linkedListVec310000.Push(i * 2.0f);
-	();
-
-	("Pop()");
-	linkedListVec310000.Pop();
-	();
-
-	("Remove(5000)");
-	linkedListVec310000.Remove(5000);
-	();
-
-	("Contains({4000.0, 4000.0, 4000.0})");
-	linkedListVec310000.Contains(4000);
-	();
-
-	("Contains({4900.0, 4900.0, 4900.0})");
-	linkedListVec310000.Contains(4900);
-	();
-
-	("Clear()");
-	linkedListVec310000.Clear();
-	();
-
-
-	LOG("\nLinkedList: 100000");
-	LOG("---------------------------------------------");
-
-	("Construction");
-	mtk::LinkedList<Vector3> linkedListVec3100000;
-	();
-
-	("Push(100000 times...)");
-	for (float i = 0.0f; i < 100000.0f; i++)
-		linkedListVec3100000.Push(i * 2.0f);
-	();
-
-	("Pop()");
-	linkedListVec3100000.Pop();
-	();
-
-	("Remove(50000)");
-	linkedListVec3100000.Remove(50000);
-	();
-
-	("Contains({40000.0, 40000.0, 40000.0})");
-	linkedListVec3100000.Contains(40000);
-	();
-
-	("Contains({49000.0, 49000.0, 49000.0})");
-	linkedListVec3100000.Contains(49000);
-	();
-
-	("Clear()");
-	linkedListVec3100000.Clear();
-	();
-
+	mtk::LinkedList<int> linkedListInt1000000;
+	{
+		TEST_PROFILER("Push");
+		for (auto i = 0; i < 500000; i++)
+			linkedListInt1000000.Push(i * 2);
+	}
+	{
+		TEST_PROFILER("Reverse");
+		linkedListInt1000000.Reverse();
+	}
+	{
+		TEST_PROFILER("Contains (True)");
+		linkedListInt1000000.Contains(1000000);
+	}
+	{
+		TEST_PROFILER("Contains (False)");
+		linkedListInt1000000.Contains(1000001);
+	}
+	{
+		TEST_PROFILER("Remove");
+		linkedListInt1000000.Remove(1000000);
+	}
+	{
+		TEST_PROFILER("Clear");
+		linkedListInt1000000.Clear();
+	}
+	LOG("");
 #endif
 	//std::cin.get();
 }
