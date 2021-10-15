@@ -16,7 +16,7 @@ namespace mtk {
 		return stringData;
 	}
 
-	List<std::string_view> Split(std::string_view _string, char _delimiter = ' ')
+	List<std::string_view> Split(const std::string_view& _string, char _delimiter = ' ')
 	{
 		List<std::string_view> stringData(_string.length());
 		PROFILER();
