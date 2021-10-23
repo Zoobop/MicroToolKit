@@ -139,7 +139,7 @@ namespace mtk {
 		_Type& operator[](const size_t& _index)
 		{
 			if (_index >= _Size) {
-				__debugbreak();
+				DEBUG_BREAK();
 			}
 			return m_Data[_index];
 		}
@@ -147,7 +147,7 @@ namespace mtk {
 		const _Type& operator[](const size_t& _index) const
 		{
 			if (_index >= _Size) {
-				__debugbreak();
+				DEBUG_BREAK();
 			}
 			return m_Data[_index];
 		}

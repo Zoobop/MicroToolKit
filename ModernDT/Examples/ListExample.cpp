@@ -1,9 +1,9 @@
-#include "mdtpch.h"
+#include "mtkpch.h"
 #include "Example.h"
 
 #include "Structures/List.h"
 
-#if 1
+#if 0
 #define BENCHMARK_LIST_INT
 #define BENCHMARK_LIST_VECTOR3
 #define BENCHMARK_LIST_PLAYER
@@ -11,6 +11,7 @@
 
 int main()
 {
+
 #ifdef BENCHMARK_LIST_INT
 	LOG("ModernDT List Benchmarks (int)");
 	LOG("------------------------------");
@@ -212,12 +213,12 @@ int main()
 	mtk::List<Vector3> listVec100;
 	{
 		TEST_PROFILER("Add");
-		for (auto i = 0; i < 50; i++)
+		for (float i = 0; i < 50; i++)
 			listVec100.Add(i * 2);
 	}
 	{
 		TEST_PROFILER("Emplace");
-		for (auto i = 0; i < 50; i++)
+		for (float i = 0; i < 50; i++)
 			listVec100.Emplace(i * 2 + 100);
 	}
 	{
@@ -249,12 +250,12 @@ int main()
 	mtk::List<Vector3> listVec1000;
 	{
 		TEST_PROFILER("Add");
-		for (auto i = 0; i < 500; i++)
+		for (float i = 0; i < 500; i++)
 			listVec1000.Add(i * 2);
 	}
 	{
 		TEST_PROFILER("Emplace");
-		for (auto i = 0; i < 500; i++)
+		for (float i = 0; i < 500; i++)
 			listVec1000.Emplace(i * 2 + 1000);
 	}
 	{
@@ -286,12 +287,12 @@ int main()
 	mtk::List<Vector3> listVec10000;
 	{
 		TEST_PROFILER("Add");
-		for (auto i = 0; i < 5000; i++)
+		for (float i = 0; i < 5000; i++)
 			listVec10000.Add(i * 2);
 	}
 	{
 		TEST_PROFILER("Emplace");
-		for (auto i = 0; i < 5000; i++)
+		for (float i = 0; i < 5000; i++)
 			listVec10000.Emplace(i * 2 + 10000);
 	}
 	{
@@ -323,12 +324,12 @@ int main()
 	mtk::List<Vector3> listVec100000;
 	{
 		TEST_PROFILER("Add");
-		for (auto i = 0; i < 50000; i++)
+		for (float i = 0; i < 50000; i++)
 			listVec100000.Add(i * 2);
 	}
 	{
 		TEST_PROFILER("Emplace");
-		for (auto i = 0; i < 50000; i++)
+		for (float i = 0; i < 50000; i++)
 			listVec100000.Emplace(i * 2 + 100000);
 	}
 	{
@@ -360,12 +361,12 @@ int main()
 	mtk::List<Vector3> listVec1000000;
 	{
 		TEST_PROFILER("Add");
-		for (auto i = 0; i < 500000; i++)
+		for (float i = 0; i < 500000; i++)
 			listVec1000000.Add(i * 2);
 	}
 	{
 		TEST_PROFILER("Emplace");
-		for (auto i = 0; i < 500000; i++)
+		for (float i = 0; i < 500000; i++)
 			listVec1000000.Emplace(i * 2 + 1000000);
 	}
 	{

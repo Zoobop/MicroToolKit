@@ -20,7 +20,7 @@
     <ClInclude Include="DebugUtils\Log.h" />
     <ClInclude Include="File\FileHandler.h" />
     <ClInclude Include="Interfaces\IDataHandler.h" />
-    <ClInclude Include="mdtpch.h" />
+    <ClInclude Include="mtkpch.h" />
     <ClInclude Include="Core\Memory.h" />
     <ClInclude Include="Core\Typedef.h" />
     <ClInclude Include="Interfaces\IHashable.h" />
@@ -120,7 +120,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)ModernDT;$(SolutionDir)ModernDT\DataStructs;</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
-      <PrecompiledHeaderFile>mdtpch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>mtkpch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -137,7 +137,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)ModernDT;$(SolutionDir)ModernDT\DataStructs;</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
-      <PrecompiledHeaderFile>mdtpch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>mtkpch.h</PrecompiledHeaderFile>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
@@ -159,6 +159,8 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)ModernDT;$(SolutionDir)ModernDT\DataStructs;</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>mtkpch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

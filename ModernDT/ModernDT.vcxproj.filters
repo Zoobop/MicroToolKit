@@ -22,7 +22,7 @@
     <ClInclude Include="MicroToolKit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mdtpch.h">
+    <ClInclude Include="mtkpch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Structures\Array.h">

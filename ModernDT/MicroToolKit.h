@@ -27,7 +27,7 @@
 #include "Utility/Random.h"
 #include "Utility/StringUtils.h"
 
-#ifdef MDT_EXPERIMENTAL
+#ifdef MTK_EXPERIMENTAL
 #include "Structures/BinaryTree.h"
 //#include "Structures/Graph.h"
 #endif

@@ -1,4 +1,6 @@
 ﻿#pragma once
+
+#ifdef ENABLE_PROFILING
 #include "Core/Core.h"
 
 #include <iostream>
@@ -74,7 +76,6 @@ namespace mtk {
 	typedef mtk::TimeHandle<36000000000, hour>		HourTimer;
 }
 
-#ifdef ENABLE_PROFILING
 #define PROFILER()			::mtk::MicrosecondTimer timer(__FUNCTION__)
 #define BENCHMARK()			::mtk::MillisecondTimer timer(__FUNCTION__)
 #define EASYTIMER()			::mtk::SecondTimer timer(__FUNCTION__)

@@ -152,7 +152,7 @@ namespace mtk {
 		const _Type& operator[](size_t _index) const
 		{
 			if (_index >= m_Capacity) {
-				__debugbreak();
+				DEBUG_BREAK();
 			}
 			return m_Data[_index];
 		}

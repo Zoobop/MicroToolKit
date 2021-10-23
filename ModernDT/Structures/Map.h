@@ -430,7 +430,7 @@ namespace mtk {
 		{
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._control != Ctrl::kFull) {
-				__debugbreak();
+				DEBUG_BREAK();
 			}
 			return m_Data[hash]._value;
 		}
@@ -439,7 +439,7 @@ namespace mtk {
 		{
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._control != Ctrl::kFull) {
-				__debugbreak();
+				DEBUG_BREAK();
 			}
 			return m_Data[hash]._value;
 		}
@@ -448,7 +448,7 @@ namespace mtk {
 		{
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._control != Ctrl::kFull) {
-				__debugbreak();
+				DEBUG_BREAK();
 			}
 			return m_Data[hash]._value._second;
 		}
@@ -457,7 +457,7 @@ namespace mtk {
 		{
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._control != Ctrl::kFull) {
-				__debugbreak();
+				DEBUG_BREAK();
 			}
 			return m_Data[hash]._value._second;
 		}
@@ -524,7 +524,7 @@ namespace mtk {
 		{
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._second._control != Ctrl::kFull) {
-				__debugbreak();
+				DEBUG_BREAK();
 			}
 			return m_Data[hash]._second;
 		}
@@ -533,7 +533,7 @@ namespace mtk {
 		{
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._second._control != Ctrl::kFull) {
-				__debugbreak();
+				DEBUG_BREAK();
 			}
 			return m_Data[hash]._second;
 		}
