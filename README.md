@@ -3,7 +3,7 @@ Clean and effective data structures and utilities with a heavy emphasis on optim
 
 Below lists the current functional data structures:
 
-**Common:**
+**Common**
 - Array
 - List
 - Set
