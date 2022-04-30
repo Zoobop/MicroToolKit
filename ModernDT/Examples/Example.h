@@ -184,10 +184,10 @@ public:
 #endif
 	}
 
-	inline const char* GetName() const { return m_Name; }
-	inline uint32_t GetLevel() const { return m_Level; }
-	inline Class GetClass() const { return m_Class; }
-	inline Vector3 GetPosition() const { return m_Position; }
+	const char* GetName() const { return m_Name; }
+	uint32_t GetLevel() const { return m_Level; }
+	Class GetClass() const { return m_Class; }
+	Vector3 GetPosition() const { return m_Position; }
 
 	newhash_t GetHash() const override
 	{

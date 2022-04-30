@@ -111,19 +111,19 @@ namespace mtk {
 		}
 
 		// IExtendable
-		virtual void ForEach(const Param<const _Type&>& _param) override
+		void ForEach(const Param<const _Type&>& _param) override
 		{
 			for (size_t i = 0; i < _Size; i++) {
 				_param(m_Data[i]);
 			}
 		}
 
-		constexpr virtual const _Type* Data() const override { return (_Type*)m_Data; }
-		constexpr virtual _Type* Data() override { return (_Type*)m_Data; }
+		const _Type* Data() const override { return (_Type*)m_Data; }
+		_Type* Data() override { return (_Type*)m_Data; }
 
 		// Accessors
-		constexpr inline size_t Size() const override { return _Size; }
-		constexpr inline size_t Capacity() const override { return _Size; }
+		constexpr size_t Size() const override { return _Size; }
+		constexpr size_t Capacity() const override { return _Size; }
 
 		// Iterator
 		constexpr Iterator begin()
