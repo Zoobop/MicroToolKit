@@ -74,8 +74,8 @@ namespace mtk {
 		//virtual bool EraseKey(const _KeyType& _obj) = 0;
 		//virtual void Clear() = 0;
 
-		constexpr inline void SetHash(const Dynamic<_KeyType, const _Type&>& _hashFunc) { m_HashFunction = _hashFunc; }
-		constexpr inline void Reserve(size_t _capacity) { ReAlloc(_capacity); }
+		constexpr void SetHash(const Dynamic<_KeyType, const _Type&>& _hashFunc) { m_HashFunction = _hashFunc; }
+		constexpr void Reserve(size_t _capacity) { ReAlloc(_capacity); }
 
 	protected:
 		_KeyType Hash(const _Type& _obj) const
@@ -92,4 +92,8 @@ namespace mtk {
 		float m_LoadFactor = 6.0f / 10.0f;
 		Dynamic<_KeyType, const _Type&> m_HashFunction;
 	};
+
+	#define _CAPACITY __super::m_Capacity
+	#define _LOADFACTOR __super::m_LoadFactor
+	#define _HASHFUNC __super::m_HashFunction
 }

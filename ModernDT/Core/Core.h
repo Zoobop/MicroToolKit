@@ -6,7 +6,7 @@
 
 #if defined(_WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Windows Platform
-#define DEBUG_BREAK()   __debugbreak();
+#define DEBUG_BREAK()   __debugbreak()
 #elif __APPLE__
 // Apple Platform(s)
 #define DEBUG_BREAK()

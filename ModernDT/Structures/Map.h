@@ -5,7 +5,7 @@
 #include "Interfaces/IHashTable.h"
 
 namespace mtk {
-
+	
 	template<typename _KeyType, typename _Type>
 	class Map : public IHashTable<_KeyType>
 	{
@@ -45,7 +45,7 @@ namespace mtk {
 
 		Map(const size_t& _capacity, const float& _loadFactor)
 		{
-			__super::m_LoadFactor = _loadFactor;
+			_LOADFACTOR = _loadFactor;
 			Map<_KeyType, _Type>::ReAlloc(_capacity);
 			__super::SetHash(Hash_Temp<_Type, newhash_t>);
 		}
@@ -59,19 +59,19 @@ namespace mtk {
 		Map(const Map<_KeyType, _Type>& _other)
 		{
 			m_Data = _other.m_Data;
-			__super::m_Capacity = _other.m_Capacity;
-			__super::m_Size = _other.m_Size;
-			__super::m_LoadFactor = _other.m_LoadFactor;
-			__super::m_HashFunction = _other.m_HashFunction;
+			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
 		}
 
 		Map(Map<_KeyType, _Type>&& _other) noexcept
 		{
 			m_Data = _other.m_Data;
-			__super::m_Capacity = _other.m_Capacity;
-			__super::m_Size = _other.m_Size;
-			__super::m_LoadFactor = _other.m_LoadFactor;
-			__super::m_HashFunction = _other.m_HashFunction;
+			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
 
 			_other.m_Data = nullptr;
 			_other.m_Capacity = 0;
@@ -83,7 +83,7 @@ namespace mtk {
 		virtual ~Map()
 		{
 			Map<_KeyType, _Type>::CleanUp();
-			Delete(m_Data, __super::m_Capacity);
+			Delete(m_Data, _CAPACITY);
 		}
 
 		/*
@@ -100,8 +100,8 @@ namespace mtk {
 		bool Insert(const _KeyType& _key)
 		{
 			// Resize if current capacity is above load factor percentage
-			if (__super::m_Size / __super::m_Capacity >= __super::m_LoadFactor) {
-				ReAlloc(__super::m_Capacity * __super::m_Capacity - __super::m_Capacity);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				ReAlloc(_CAPACITY * _CAPACITY - _CAPACITY);
 			}
 
 			// Get the hash value from key
@@ -144,7 +144,7 @@ namespace mtk {
 			delete node;
 
 			// Increase size to reflect the insertion
-			++__super::m_Size;
+			++_SIZE;
 			return true;
 		}
 
@@ -156,8 +156,8 @@ namespace mtk {
 		bool Insert(_KeyType&& _key)
 		{
 			// Resize if current capacity is above load factor percentage
-			if (__super::m_Size / __super::m_Capacity >= __super::m_LoadFactor) {
-				ReAlloc(__super::m_Capacity * __super::m_Capacity - __super::m_Capacity);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				ReAlloc(_CAPACITY * _CAPACITY - _CAPACITY);
 			}
 
 			// Get the hash value from key
@@ -200,7 +200,7 @@ namespace mtk {
 			delete node;
 
 			// Increase size to reflect the insertion
-			++__super::m_Size;
+			++_SIZE;
 			return true;
 		}
 
@@ -213,8 +213,8 @@ namespace mtk {
 		bool Insert(const _KeyType& _key, const _Type& _value)
 		{
 			// Resize if current capacity is above load factor percentage
-			if (__super::m_Size / __super::m_Capacity >= __super::m_LoadFactor) {
-				ReAlloc(__super::m_Capacity * __super::m_Capacity - __super::m_Capacity);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				ReAlloc(_CAPACITY * _CAPACITY - _CAPACITY);
 			}
 
 			// Get the hash value from key
@@ -257,7 +257,7 @@ namespace mtk {
 			delete node;
 
 			// Increase size to reflect the insertion
-			++__super::m_Size;
+			++_SIZE;
 			return true;
 		}
 
@@ -270,8 +270,8 @@ namespace mtk {
 		bool Insert(_KeyType&& _key, const _Type& _value) noexcept
 		{
 			// Resize if current capacity is above load factor percentage
-			if (__super::m_Size / __super::m_Capacity >= __super::m_LoadFactor) {
-				ReAlloc(__super::m_Capacity * __super::m_Capacity - __super::m_Capacity);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				ReAlloc(_CAPACITY * _CAPACITY - _CAPACITY);
 			}
 
 			// Get the hash value from key
@@ -314,7 +314,7 @@ namespace mtk {
 			delete node;
 
 			// Increase size to reflect the insertion
-			++__super::m_Size;
+			++_SIZE;
 			return true;
 		}
 
@@ -327,8 +327,8 @@ namespace mtk {
 		bool Insert(const _KeyType& _key, _Type&& _value) noexcept
 		{
 			// Resize if current capacity is above load factor percentage
-			if (__super::m_Size / __super::m_Capacity >= __super::m_LoadFactor) {
-				ReAlloc(__super::m_Capacity * __super::m_Capacity - __super::m_Capacity);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				ReAlloc(_CAPACITY * _CAPACITY - _CAPACITY);
 			}
 
 			// Get the hash value from key
@@ -371,7 +371,7 @@ namespace mtk {
 			delete node;
 
 			// Increase size to reflect the insertion
-			++__super::m_Size;
+			++_SIZE;
 			return true;
 		}
 		
@@ -384,8 +384,8 @@ namespace mtk {
 		bool Insert(_KeyType&& _key, _Type&& _value) noexcept
 		{
 			// Resize if current capacity is above load factor percentage
-			if (__super::m_Size / __super::m_Capacity >= __super::m_LoadFactor) {
-				ReAlloc(__super::m_Capacity * __super::m_Capacity - __super::m_Capacity);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				ReAlloc(_CAPACITY * _CAPACITY - _CAPACITY);
 			}
 
 			// Get the hash value from key
@@ -428,7 +428,7 @@ namespace mtk {
 			delete node;
 
 			// Increase size to reflect the insertion
-			++__super::m_Size;
+			++_SIZE;
 			return true;
 		}
 
@@ -440,8 +440,8 @@ namespace mtk {
 		bool Insert(const _Pair& _pair)
 		{
 			// Resize if current capacity is above load factor percentage
-			if (__super::m_Size / __super::m_Capacity >= __super::m_LoadFactor) {
-				ReAlloc(__super::m_Capacity * __super::m_Capacity - __super::m_Capacity);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				ReAlloc(_CAPACITY * _CAPACITY - _CAPACITY);
 			}
 
 			// Get the hash value from key
@@ -484,7 +484,7 @@ namespace mtk {
 			delete node;
 
 			// Increase size to reflect the insertion
-			++__super::m_Size;
+			++_SIZE;
 			return true;
 		}
 
@@ -496,8 +496,8 @@ namespace mtk {
 		bool Insert(_Pair&& _pair) noexcept
 		{
 			// Resize if current capacity is above load factor percentage
-			if (__super::m_Size / __super::m_Capacity >= __super::m_LoadFactor) {
-				ReAlloc(__super::m_Capacity * __super::m_Capacity - __super::m_Capacity);
+			if (_SIZE / _CAPACITY >= _LOADFACTOR) {
+				ReAlloc(_CAPACITY * _CAPACITY - _CAPACITY);
 			}
 
 			// Get the hash value from key
@@ -540,7 +540,7 @@ namespace mtk {
 			delete node;
 
 			// Increase size to reflect the insertion
-			++__super::m_Size;
+			++_SIZE;
 			return true;
 		}
 
@@ -603,12 +603,31 @@ namespace mtk {
 		 */
 		[[nodiscard]] const _Pair& Find(const _KeyType& _key) const
 		{
-			// TODO: Refactor to search bucket values too
+			// Gets the hashed value of the key
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._control != Ctrl::kFull) {
 				DEBUG_BREAK();
 			}
-			return m_Data[hash]._value;
+			// Search bucket for matching key
+			bool found = false;
+			auto node = &m_Data[hash];
+			while (node && node != _NullNode && node->_control == Ctrl::kFull)
+			{
+				if (node->_value._first == _key)
+				{
+					// Set control to true
+					found = true;
+					break;
+				}
+
+				node = node->_next;
+			}
+
+			// Throw exception if key is not found (key hashes to valid index but is not present)
+			if (!found)
+				DEBUG_BREAK();
+
+			return node->_value;
 		}
 
 		/**
@@ -618,12 +637,31 @@ namespace mtk {
 		 */
 		_Pair& Find(const _KeyType& _key)
 		{
-			// TODO: Refactor to search bucket values too
+			// Gets the hashed value of the key
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._control != Ctrl::kFull) {
 				DEBUG_BREAK();
 			}
-			return m_Data[hash]._value;
+			// Search bucket for matching key
+			bool found = false;
+			auto node = &m_Data[hash];
+			while (node && node != _NullNode && node->_control == Ctrl::kFull)
+			{
+				if (node->_value._first == _key)
+				{
+					// Set control to true
+					found = true;
+					break;
+				}
+
+				node = node->_next;
+			}
+
+			// Throw exception if key is not found (key hashes to valid index but is not present)
+			if (!found)
+				DEBUG_BREAK();
+
+			return node->_value;
 		}
 
 		/**
@@ -633,12 +671,31 @@ namespace mtk {
 		 */
 		[[nodiscard]] const _Type& At(const _KeyType& _key) const
 		{
-			// TODO: Refactor to search bucket values too
+			// Gets the hashed value of the key
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._control != Ctrl::kFull) {
 				DEBUG_BREAK();
 			}
-			return m_Data[hash]._value._second;
+			// Search bucket for matching key
+			bool found = false;
+			auto node = &m_Data[hash];
+			while (node && node != _NullNode && node->_control == Ctrl::kFull)
+			{
+				if (node->_value._first == _key)
+				{
+					// Set control to true
+					found = true;
+					break;
+				}
+
+				node = node->_next;
+			}
+
+			// Throw exception if key is not found (key hashes to valid index but is not present)
+			if (!found)
+				DEBUG_BREAK();
+
+			return node->_value._second;
 		}
 
 		/**
@@ -648,12 +705,31 @@ namespace mtk {
 		 */
 		_Type& At(const _KeyType& _key)
 		{
-			// TODO: Refactor to search bucket values too
+			// Gets the hashed value of the key
 			newhash_t hash = __super::Hash(_key);
 			if (m_Data[hash]._control != Ctrl::kFull) {
 				DEBUG_BREAK();
 			}
-			return m_Data[hash]._value._second;
+			// Search bucket for matching key
+			bool found = false;
+			auto node = &m_Data[hash];
+			while (node && node != _NullNode && node->_control == Ctrl::kFull)
+			{
+				if (node->_value._first == _key)
+				{
+					// Set control to true
+					found = true;
+					break;
+				}
+
+				node = node->_next;
+			}
+
+			// Throw exception if key is not found (key hashes to valid index but is not present)
+			if (!found)
+				DEBUG_BREAK();
+
+			return node->_value._second;
 		}
 
 		/**
@@ -663,12 +739,13 @@ namespace mtk {
 		 */
 		bool Erase(const _KeyType& _key)
 		{
+			// Gets the hashed value of the key
 			newhash_t hash = __super::Hash(_key);
 			_HashNode* node = &m_Data[hash];
 			while (node && node != _NullNode) {
 				if (node->_value._first == _key) {
-					node->_control = Ctrl::kDeleted;
-					--__super::m_Size;
+					node->_control = Ctrl::kInvalid;
+					--_SIZE;
 					return true;
 				}
 				node = node->_next;
@@ -681,7 +758,7 @@ namespace mtk {
 		 */
 		void Clear()
 		{
-			for (size_t i = 0; i < __super::m_Capacity; i++) {
+			for (size_t i = 0; i < _CAPACITY; i++) {
 				auto iter = &m_Data[i];
 				while (iter && iter != _NullNode) {
 					iter->_control = Ctrl::kEmpty;
@@ -689,7 +766,7 @@ namespace mtk {
 				}
 			}
 
-			__super::m_Size = 0;
+			_SIZE = 0;
 		}
 
 		/*
@@ -702,13 +779,13 @@ namespace mtk {
 		 * \brief Gets the total capacity of the map.
 		 * \return The total capacity of the map.
 		 */
-		[[nodiscard]] constexpr size_t Capacity() const { return __super::m_Capacity; }
+		[[nodiscard]] constexpr size_t Capacity() const { return _CAPACITY; }
 		
 		/**
 		 * \brief Gets the number of entries in the map.
 		 * \return The number of entries in the map.
 		 */
-		[[nodiscard]] constexpr size_t Size() const { return __super::m_Size; }
+		[[nodiscard]] constexpr size_t Size() const { return _SIZE; }
 
 		/*
 		 * =========
@@ -722,7 +799,7 @@ namespace mtk {
 
 		constexpr Iterator end()
 		{
-			return Iterator(m_Data + __super::m_Capacity);
+			return Iterator(m_Data + _CAPACITY);
 		}
 
 		/*
@@ -751,10 +828,10 @@ namespace mtk {
 		void operator=(const Map<_KeyType, _Type>& _other)
 		{
 			m_Data = _other.m_Data;
-			__super::m_Capacity = _other.m_Capacity;
-			__super::m_Size = _other.m_Size;
-			__super::m_LoadFactor = _other.m_LoadFactor;
-			__super::m_HashFunction = _other.m_HashFunction;
+			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
 		}
 
 		void operator=(Map<_KeyType, _Type>&& _other) noexcept
@@ -762,10 +839,10 @@ namespace mtk {
 			delete[] m_Data;
 
 			m_Data = _other.m_Data;
-			__super::m_Capacity = _other.m_Capacity;
-			__super::m_Size = _other.m_Size;
-			__super::m_LoadFactor = _other.m_LoadFactor;
-			__super::m_HashFunction = _other.m_HashFunction;
+			_CAPACITY = _other.m_Capacity;
+			_SIZE = _other.m_Size;
+			_LOADFACTOR = _other.m_LoadFactor;
+			_HASHFUNC = _other.m_HashFunction;
 
 			_other.m_Data = nullptr;
 			_other.m_Capacity = 0;
@@ -806,41 +883,57 @@ namespace mtk {
 	private:
 		void ReAlloc(size_t _capacity) override
 		{
-			auto* newBlock = (_HashNode*)Alloc<_HashNode>(_capacity);
+			// Create the new block of memory
+			auto* newBlock = static_cast<_HashNode*>(Alloc<_HashNode>(_capacity));
 
-			if (_capacity < __super::m_Size)
-				__super::m_Size = _capacity;
+			// Downsize if necessary
+			if (_capacity < _SIZE)
+				_SIZE = _capacity;
 
-			for (size_t i = 0; i < __super::m_Size; i++) {
+			// Move over the data to new block
+			for (size_t i = 0; i < _SIZE; i++) {
 				newBlock[i] = m_Data[i];
 			}
 
-			for (size_t i = 0; i < __super::m_Size; i++) {
+			// Free the old memory
+			for (size_t i = 0; i < _SIZE; i++) {
 				m_Data[i].~_HashNode();
 			}
+			Delete(m_Data, _CAPACITY);
 
-			Delete(m_Data, __super::m_Capacity);
+			// Set the new block to be the data
 			m_Data = newBlock;
-			__super::m_Capacity = _capacity;
+			// Set new capacity
+			_CAPACITY = _capacity;
 		}
 
+		void DeleteBucket(_HashNode* _nodePtr)
+		{
+			// Deletes all the linked nodes
+			_HashNode* node = _nodePtr;
+			_HashNode* prev = nullptr;
+			while (node && node != _NullNode && node->IsValid()) {
+				// Checks if next node is not null
+				if (!node->_next) {
+					node->~_HashNode();
+					break;
+				}
+				prev = node;
+				node = node->_next;
+				prev->~_HashNode();
+			}
+		}
+		
 		void CleanUp() override
 		{
-			for (auto i = 0; i < __super::m_Capacity; i++) {
-				_HashNode* node = &m_Data[i];
-				_HashNode* prev = nullptr;
-				while (node && node != _NullNode) {
-					if (!node->_next) {
-						node->~_HashNode();
-						break;
-					}
-					prev = node;
-					node = node->_next;
-					prev->~_HashNode();
-				}
+			// Loops through the hash array
+			for (auto i = 0; i < _CAPACITY; i++) {
+				// Loops through and deletes all the hashed nodes at the hashed index
+				DeleteBucket(&m_Data[i]);
 			}
-			__super::m_Size = 0;
-			__super::m_Capacity = 0;
+			// Resets the size and capacity to zero
+			_SIZE = 0;
+			_CAPACITY = 0;
 		}
 
 	private:

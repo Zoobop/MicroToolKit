@@ -5,20 +5,19 @@ namespace mtk {
 
 	enum class Ctrl : int8_t
 	{
-		kEmpty = -51,
-		kDeleted = 0x0,
-		kFull = 0x1
+		kInvalid = 0,
+		kEmpty = 1,
+		kFull = 2
 	};
 
 	template<typename _Type>
 	struct HashNode
 	{
 		_Type _value;
-		Ctrl _control = Ctrl::kEmpty;
+		Ctrl _control = Ctrl::kInvalid;
 		HashNode<_Type>* _next = nullptr;
 
 		HashNode()
-			: _control(Ctrl::kEmpty)
 		{
 		}
 
@@ -38,6 +37,8 @@ namespace mtk {
 			free_smem(_next);
 		}
 
+		bool IsValid() const { return _control == Ctrl::kEmpty || _control == Ctrl::kFull || _control == Ctrl::kInvalid; }
+		
 		friend bool operator==(const HashNode<_Type>& _current, const _Type& _value)
 		{
 			return _current._value == _value;

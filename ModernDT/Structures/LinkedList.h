@@ -134,7 +134,7 @@ namespace mtk {
 					node = iter;
 					iter = iter->_next;
 				}
-				node->_control = Ctrl::kDeleted;
+				node->_control = Ctrl::kInvalid;
 
 				m_Size--;
 				return node->_value;
@@ -147,7 +147,7 @@ namespace mtk {
 			_Node* node = m_Head;
 			while (node) {
 				if (node->_value == _value) {
-					node->_control = Ctrl::kDeleted;
+					node->_control = Ctrl::kInvalid;
 					return true;
 				}
 				node = node->_next;
@@ -160,7 +160,7 @@ namespace mtk {
 			_Node* node = m_Head;
 			while (node) {
 				if (node->_value == _value) {
-					node->_control = Ctrl::kDeleted;
+					node->_control = Ctrl::kInvalid;
 					return true;
 				}
 				node = node->_next;
@@ -207,7 +207,7 @@ namespace mtk {
 		{
 			_Node* node = m_Head;
 			while (node) {
-				node->_control = Ctrl::kDeleted;
+				node->_control = Ctrl::kInvalid;
 				node = node->_next;
 			}
 

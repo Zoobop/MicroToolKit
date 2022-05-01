@@ -241,7 +241,7 @@ namespace mtk {
 			_HashNode* node = &m_Data[hash];
 			while (node && node != _NullNode) {
 				if (node->_value == _value) {
-					node->_control = Ctrl::kDeleted;
+					node->_control = Ctrl::kInvalid;
 					__super::m_Size--;
 					return true;
 				}
@@ -259,7 +259,7 @@ namespace mtk {
 					node->_control != Ctrl::kFull) 
 					return false;
 				while (node && node != _NullNode) {
-					node->_control = Ctrl::kDeleted;
+					node->_control = Ctrl::kInvalid;
 					node = node->_next;
 				}
 				__super::m_Size--;

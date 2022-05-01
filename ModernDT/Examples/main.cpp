@@ -6,7 +6,8 @@
 
 int main() 
 {
-    auto map = mtk::Map<uint32_t, Player>([](uint32_t id){ return 0; });
+    auto map = mtk::Map<uint32_t, Player>([](uint32_t id){ return id; });
+    map.Reserve(10);
 
     map.Insert(0, Player { "Bellona", 10, Player::Warrior });
     map.Insert(1, Player { "Poseidon", 20, Player::Mage });
@@ -25,5 +26,14 @@ int main()
     LOG(map);
 
     LOG(map.At(0));
-    
+    LOG(map.At(1));
+    LOG(map.At(2));
+    LOG(map.At(3));
+    LOG(map.At(4));
+
+    LOG(map.Find(0));
+    LOG(map.Find(1));
+    LOG(map.Find(2));
+    LOG(map.Find(3));
+    LOG(map.Find(4));
 }
