@@ -1,6 +1,6 @@
 #pragma once
 #include <random>
-#include "DebugUtils/Log.h"
+#include "DebugUtils/Timer.h"
 
 namespace mtk {
 
