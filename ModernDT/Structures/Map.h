@@ -929,7 +929,10 @@ namespace mtk {
 			// Loops through the hash array
 			for (auto i = 0; i < _CAPACITY; i++) {
 				// Loops through and deletes all the hashed nodes at the hashed index
-				DeleteBucket(&m_Data[i]);
+				auto head = &m_Data[i];
+				if (head->IsValid())
+					DeleteBucket(head->_next);
+				head->_next = nullptr;
 			}
 			// Resets the size and capacity to zero
 			_SIZE = 0;
