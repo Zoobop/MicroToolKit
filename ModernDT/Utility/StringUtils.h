@@ -105,6 +105,7 @@ namespace mtk {
 		try
 		{
 			_out = std::stof(_string);
+			return true;
 		}
 		catch (const std::invalid_argument&)
 		{
@@ -117,6 +118,7 @@ namespace mtk {
 		try
 		{
 			_out = std::stod(_string);
+			return true;
 		}
 		catch (const std::invalid_argument&)
 		{
@@ -129,6 +131,7 @@ namespace mtk {
 		try
 		{
 			_out = std::stold(_string);
+			return true;
 		}
 		catch (const std::invalid_argument&)
 		{
@@ -141,6 +144,7 @@ namespace mtk {
 		try
 		{
 			_out = static_cast<int8_t>(std::stoi(_string));
+			return true;
 		}
 		catch (const std::invalid_argument&)
 		{
@@ -153,6 +157,7 @@ namespace mtk {
 		try
 		{
 			_out = static_cast<int16_t>(std::stoi(_string));
+			return true;
 		}
 		catch (const std::invalid_argument&)
 		{
@@ -165,6 +170,7 @@ namespace mtk {
 		try
 		{
 			_out = std::stoi(_string);
+			return true;
 		}
 		catch (const std::invalid_argument&)
 		{
@@ -177,6 +183,7 @@ namespace mtk {
 		try
 		{
 			_out = std::stoll(_string);
+			return true;
 		}
 		catch (const std::invalid_argument&)
 		{

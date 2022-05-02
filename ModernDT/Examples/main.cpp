@@ -6,7 +6,10 @@
 
 int main() 
 {
-    auto result = mtk::Parse<float>("1");
-
-    LOG(result);
+    auto num = 0;
+    if (TryParse("10", num))
+    {
+        LOG(num);
+    }
+    LOG("Cannot parse!");
 }
