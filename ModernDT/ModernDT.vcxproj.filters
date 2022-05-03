@@ -109,5 +109,11 @@
     <ClInclude Include="File\FileHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Examples\Example.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Examples\main.cpp" />
   </ItemGroup>
 </Project>

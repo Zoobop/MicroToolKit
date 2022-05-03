@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\Brandon\source\repos\MicroToolKit\bin\Debug-x64\ModernDT\MicroToolKit.lib</FullPath>
+      <FullPath>C:\Users\Brandon\source\repos\AccountGenerator\MicroLib\bin\Debug-x64\ModernDT\MicroToolKit.lib</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
