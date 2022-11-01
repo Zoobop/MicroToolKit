@@ -2,6 +2,7 @@
 
 #include "Interfaces/IStruct.h"
 #include "Interfaces/IDataHandler.h"
+#include "Interfaces/IExtendable.h"
 
 namespace mtk {
 
@@ -114,6 +115,17 @@ namespace mtk {
 				return item;
 			}
 			return {};
+		}
+
+		bool TryPop(_Type& _out)
+		{
+			if (m_Size > 0) {
+				_out = std::move(m_Data[m_Size - 1]);
+				m_Data[m_Size - 1].~_Type();
+				m_Size--;
+				return true;
+			}
+			return false;
 		}
 
 		_Type Peek() const

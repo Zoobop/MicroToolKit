@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Structures/List.h"
-#include "Structures/Stack.h"
-#include "Structures/Queue.h"
+#include "Common/List.h"
+#include "Common/Queue.h"
+#include "Common/Stack.h"
 
 namespace mtk {
 

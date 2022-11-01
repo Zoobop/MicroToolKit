@@ -9,9 +9,6 @@
 #include "Core/Memory.h"
 #include "Core/Typedef.h"
 
-#include "DebugUtils/Timer.h"
-#include "DebugUtils/Log.h"
-
 #include "File/FileHandler.h"
 
 #include "Common/Array.h"
@@ -22,12 +19,14 @@
 #include "Common/Queue.h"
 #include "Common/LinkedList.h"
 
+#include "Utility/Timer.h"
+#include "Utility/Log.h"
 #include "Utility/Sort.h"
 #include "Utility/Tuple.h"
 #include "Utility/Random.h"
 #include "Utility/StringUtils.h"
 
 #ifdef MTK_EXPERIMENTAL
-#include "Structures/BinaryTree.h"
+//#include "Structures/BinaryTree.h"
 //#include "Structures/Graph.h"
 #endif

@@ -1,110 +1,113 @@
 #pragma once
-#include "Structures/List.h"
+#include <string>
+
+#include "Common/String.h"
+#include "Common/List.h"
 
 namespace mtk {
 
 	template<typename _Type>
-	_Type Parse(const std::string& _string)
+	_Type Parse(const String& _string)
 	{
 		return {};
 	}
 
 	template<>
-	inline float Parse(const std::string& _string)
+	inline float Parse(const String& _string)
 	{
 		try
 		{
-			return std::stof(_string);
+			return std::stof((std::string)_string);
 		}
 		catch (const std::invalid_argument& e)
 		{
-			throw e;
+			throw;
 		}
 	}
 
 	template<>
-	inline double Parse(const std::string& _string)
+	inline double Parse(const String& _string)
 	{
 		try
 		{
-			return std::stod(_string);
+			return std::stod((std::string)_string);
 		}
 		catch (const std::invalid_argument& e)
 		{
-			throw e;
+			throw;
 		}
 	}
 
 	template<>
-	inline long double Parse(const std::string& _string)
+	inline long double Parse(const String& _string)
 	{
 		try
 		{
-			return std::stold(_string);
+			return std::stold((std::string)_string);
 		}
 		catch (const std::invalid_argument& e)
 		{
-			throw e;
+			throw;
 		}
 	}
 
 	template<>
-	inline int8_t Parse(const std::string& _string)
+	inline int8_t Parse(const String& _string)
 	{
 		try
 		{
-			return static_cast<int8_t>(std::stoi(_string));
+			return static_cast<int8_t>(std::stoi((std::string)_string));
 		}
 		catch (const std::invalid_argument& e)
 		{
-			throw e;
+			throw;
 		}
 	}
 
 	template<>
-	inline int16_t Parse(const std::string& _string)
+	inline int16_t Parse(const String& _string)
 	{
 		try
 		{
-			return static_cast<int16_t>(std::stoi(_string));
+			return static_cast<int16_t>(std::stoi((std::string)_string));
 		}
 		catch (const std::invalid_argument& e)
 		{
-			throw e;
+			throw;
 		}
 	}
 
 	template<>
-	inline int32_t Parse(const std::string& _string)
+	inline int32_t Parse(const String& _string)
 	{
 		try
 		{
-			return std::stoi(_string);
+			return std::stoi((std::string)_string);
 		}
 		catch (const std::invalid_argument& e)
 		{
-			throw e;
+			throw;
 		}
 	}
 
 	template<>
-	inline int64_t Parse(const std::string& _string)
+	inline int64_t Parse(const String& _string)
 	{
 		try
 		{
-			return std::stoll(_string);
+			return std::stoll((std::string)_string);
 		}
 		catch (const std::invalid_argument& e)
 		{
-			throw e;
+			throw;
 		}
 	}
 
-	inline bool TryParse(const std::string& _string, float& _out)
+	inline bool TryParse(const String& _string, float& _out)
 	{
 		try
 		{
-			_out = std::stof(_string);
+			_out = std::stof((std::string)_string);
 			return true;
 		}
 		catch (const std::invalid_argument&)
@@ -113,11 +116,11 @@ namespace mtk {
 		return false;
 	}
 
-	inline bool TryParse(const std::string& _string, double& _out)
+	inline bool TryParse(const String& _string, double& _out)
 	{
 		try
 		{
-			_out = std::stod(_string);
+			_out = std::stod((std::string)_string);
 			return true;
 		}
 		catch (const std::invalid_argument&)
@@ -126,11 +129,11 @@ namespace mtk {
 		return false;
 	}
 
-	inline bool TryParse(const std::string& _string, long double& _out)
+	inline bool TryParse(const String& _string, long double& _out)
 	{
 		try
 		{
-			_out = std::stold(_string);
+			_out = std::stold((std::string)_string);
 			return true;
 		}
 		catch (const std::invalid_argument&)
@@ -139,11 +142,11 @@ namespace mtk {
 		return false;
 	}
 	
-	inline bool TryParse(const std::string& _string, int8_t& _out)
+	inline bool TryParse(const String& _string, int8_t& _out)
 	{
 		try
 		{
-			_out = static_cast<int8_t>(std::stoi(_string));
+			_out = static_cast<int8_t>(std::stoi((std::string)_string));
 			return true;
 		}
 		catch (const std::invalid_argument&)
@@ -152,11 +155,11 @@ namespace mtk {
 		return false;
 	}
 	
-	inline bool TryParse(const std::string& _string, int16_t& _out)
+	inline bool TryParse(const String& _string, int16_t& _out)
 	{
 		try
 		{
-			_out = static_cast<int16_t>(std::stoi(_string));
+			_out = static_cast<int16_t>(std::stoi((std::string)_string));
 			return true;
 		}
 		catch (const std::invalid_argument&)
@@ -165,11 +168,11 @@ namespace mtk {
 		return false;
 	}
 	
-	inline bool TryParse(const std::string& _string, int32_t& _out)
+	inline bool TryParse(const String& _string, int32_t& _out)
 	{
 		try
 		{
-			_out = std::stoi(_string);
+			_out = std::stoi((std::string)_string);
 			return true;
 		}
 		catch (const std::invalid_argument&)
@@ -178,11 +181,11 @@ namespace mtk {
 		return false;
 	}
 
-	inline bool TryParse(const std::string& _string, int64_t& _out)
+	inline bool TryParse(const String& _string, int64_t& _out)
 	{
 		try
 		{
-			_out = std::stoll(_string);
+			_out = std::stoll((std::string)_string);
 			return true;
 		}
 		catch (const std::invalid_argument&)
@@ -191,28 +194,26 @@ namespace mtk {
 		return false;
 	}
 	
-	inline List<std::string_view> Split(const std::string& _string, char _delimiter = ' ')
+	inline List<String> Split(const String& _string, char _delimiter = ' ')
 	{
-		List<std::string_view> stringData(_string.length());
-		PROFILER();
-		for (size_t i = 0, prev = 0; i < _string.length() + 1; i++) {
+		List<String> stringData(_string.Size());
+		for (size_t i = 0, prev = 0; i < _string.Size() + 1; i++) {
 			if (_string[i] == '\r' || _string[i] == '\n') {
 				if (i - prev == 0)
 					prev++;
 			}
 
 			if (_string[i] == _delimiter || _string[i] == '\0') {
-				stringData.Emplace(_string.c_str() + prev, i - prev);
+				stringData.Emplace(&_string[prev], i - prev);
 				prev = i + 1;
 			}
 		}
 		return stringData;
 	}
 
-	inline List<std::string_view> Split(const std::string_view& _string, char _delimiter = ' ')
+	inline List<String> Split(const std::string_view& _string, char _delimiter = ' ')
 	{
-		List<std::string_view> stringData(_string.length());
-		PROFILER();
+		List<String> stringData(_string.length());
 		for (size_t i = 0, prev = 0; i < _string.length(); i++) {
 			if (_string[i] == '\r' || _string[i] == '\n') {
 				if (i - prev == 0)
@@ -230,7 +231,7 @@ namespace mtk {
 	inline bool IsIdentical(const std::string& _left, const std::string& _right)
 	{
 		if (_left.length() == _right.length()) {
-			for (auto i = 0; i < _left.length(); i++) {
+			for (size_t i = 0; i < _left.length(); i++) {
 				if (_left[i] != _right[i])
 					return false;
 			}
@@ -239,18 +240,18 @@ namespace mtk {
 		return false;
 	}
 
-	inline std::string& ToUpper(std::string& _string)
+	inline String& ToUpper(String& _string)
 	{
-		for (auto i = 0; i < _string.length(); i++) {
-			_string[i] = std::toupper(_string[i]);
+		for (size_t i = 0; i < _string.Size(); i++) {
+			_string[i] = (char) std::toupper(_string[i]);
 		}
 		return _string;
 	}
 
-	inline std::string& ToLower(std::string& _string)
+	inline String& ToLower(String& _string)
 	{
-		for (auto i = 0; i < _string.length(); i++) {
-			_string[i] = std::tolower(_string[i]);
+		for (size_t i = 0; i < _string.Size(); i++) {
+			_string[i] = (char) std::tolower(_string[i]);
 		}
 		return _string;
 	}
