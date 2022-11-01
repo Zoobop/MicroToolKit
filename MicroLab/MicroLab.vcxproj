@@ -12,9 +12,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{178D11F0-133A-4B67-A65E-892E3E66260B}</ProjectGuid>
+    <ProjectGuid>{48EE00F4-D3CE-45D3-A2CD-C65F67666890}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>MicroToolKit</RootNamespace>
+    <RootNamespace>MicroLab</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -22,13 +22,13 @@
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -48,13 +48,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)\intermediate\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(ProjectDir)\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)\intermediate\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(SolutionDir)\intermediate\$(Configuration)-$(Platform)\</IntDir>
-    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\</OutDir>
+    <OutDir>$(ProjectDir)\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)\intermediate\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -67,7 +67,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\;$(ProjectDir)\src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -87,7 +87,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\;$(ProjectDir)\src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -97,42 +97,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Common\String.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Common\Array.h" />
-    <ClInclude Include="src\Common\BinaryTree.h" />
-    <ClInclude Include="src\Common\Graph.h" />
-    <ClInclude Include="src\Common\LinkedList.h" />
-    <ClInclude Include="src\Common\List.h" />
-    <ClInclude Include="src\Common\Map.h" />
-    <ClInclude Include="src\Common\Queue.h" />
-    <ClInclude Include="src\Common\Set.h" />
-    <ClInclude Include="src\Common\Stack.h" />
-    <ClInclude Include="src\Common\String.h" />
-    <ClInclude Include="src\Core\Core.h" />
-    <ClInclude Include="src\Core\Function.h" />
-    <ClInclude Include="src\Core\Memory.h" />
-    <ClInclude Include="src\Core\Typedef.h" />
-    <ClInclude Include="src\File\FileHandler.h" />
-    <ClInclude Include="src\Interfaces\IConvert.h" />
-    <ClInclude Include="src\Interfaces\IDataHandler.h" />
-    <ClInclude Include="src\Interfaces\IExtendable.h" />
-    <ClInclude Include="src\Interfaces\IHashable.h" />
-    <ClInclude Include="src\Interfaces\IHashTable.h" />
-    <ClInclude Include="src\Interfaces\IStruct.h" />
-    <ClInclude Include="src\MicroToolKit.h" />
-    <ClInclude Include="src\mtkpch.h" />
-    <ClInclude Include="src\Utility\DoubleNode.h" />
-    <ClInclude Include="src\Utility\HashNode.h" />
-    <ClInclude Include="src\Utility\Log.h" />
-    <ClInclude Include="src\Utility\MultiNode.h" />
-    <ClInclude Include="src\Utility\Random.h" />
-    <ClInclude Include="src\Utility\SingleNode.h" />
-    <ClInclude Include="src\Utility\Sort.h" />
-    <ClInclude Include="src\Utility\StringUtils.h" />
-    <ClInclude Include="src\Utility\Timer.h" />
-    <ClInclude Include="src\Utility\Tuple.h" />
+    <ProjectReference Include="..\MicroToolKit.vcxproj">
+      <Project>{178d11f0-133a-4b67-a65e-892e3e66260b}</Project>
+      <Name>MicroToolKit</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\TestRunner.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\Tests" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
