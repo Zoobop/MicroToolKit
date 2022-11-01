@@ -1,194 +1,83 @@
 #pragma once
+#include <ostream>
 
-#include "Structures/Array.h"
+#include "Core/Core.h"
 
 namespace mtk {
-
+	
 	class String
 	{
 	public:
-		String()
-		{
-		}
+		// Constructors/Deconstructors
+		String();
+		String(const String& _other);
+		String(String&& _other) noexcept;
+		explicit String(char _char);
+		String(char* _char);
+		String(const char* _char);
+		String(const std::string& _string);
+		String(std::string&& _string);
+		String(std::string_view _string);
+		String(const char* begin, size_t count);
+		~String();
 
-		String(const String& _other)
-			: m_Data(_other.m_Data), m_Size(_other.m_Size)
-		{
-		}
+		// Accessors
+		NODISCARD constexpr size_t Size() const { return m_Size; }
 
-		String(String&& _other) noexcept
-			: m_Data(std::move(_other.m_Data)), m_Size(std::move(_other.m_Size))
-		{
-		}
-
-		String(char* _char)
-		{
-			m_Size = strlen(_char);
-			m_Data = new char[m_Size + 1];
-			strcpy_s(m_Data, m_Size+1, _char);
-			m_Data[m_Size] = 0;
-		}
-
-		String(const char* _char)
-		{
-			m_Size = strlen(_char);
-			m_Data = new char[m_Size + 1];
-			strcpy_s(m_Data, m_Size+1, _char);
-			m_Data[m_Size] = 0;
-		}
-
-		~String()
-		{
-			free_amem(m_Data);
-		}
-
-		inline constexpr size_t Size() const { return m_Size; }
-
+		// Utility
+		NODISCARD int32_t IndexOf(char _character) const;
+		NODISCARD String Replace(char _oldChar, char _newChar) const;
+		NODISCARD String Replace(const String& _oldString, char _newChar) const;
+		NODISCARD String Replace(char _oldChar, const String& _newString) const;
+		NODISCARD String Replace(const String& _oldString, const String& _newString) const;
+		NODISCARD String Substring(size_t _start) const;
+		NODISCARD String Substring(size_t _start, size_t _end) const;
+		NODISCARD bool Contains(char _character) const;
+		NODISCARD bool Contains(char* _string) const;
+		NODISCARD bool Contains(const String& _string) const;
+		NODISCARD bool Contains(const std::string& _string) const;
+		NODISCARD bool StartsWith(char _character) const;
+		NODISCARD bool StartsWith(const char* _string) const;
+		NODISCARD bool StartsWith(const String& _string) const;
+		NODISCARD bool StartsWith(const std::string& _string) const;
+		NODISCARD bool EndsWith(char _character) const;
+		NODISCARD bool EndsWith(const char* _string) const;
+		NODISCARD bool EndsWith(const String& _string) const;
+		NODISCARD bool EndsWith(const std::string& _string) const;
+		NODISCARD String Trim(char _character) const;
+		NODISCARD String Trim(const char* _characters) const;
+		NODISCARD String TrimStart(char _character) const;
+		NODISCARD String TrimStart(char* _characters) const;
+		NODISCARD String TrimEnd(char _character) const;
+		NODISCARD String TrimEnd(char* _characters) const;
+		
+		
 		// Operator Overloads
-		char& operator[](const size_t& _index)
-		{
-			if (_index >= m_Size) {
-				DEBUG_BREAK();
-			}
-			return m_Data[_index];
-		}
-
-		const char& operator[](const size_t& _index) const
-		{
-			if (_index >= m_Size) {
-				DEBUG_BREAK();
-			}
-			return m_Data[_index];
-		}
-
-		void operator=(const String& _other)
-		{
-			if (m_Data != nullptr && m_Size != _other.m_Size)
-			{
-				m_Data = static_cast<char*>(realloc(m_Data, _other.m_Size+1));
-			}
-
-			
-			m_Size = _other.m_Size;
-		}
-
-		void operator=(String&& _other) noexcept
-		{
-			if (m_Data != nullptr)
-			{
-				free_amem(m_Data);
-			}
-
-			m_Data = std::move(_other.m_Data);
-			m_Size = _other.m_Size;
-
-			_other.m_Data = nullptr;
-		}
-
-		void operator=(char* _other)
-		{
-			auto size = strlen(_other);
-			if (m_Data != nullptr)
-			{
-				if (m_Size != size)
-				{
-					free_amem(m_Data);
-				}
-				else
-				{
-					for (auto i = 0; i < size; i++)
-					{
-						m_Data[i] = _other[i];
-					}
-					return;
-				}
-			}
-			else
-			{
-				m_Data = new char[size + 1];
-			}
-
-			strcpy_s(m_Data, size + 1, _other);
-			m_Data[0] = 0;
-		}
-
-		void operator=(const char* _other)
-		{
-			auto size = strlen(_other);
-			if (m_Data != nullptr)
-			{
-				if (m_Size != size)
-				{
-					free_amem(m_Data);
-				}
-				else 
-				{
-					for (auto i = 0; i < size; i++)
-					{
-						m_Data[i] = _other[i];
-					}
-					return;
-				}
-			}
-			else 
-			{
-				m_Data = new char[size + 1];
-			}
-
-		    strcpy_s(m_Data, size+1, _other);
-			m_Data[0] = 0;
-		}
-
-		String& operator+=(const String& _other)
-		{
-			if (m_Data == nullptr)
-			{
-				m_Data = new char[_other.m_Size];
-			}
-			else
-			{
-				realloc(m_Data, _other.m_Size);
-			}
-
-			memcpy_s(m_Data, _other.m_Size, _other.m_Data, _other.m_Size);
-			return *this;
-		}
-
-		friend String operator+(const String& _left, const String& _right)
-		{
-			auto size = strlen(_left.m_Data) + strlen(_right.m_Data);
-			char* concat = new char[size];
-			memcpy_s(concat, size, _left.m_Data, size);
-			return concat;
-		}
-
-		friend bool operator==(const String& _left, const String& _right)
-		{
-			return _left.m_Data == _right.m_Data;
-		}
-
-		friend bool operator!=(const String& _left, const String& _right)
-		{
-			return !(_left == _right);
-		}
-
-		friend std::ostream& operator<<(std::ostream& _stream, const String& _current)
-		{
-			if (_current.m_Size > 0) 
-			{
-				_stream << _current.m_Data;
-			}
-			else 
-			{
-				_stream << "";
-			}
-			return _stream;
-		}
+		explicit operator std::string() const;
+		
+		char& operator[](const size_t& _index);
+		const char& operator[](const size_t& _index) const;
+		String& operator=(const String& _other);
+		String& operator=(String&& _other) noexcept;
+		String& operator=(char* _other);
+		String& operator=(const char* _other);
+		String& operator=(const std::string& _other);
+		String& operator=(std::string&& _other);
+		String& operator=(std::string_view _other);
+		String& operator+=(const String& _other);
+		String& operator+=(String&& _other);
+		String& operator+=(char _other);
+		String& operator+=(char* _other);
+		String& operator+=(const char* _other);
+		friend String operator+(const String& _left, const String& _right);
+		friend String operator+(const String& _left, const char* _right);
+		friend String operator+(const char* _left, const String& _right);
+		friend bool operator==(const String& _left, const String& _right);
+		friend bool operator!=(const String& _left, const String& _right);
+		friend std::ostream& operator<<(std::ostream& _stream, const String& _current);
 
 	private:
 		char* m_Data = nullptr;
 		size_t m_Size = 0;
 	};
-
-	typedef String string;
 }

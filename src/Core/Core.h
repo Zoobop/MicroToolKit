@@ -22,3 +22,5 @@
 #else
 #error "Unknown compiler"
 #endif
+
+#define NODISCARD [[nodiscard]]
