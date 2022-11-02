@@ -4,7 +4,7 @@
 #include <iostream>
 
 namespace mtk {
-
+	
 	class Logger
 	{
 	public:

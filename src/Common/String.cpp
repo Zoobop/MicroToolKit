@@ -16,8 +16,12 @@ namespace mtk
 	}
 	
 	String::String(String&& _other) noexcept
-		: m_Data(_other.m_Data), m_Size(_other.m_Size)
 	{
+		m_Data = _other.m_Data;
+		m_Size = _other.m_Size;
+
+		_other.m_Data = nullptr;
+		_other.m_Size = 0;
 	}
 
 	String::String(char _char)
@@ -34,7 +38,7 @@ namespace mtk
 		if (m_Size == 0) return;
 			
 		m_Data = new char[m_Size + 1];
-		strcpy_s(m_Data, m_Size+1, _char);
+		memcpy_s(m_Data, m_Size+1, _char, m_Size+1);
 		m_Data[m_Size] = 0;
 	}
 
@@ -62,9 +66,9 @@ namespace mtk
 	{
 		m_Size = _string.size();
 		if (m_Size == 0) return;
-			
-		m_Data = _string.data();
-		m_Data[m_Size] = 0;
+
+		m_Data = new char[m_Size+1];
+		memmove_s(m_Data, m_Size+1, _string.c_str(), m_Size+1);
 	}
 	
 	String::String(std::string_view _string)
@@ -261,8 +265,11 @@ namespace mtk
 
 	String String::Substring(size_t _start) const
 	{
+		// TODO: Rewrite
+		if (_start == 0) return *this;
+		
 		const size_t size = m_Size - _start;
-		if (size == 0) return *this;
+		if (size == 0 || size > m_Size) return { };
 		
 		char* string = new char[size + 1];
 		strcpy_s(string, m_Size - _start + 1, m_Data + size);
@@ -270,16 +277,48 @@ namespace mtk
 		return string;
 	}
 	
-	String String::Substring(size_t _start, size_t _end) const
+	String String::Substring(size_t _start, size_t _length) const
 	{
-		const size_t size = _end - _start;
-		if (_end == _start) return String(m_Data[_start]);
+		// TODO: Rewrite
+		const size_t size = _length - _start;
+		if (_length == _start) return String(m_Data[_start]);
 		if (size == 0) return *this;
 
 		char* string = new char[size + 1];
 		memcpy_s(string, size + 1, m_Data + _start, size + 1);
 		string[size] = 0;
 		return string;
+	}
+
+	bool String::Equals(const String& _other) const
+	{
+		if (m_Size != _other.m_Size) return false;
+
+		const int32_t result = memcmp(m_Data, _other.m_Data, m_Size);
+		return result == 0 ? true : false;
+	}
+
+	bool String::Equals(const std::string& _other) const
+	{
+		if (m_Size != _other.size()) return false;
+
+		const int32_t result = memcmp(m_Data, _other.data(), m_Size);
+		return result == 0 ? true : false;
+	}
+
+	bool String::Equals(const char* _other) const
+	{
+		const size_t length = strlen(_other);
+		if (m_Size != length) return false;
+
+		const int32_t result = memcmp(m_Data, _other, m_Size);
+		return result == 0 ? true : false;
+	}
+
+	bool String::Equals(const char _other) const
+	{
+		if (m_Size == 0 || m_Size > 1) return false;
+		return m_Data[0] == _other;
 	}
 
 	bool String::Contains(char _character) const

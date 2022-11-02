@@ -65,7 +65,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(SolutionDir)\src\;$(ProjectDir)\src\</AdditionalIncludeDirectories>
     </ClCompile>
@@ -98,6 +98,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Tests\StringTestRunner.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MicroToolKit.vcxproj">
@@ -107,9 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\TestRunner.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\Tests" />
+    <ClInclude Include="src\Tests\StringTestRunner.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
