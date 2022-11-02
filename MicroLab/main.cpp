@@ -1,6 +1,6 @@
 #include "IO/IOHandler.hpp"
 #include "Tests/StringTestRunner.h"
-#include "Utility/BufferView.h"
+#include "IO/IOHandler.h"
 
 int main()
 {
