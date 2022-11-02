@@ -13,6 +13,7 @@ Below lists the current features:
 - Stack       -> ```mtk::Stack<T>```
 - Queue       -> ```mtk::Queue<T>```
 - LinkedList  -> ```mtk::LinkedList<T>```
+- String      -> ```mtk::String```
 
 **Utility**
 - Sort
