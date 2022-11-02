@@ -8,7 +8,9 @@ namespace mtk {
 	class String
 	{
 	public:
-		// Constructors/Deconstructors
+		friend std::string;
+		
+		// Constructors/Destructors
 		String();
 		String(const String& _other);
 		String(String&& _other) noexcept;
@@ -23,6 +25,7 @@ namespace mtk {
 
 		// Accessors
 		NODISCARD constexpr size_t Size() const { return m_Size; }
+		NODISCARD constexpr const char* Data() const { return m_Data; }
 
 		// Utility
 		NODISCARD int32_t IndexOf(char _character) const;
@@ -31,7 +34,11 @@ namespace mtk {
 		NODISCARD String Replace(char _oldChar, const String& _newString) const;
 		NODISCARD String Replace(const String& _oldString, const String& _newString) const;
 		NODISCARD String Substring(size_t _start) const;
-		NODISCARD String Substring(size_t _start, size_t _end) const;
+		NODISCARD String Substring(size_t _start, size_t _length) const;
+		NODISCARD bool Equals(const String& _other) const;
+		NODISCARD bool Equals(const std::string& _other) const;
+		NODISCARD bool Equals(const char* _other) const;
+		NODISCARD bool Equals(char _other) const;
 		NODISCARD bool Contains(char _character) const;
 		NODISCARD bool Contains(char* _string) const;
 		NODISCARD bool Contains(const String& _string) const;

@@ -1,7 +1,8 @@
-#include "TestRunner.h"
+#include "Tests/StringTestRunner.h"
 
-int main(int argc, char* argv[])
+int main()
 {
-    TestRunner<int> tr;
+    TestRunner<String>::Run();
+    
     return 0;
 }
