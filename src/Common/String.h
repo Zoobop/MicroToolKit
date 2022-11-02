@@ -2,14 +2,13 @@
 #include <ostream>
 
 #include "Core/Core.h"
+#include "Utility/BufferView.h"
 
 namespace mtk {
 	
 	class String
 	{
 	public:
-		friend std::string;
-		
 		// Constructors/Destructors
 		String();
 		String(const String& _other);
@@ -20,7 +19,7 @@ namespace mtk {
 		String(const std::string& _string);
 		String(std::string&& _string);
 		String(std::string_view _string);
-		String(const char* begin, size_t count);
+		String(const char* _begin, size_t _count);
 		~String();
 
 		// Accessors
@@ -86,5 +85,32 @@ namespace mtk {
 	private:
 		char* m_Data = nullptr;
 		size_t m_Size = 0;
+	};
+
+	class BufferView
+	{
+	public:
+		BufferView(const char* _ref);
+		BufferView(const BufferView& _other) = default;
+		BufferView(BufferView&&) = default;
+		~BufferView() = default;
+
+		NODISCARD size_t Size() const { return c_Size; }
+		NODISCARD const char* Data() const { return c_StartRef; }
+
+		NODISCARD BufferView Slice(size_t _start, size_t _end) const;
+        
+		NODISCARD const char& operator[](size_t _index);
+		NODISCARD const char& operator[](size_t _index) const;
+		BufferView& operator=(const BufferView& _other);
+		BufferView& operator=(BufferView&& _other) noexcept;
+
+	private:
+		BufferView(const char* _startRef, const char* _endRef);
+        
+	private:
+		const char* c_StartRef;
+		const char* c_EndRef;
+		const size_t c_Size;
 	};
 }

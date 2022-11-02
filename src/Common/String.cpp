@@ -1020,4 +1020,50 @@ namespace mtk
 		}
 		return _stream;
 	};
+
+	// BufferView Class
+	
+	BufferView::BufferView(const char* _ref)
+	: c_StartRef(_ref), c_EndRef(_ref + strlen(_ref)), c_Size(strlen(_ref))
+	{
+	}
+
+	NODISCARD BufferView BufferView::Slice(size_t _start, size_t _end) const
+	{
+		return { c_StartRef + _start, c_StartRef + _end + 1 };
+	}
+        
+	NODISCARD const char& BufferView::operator[](size_t _index)
+	{
+		if (_index >= c_Size) {
+			DEBUG_BREAK();
+		}
+		return c_StartRef[_index];
+	}
+
+	NODISCARD const char& BufferView::operator[](size_t _index) const
+	{
+		if (_index >= c_Size) {
+			DEBUG_BREAK();
+		}
+		return c_StartRef[_index];
+	}
+
+	BufferView& BufferView::operator=(const BufferView& _other)
+	{
+		this(_other);
+		return *this;
+	}
+
+	BufferView& BufferView::operator=(BufferView&& _other) noexcept
+	{
+		this(_other);
+		return *this;
+	}
+    
+	BufferView::BufferView(const char* _startRef, const char* _endRef)
+		: c_StartRef(_startRef), c_EndRef(_endRef), c_Size(strlen(c_StartRef) - strlen(c_EndRef))
+	{
+		
+	}
 }

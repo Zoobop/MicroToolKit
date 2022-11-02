@@ -114,14 +114,14 @@
     <ClInclude Include="src\Core\Function.h" />
     <ClInclude Include="src\Core\Memory.h" />
     <ClInclude Include="src\Core\Typedef.h" />
-    <ClInclude Include="src\IO\FileHandler.hpp" />
+    <ClInclude Include="src\IO\FileHandler.h" />
     <ClInclude Include="src\Interfaces\IConvert.h" />
     <ClInclude Include="src\Interfaces\IDataHandler.h" />
     <ClInclude Include="src\Interfaces\IExtendable.h" />
     <ClInclude Include="src\Interfaces\IHashable.h" />
     <ClInclude Include="src\Interfaces\IHashTable.h" />
     <ClInclude Include="src\Interfaces\IStruct.h" />
-    <ClInclude Include="src\IO\IOHandler.hpp" />
+    <ClInclude Include="src\IO\IOHandler.h" />
     <ClInclude Include="src\IO\Log.h" />
     <ClInclude Include="src\MicroToolKit.h" />
     <ClInclude Include="src\mtkpch.h" />
