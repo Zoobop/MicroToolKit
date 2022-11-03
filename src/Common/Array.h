@@ -111,7 +111,7 @@ namespace mtk {
 		}
 
 		// IExtendable
-		void ForEach(const Param<const _Type&>& _param) override
+		void ForEach(const Action<const _Type&>& _param) override
 		{
 			for (size_t i = 0; i < _Size; i++) {
 				_param(m_Data[i]);

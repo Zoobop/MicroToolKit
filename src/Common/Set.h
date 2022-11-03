@@ -30,7 +30,7 @@ namespace mtk {
 			__super::SetHash(Hash_Temp<_Type, _KeyType>);
 		}
 
-		Set(const Dynamic<_KeyType, const _Type&>& _hashFunc)
+		Set(const Func<_KeyType, const _Type&>& _hashFunc)
 		{
 			ReAlloc(50);
 			__super::SetHash(_hashFunc);
@@ -281,14 +281,14 @@ namespace mtk {
 			__super::m_Size = 0;
 		}
 
-		void ForEach(const Param<const _HashNode&>& _param)
+		void ForEach(const Action<const _HashNode&>& _param)
 		{
 			for (size_t i = 0; i < __super::m_Size; i++) {
 				_param(m_Data[i]);
 			}
 		}
 
-		void ForEach(const Param<const _Type&>& _param)
+		void ForEach(const Action<const _Type&>& _param)
 		{
 			for (size_t i = 0; i < __super::m_Size; i++) {
 				_param(m_Data[i]._value);

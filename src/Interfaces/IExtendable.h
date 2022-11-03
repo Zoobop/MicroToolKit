@@ -9,7 +9,7 @@ namespace mtk {
 	class IExtendable
 	{
 	public:
-		virtual void ForEach(const Param<const _Type&>& _param) = 0;
+		virtual void ForEach(const Action<const _Type&>& _param) = 0;
 	};
 
 }

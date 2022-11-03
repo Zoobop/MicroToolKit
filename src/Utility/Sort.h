@@ -30,7 +30,7 @@ namespace mtk {
 
 	template<typename _Type>
 	void Sort(const IDataHandler<_Type>& _dataHandler, 
-		const Dynamic<bool, const _Type&, const _Type&>& _predicate = GreaterThan<_Type>)
+		const Func<bool, const _Type&, const _Type&>& _predicate = GreaterThan<_Type>)
 	{
 		_Type* data = const_cast<_Type*>(_dataHandler.Data());
 		size_t size = _dataHandler.Size();
@@ -49,7 +49,7 @@ namespace mtk {
 
 	template<typename _Type>
 	void RSort(const IDataHandler<_Type>& _dataHandler, 
-		const Dynamic<bool, const _Type&, const _Type&>& _predicate = GreaterThan<_Type>)
+		const Func<bool, const _Type&, const _Type&>& _predicate = GreaterThan<_Type>)
 	{
 		_Type* data = const_cast<_Type*>(_dataHandler.Data());
 		size_t size = _dataHandler.Size();

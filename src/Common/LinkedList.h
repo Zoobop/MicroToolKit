@@ -261,7 +261,7 @@ namespace mtk {
 		}
 
 		// IExtendable
-		virtual void ForEach(const Param<const _Type&>& _param) override
+		virtual void ForEach(const Action<const _Type&>& _param) override
 		{
 			for (_Node* node = m_Head; node != nullptr; node = node->_next) {
 				_param(node->_value);

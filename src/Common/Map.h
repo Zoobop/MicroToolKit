@@ -30,7 +30,7 @@ namespace mtk {
 			__super::SetHash(Hash_Temp<_KeyType, newhash_t>);
 		}
 
-		Map(const Dynamic<newhash_t, const _KeyType&>& _hashFunc)
+		Map(const Func<newhash_t, const _KeyType&>& _hashFunc)
 		{
 			Map<_KeyType, _Type>::ReAlloc(50);
 			__super::SetHash(_hashFunc);

@@ -2,7 +2,6 @@
 #include <ostream>
 
 #include "Core/Core.h"
-#include "Utility/BufferView.h"
 
 namespace mtk {
 	
@@ -111,6 +110,6 @@ namespace mtk {
 	private:
 		const char* c_StartRef;
 		const char* c_EndRef;
-		const size_t c_Size;
+		size_t c_Size;
 	};
 }

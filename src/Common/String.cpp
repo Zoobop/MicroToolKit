@@ -1051,13 +1051,21 @@ namespace mtk
 
 	BufferView& BufferView::operator=(const BufferView& _other)
 	{
-		this(_other);
+		c_StartRef = _other.c_StartRef;
+		c_EndRef = _other.c_EndRef;
+		c_Size = _other.c_Size;
 		return *this;
 	}
 
 	BufferView& BufferView::operator=(BufferView&& _other) noexcept
 	{
-		this(_other);
+		c_StartRef = _other.c_StartRef;
+		c_EndRef = _other.c_EndRef;
+		c_Size = _other.c_Size;
+
+		_other.c_StartRef = nullptr;
+		_other.c_EndRef = nullptr;
+		_other.c_Size = 0;
 		return *this;
 	}
     
