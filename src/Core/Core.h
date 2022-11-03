@@ -1,7 +1,7 @@
 #pragma once
 
 #define VALUE(x)		x
-#define STRINGIFY(x)	#x
+#define NAMEOF(x)	    #x
 #define EVAL(x)			STRINGIFY(##x)
 
 #if defined(_WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)

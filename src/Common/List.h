@@ -65,7 +65,7 @@ namespace mtk {
 
 		~List()
 		{
-			Clear();
+			//Clear();
 			Delete(m_Data, m_Capacity);
 		}
 
