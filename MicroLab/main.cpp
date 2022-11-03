@@ -10,10 +10,14 @@ int main()
     //List<String> splitList = str.Split({ ' ', 'o' });
 
     //IOHandler::WriteLine(splitList);
-    String string = "Zoobop";
-    BufferView view = string;
+    String strings[10];
+    strings[0] = "Zoobop";
     
-    IOHandler::WriteLine(view.Slice(1, 3));
+    Sequence sequence { strings, 6 };
+    for (const auto& item : sequence)
+    {
+        IOHandler::Write(item);
+    }
     
     return 0;
 }

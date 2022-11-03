@@ -100,6 +100,7 @@
     <ClCompile Include="src\Common\String.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Collections\Sequence.h" />
     <ClInclude Include="src\Common\Array.h" />
     <ClInclude Include="src\Common\BinaryTree.h" />
     <ClInclude Include="src\Common\Graph.h" />

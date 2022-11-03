@@ -6,27 +6,31 @@ namespace mtk
 {
 	String String::Empty = {};
 	
-	String::String() = default;
+	String::String()
+		: Sequence<char> { nullptr, 0 }
+	{
+	}
+	
 	String::String(const String& _other)
+		: Sequence<char>(_other)
 	{
 		m_Size = _other.m_Size;
 		if (m_Size == 0) return;
 
 		m_Data = new char[m_Size + 1];
-		strcpy_s(m_Data, m_Size+1, _other.m_Data);
+		strcpy_s(m_Data, m_Size + 1, _other.m_Data);
 		m_Data[m_Size] = 0;
 	}
-	
-	String::String(String&& _other) noexcept
-	{
-		m_Data = _other.m_Data;
-		m_Size = _other.m_Size;
 
+	String::String(String&& _other) noexcept
+		: Sequence<char> { _other.Data(), _other.Size() }
+	{
 		_other.m_Data = nullptr;
 		_other.m_Size = 0;
 	}
 
 	String::String(char _char)
+		: Sequence<char> { }
 	{
 		m_Data = new char[2];
 		m_Size = 1;
@@ -35,6 +39,7 @@ namespace mtk
 	}
 
 	String::String(char* _char)
+		: Sequence<char> { }
 	{
 		m_Size = strlen(_char);
 		if (m_Size == 0) return;
@@ -45,6 +50,7 @@ namespace mtk
 	}
 
 	String::String(const char* _char)
+		: Sequence<char> { _char, strlen(_char) }
 	{
 		m_Size = strlen(_char);
 		if (m_Size == 0) return;
@@ -55,6 +61,7 @@ namespace mtk
 	}
 
 	String::String(const std::string& _string)
+		: Sequence<char> { }
 	{
 		m_Size = _string.size();
 		if (m_Size == 0) return;
@@ -65,6 +72,7 @@ namespace mtk
 	}
 	
 	String::String(std::string&& _string)
+		: Sequence<char> { }
 	{
 		m_Size = _string.size();
 		if (m_Size == 0) return;
@@ -74,6 +82,7 @@ namespace mtk
 	}
 	
 	String::String(std::string_view _string)
+		: Sequence<char> { }
 	{
 		m_Size = _string.size();
 		if (m_Size == 0) return;
@@ -84,6 +93,7 @@ namespace mtk
 	}
 
 	String::String(BufferView _string)
+		: Sequence<char> { }
 	{
 		m_Size = _string.Size();
 		if (m_Size == 0) return;
@@ -94,6 +104,7 @@ namespace mtk
 	}
 
 	String::String(const char* _begin, size_t _count)
+		: Sequence<char> { }
 	{
 		m_Size = _count;
 		m_Data = new char[_count + 1];
@@ -102,6 +113,7 @@ namespace mtk
 	}
 
 	String::String(const char* _begin, const char* _end)
+		: Sequence<char> { }
 	{
 		const size_t size = strlen(_begin) - strlen(_end) + 1;
 		m_Data = new char[size];
@@ -574,11 +586,6 @@ namespace mtk
 		return string;
 	}
 
-	bool String::IsEmpty() const
-	{
-		return m_Data == nullptr || m_Size == 0;
-	}
-
 	bool String::Equals(const String& _other) const
 	{
 		if (m_Size != _other.m_Size) return false;
@@ -973,6 +980,23 @@ namespace mtk
 		return splitList;
 	}
 
+	// IHashable Overrides
+	
+	newhash_t String::HashCode() const
+	{
+		newhash_t hash = 0;
+		
+		const char* end = m_Data + m_Size;
+		for (char* iter = m_Data; iter != end; ++iter)
+		{
+			hash += *iter;
+		}
+
+		hash += typeid(String).hash_code() + m_Size;
+		
+		return hash;
+	}
+
 	// Operator Overloads
 	
 	String::operator std::string() const
@@ -1048,6 +1072,8 @@ namespace mtk
 				{
 					m_Data[i] = _other[i];
 				}
+
+				m_Size = size;
 				return *this;
 			}
 		}
@@ -1058,6 +1084,7 @@ namespace mtk
 
 		strcpy_s(m_Data, size + 1, _other);
 		m_Data[size] = 0;
+		m_Size = size;
 		return *this;
 	}
 
@@ -1077,6 +1104,8 @@ namespace mtk
 				{
 					m_Data[i] = _other[i];
 				}
+
+				m_Size = size;
 				return *this;
 			}
 		}
@@ -1087,6 +1116,7 @@ namespace mtk
 
 		strcpy_s(m_Data, size+1, _other);
 		m_Data[size] = 0;
+		m_Size = size;
 		return *this;
 	}
 
@@ -1264,22 +1294,22 @@ namespace mtk
 	BufferView BufferView::Empty = { };
 	
 	BufferView::BufferView(const char* _ref)
-	: c_StartRef(_ref), c_EndRef(_ref + strlen(_ref)), m_Size(strlen(_ref))
+		: Sequence { strlen(_ref) }, c_StartRef(_ref), c_EndRef(_ref + strlen(_ref))
 	{
 	}
 
 	BufferView::BufferView(const String& _ref)
-		: c_StartRef(_ref.Data()), c_EndRef(_ref.Data() + _ref.Size()), m_Size(_ref.Size())
+		: Sequence { _ref.Size() }, c_StartRef(_ref.Data()), c_EndRef(_ref.Data() + _ref.Size())
 	{
 	}
 
 	BufferView::BufferView(const char* _startRef, const char* _endRef)
-	: c_StartRef(_startRef), c_EndRef(_endRef), m_Size(strlen(c_StartRef) - strlen(c_EndRef))
+		: Sequence { strlen(_startRef) - strlen(_endRef) }, c_StartRef(_startRef), c_EndRef(_endRef)
 	{
 	}
 
 	BufferView::BufferView()
-		: c_StartRef(nullptr), c_EndRef(nullptr), m_Size(0)
+		: Sequence { 0 }, c_StartRef(nullptr), c_EndRef(nullptr)
 	{
 	}
 
