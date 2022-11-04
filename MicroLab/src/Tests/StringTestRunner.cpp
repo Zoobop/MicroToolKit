@@ -7,17 +7,8 @@ void TestRunner<String>::Run()
     TEST_MESSAGE       ("======================================================================\n");
     TEST_MESSAGE_FORMAT("  Zoobop's {} TestRunner                                              \n", NAMEOF(String));
     TEST_MESSAGE       ("======================================================================\n");
-    
-    TEST(Test_Default_Constructor);
-    TEST(Test_Copy_Constructor);
-    TEST(Test_Move_Constructor);
-    TEST(Test_Explicit_Char_Constructor);
-    TEST(Test_Char_Pointer_Constructor);
-    TEST(Test_Const_Char_Pointer_Constructor);
-    TEST(Test_Std_String_Copy_Constructor);
-    TEST(Test_Std_String_Move_Constructor);
-    TEST(Test_Std_StringView_Constructor);
-    TEST(Test_Const_Char_Pointer_Range_Constructor);
+
+    TEST(Test_Constructors);
 
     TEST(Test_IndexOf_Char);
     TEST(Test_IndexOf_String);
@@ -53,15 +44,126 @@ void TestRunner<String>::ShowResults(const Func<bool>& _function, const String& 
     TEST_BAD_RESULT("[FAILURE]");
 }
 
-bool TestRunner<String>::Test_Default_Constructor()
+bool TestRunner<String>::Test_Constructors()
 {
     try
     {
-        // Setup
-        const String empty;
+        //// Constructor()
+        {
+            // Setup
+            const String string;
 
-        // Assert
-        TEST_ASSERT(empty == String::Empty);
+            // Assert
+            TEST_ASSERT(string == String::Empty);
+        }
+
+        //// Constructor(const String&)
+        {
+            // Setup
+            const String string1 = "Zoobop is a good guy";
+            const String string2 = string1;
+
+            // Assert
+            TEST_ASSERT(string1.Equals("Zoobop is a good guy"));
+            TEST_ASSERT(string2.Equals("Zoobop is a good guy"));
+            TEST_ASSERT(string1.Equals(string2));
+        }
+        
+        //// Constructor(String&&)
+        {
+            // Setup
+            String string1 = "Zoobop is a good guy";
+            String string2 = std::move(string1);
+
+            // Assert
+            TEST_ASSERT(!string1.Equals("Zoobop is a good guy"));
+            TEST_ASSERT(string2.Equals("Zoobop is a good guy"));
+            TEST_ASSERT(!string1.Equals(string2));
+        }
+            
+        //// explicit Constructor(char)
+        {
+            // Setup
+            const String character('a');
+
+            // Assert
+            TEST_ASSERT(character.Equals('a'));
+        }
+
+        //// Constructor(char*)
+        {
+            // Setup
+            char charPointer[6];
+            charPointer[0] = 'a';
+            charPointer[1] = 'b';
+            charPointer[2] = 'c';
+            charPointer[3] = 'd';
+            charPointer[4] = 'e';
+            charPointer[5] = 0;
+            const String charPointerString = charPointer;
+
+            // Assert
+            TEST_ASSERT(charPointerString.Size() == 5); // 1 + length of str
+            TEST_ASSERT(charPointerString.Equals("abcde"));
+        }
+
+        //// Constructor(const char*)
+        {
+            // Setup
+            const char* constCharPointer = "Zoobop is a good guy";
+            const String constCharPointerString = constCharPointer;
+
+            // Assert
+            TEST_ASSERT(constCharPointerString.Equals("Zoobop is a good guy"));
+            TEST_ASSERT(constCharPointerString.Equals(constCharPointer));
+            TEST_ASSERT(constCharPointerString.Size() == 20);
+        }
+
+        //// Constructor(const std::string&)
+        {
+            // Setup
+            const std::string stdString = "Zoobop is a good guy";
+            String string = stdString;
+
+            // Assert
+            TEST_ASSERT(string.Equals(stdString));
+            TEST_ASSERT(string.Size() == stdString.size());
+        }
+
+        //// Constructor(std::string&&)
+        {
+            // Setup
+            std::string stdString = "Zoobop is a good guy";
+            String string = std::move(stdString);
+
+            // Assert
+            TEST_ASSERT(stdString != "Zoobop is a good guy");
+            TEST_ASSERT(string.Equals("Zoobop is a good guy"));
+        }
+
+        //// Constructor(std::string_view)
+        {
+            // Setup
+            std::string stdString = "Zoobop is a good guy";
+            std::string_view strview = stdString;
+            String string = strview;
+
+            // Assert
+            TEST_ASSERT(stdString == "Zoobop is a good guy");
+            TEST_ASSERT(string.Equals("Zoobop is a good guy"));
+            TEST_ASSERT(string.Equals(strview));
+            TEST_ASSERT(string.Equals(stdString));
+        }
+
+        //// Constructor(const char*, size_t)
+        {
+            // Setup
+            const String string = { "Zoobop is a good guy", 10 };
+
+            // Assert
+            TEST_ASSERT(string.Equals("Zoobop is "));
+        }
+        
         return true;
     }
     catch (const std::exception&)
@@ -69,171 +171,6 @@ bool TestRunner<String>::Test_Default_Constructor()
         return false;
     }
 }
-
-bool TestRunner<String>::Test_Copy_Constructor()
-{
-    try
-    {
-        // Setup
-        const String string1 = "Zoobop is a good guy";
-        const String string2 = string1;
-
-        // Assert
-        TEST_ASSERT(string1.Equals("Zoobop is a good guy"));
-        TEST_ASSERT(string2.Equals("Zoobop is a good guy"));
-        TEST_ASSERT(string1.Equals(string2));
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-bool TestRunner<String>::Test_Move_Constructor()
-{
-    try
-    {
-        // Setup
-        String string1 = "Zoobop is a good guy";
-        String string2 = std::move(string1);
-
-        // Assert
-        TEST_ASSERT(!string1.Equals("Zoobop is a good guy"));
-        TEST_ASSERT(string2.Equals("Zoobop is a good guy"));
-        TEST_ASSERT(!string1.Equals(string2));
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-bool TestRunner<String>::Test_Explicit_Char_Constructor()
-{
-    try
-    {
-        // Setup
-        const String character('a');
-
-        // Assert
-        TEST_ASSERT(character.Equals('a'));
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-bool TestRunner<String>::Test_Char_Pointer_Constructor()
-{
-    try
-    {
-        // Setup
-        char str[6];
-        str[0] = 'a';
-        str[1] = 'b';
-        str[2] = 'c';
-        str[3] = 'd';
-        str[4] = 'e';
-        str[5] = 0;
-        const String string = str;
-
-        // Assert
-        TEST_ASSERT(string.Size() == 5); // 1 + length of str
-        TEST_ASSERT(string.Equals("abcde"));
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-bool TestRunner<String>::Test_Const_Char_Pointer_Constructor()
-{
-    try
-    {
-        // Setup
-        const char* str = "Zoobop is a good guy";
-        const String string = str;
-
-        // Assert
-        TEST_ASSERT(string.Equals("Zoobop is a good guy"));
-        TEST_ASSERT(string.Equals(str));
-        TEST_ASSERT(string.Size() == 20);
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-bool TestRunner<String>::Test_Std_String_Copy_Constructor()
-{
-    try
-    {
-        // Setup
-        const std::string stdString = "Zoobop is a good guy";
-        String string = stdString;
-
-        // Assert
-        TEST_ASSERT(string.Equals(stdString));
-        TEST_ASSERT(string.Size() == stdString.size());
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-bool TestRunner<String>::Test_Std_String_Move_Constructor()
-{
-    try
-    {
-        std::string stdString = "Zoobop is a good guy";
-        String string = std::move(stdString);
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-bool TestRunner<String>::Test_Std_StringView_Constructor()
-{
-    try
-    {
-        std::string stdString = "Zoobop is a good guy";
-        std::string_view strview = stdString;
-        String string = strview;
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-bool TestRunner<String>::Test_Const_Char_Pointer_Range_Constructor()
-{
-    try
-    {
-        String string = { "Zoobop is a good guy", 10 };
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}
-
-
 
 bool TestRunner<String>::Test_IndexOf_Char()
 {

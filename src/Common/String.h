@@ -1,9 +1,7 @@
 #pragma once
 #include <ostream>
-
-#include "List.h"
-#include "Collections/Sequence.h"
 #include "Core/Core.h"
+#include "Collections/Sequence.h"
 #include "Interfaces/IHashable.h"
 
 namespace mtk {
@@ -26,7 +24,6 @@ namespace mtk {
 		String(BufferView _string);
 		String(const char* _begin, size_t _count);
 		String(const char* _begin, const char* _end);
-		~String() override;
 
 		// Utility
 		String& Append(const String& _string);
@@ -38,6 +35,7 @@ namespace mtk {
 		String& Append(std::string&& _string) noexcept;
 		String& Append(std::string_view _string);
 		String& Append(BufferView _string);
+		void Clear();
 		NODISCARD void Insert(char _character, size_t _index) const;
 		NODISCARD int32_t IndexOf(char _character) const;
 		NODISCARD int32_t IndexOf(const String& _string, size_t _startIndex, size_t _length) const;
@@ -72,8 +70,8 @@ namespace mtk {
 		NODISCARD String TrimEnd(char _character) const;
 		NODISCARD String TrimEnd(std::initializer_list<char>&& _characters) const;
 
-		NODISCARD List<String> Split(char _delimiter = ' ') const;
-		NODISCARD List<String> Split(std::initializer_list<char>&& _characters) const;
+		NODISCARD Sequence<String> Split(char _delimiter = ' ') const;
+		NODISCARD Sequence<String> Split(std::initializer_list<char>&& _characters) const;
 
 		// IHashable Overrides
 		NODISCARD newhash_t HashCode() const override;

@@ -1,5 +1,6 @@
 ﻿#include "Common/String.h"
 
+#include "List.h"
 #include "Common/Set.h"
 
 namespace mtk
@@ -7,19 +8,13 @@ namespace mtk
 	String String::Empty = {};
 	
 	String::String()
-		: Sequence<char> { nullptr, 0 }
+		: Sequence<char> { }
 	{
 	}
 	
 	String::String(const String& _other)
-		: Sequence<char>(_other)
+		: Sequence<char> { _other.Data(), _other.Size() }
 	{
-		m_Size = _other.m_Size;
-		if (m_Size == 0) return;
-
-		m_Data = new char[m_Size + 1];
-		strcpy_s(m_Data, m_Size + 1, _other.m_Data);
-		m_Data[m_Size] = 0;
 	}
 
 	String::String(String&& _other) noexcept
@@ -30,103 +25,49 @@ namespace mtk
 	}
 
 	String::String(char _char)
-		: Sequence<char> { }
+		: Sequence<char> { _char }
 	{
-		m_Data = new char[2];
-		m_Size = 1;
-		m_Data[0] = _char;
-		m_Data[m_Size] = 0;
 	}
 
 	String::String(char* _char)
-		: Sequence<char> { }
+		: Sequence<char> { _char, strlen(_char) }
 	{
-		m_Size = strlen(_char);
-		if (m_Size == 0) return;
-			
-		m_Data = new char[m_Size + 1];
-		memcpy_s(m_Data, m_Size+1, _char, m_Size+1);
-		m_Data[m_Size] = 0;
 	}
 
 	String::String(const char* _char)
 		: Sequence<char> { _char, strlen(_char) }
 	{
-		m_Size = strlen(_char);
-		if (m_Size == 0) return;
-			
-		m_Data = new char[m_Size + 1];
-		strcpy_s(m_Data, m_Size+1, _char);
-		m_Data[m_Size] = 0;
 	}
 
 	String::String(const std::string& _string)
-		: Sequence<char> { }
+		: Sequence<char> { _string.data(), _string.size() }
 	{
-		m_Size = _string.size();
-		if (m_Size == 0) return;
-			
-		m_Data = new char[m_Size + 1];
-		strcpy_s(m_Data, m_Size+1, _string.c_str());
-		m_Data[m_Size] = 0;
 	}
 	
 	String::String(std::string&& _string)
-		: Sequence<char> { }
+		: Sequence<char> { (const char*&&)_string.data(), _string.size() }
 	{
-		m_Size = _string.size();
-		if (m_Size == 0) return;
-
-		m_Data = new char[m_Size+1];
-		memmove_s(m_Data, m_Size+1, _string.c_str(), m_Size+1);
+		_string.clear();
 	}
 	
 	String::String(std::string_view _string)
-		: Sequence<char> { }
+		: Sequence<char> { _string.data(), _string.size() }
 	{
-		m_Size = _string.size();
-		if (m_Size == 0) return;
-			
-		m_Data = new char[m_Size + 1];
-		strcpy_s(m_Data, m_Size+1, _string.data());
-		m_Data[m_Size] = 0;
 	}
 
 	String::String(BufferView _string)
-		: Sequence<char> { }
+		: Sequence<char> { _string.Data(), _string.Size() }
 	{
-		m_Size = _string.Size();
-		if (m_Size == 0) return;
-			
-		m_Data = new char[m_Size + 1];
-		memcpy_s(m_Data, m_Size+1, _string.Data(), _string.Size());
-		m_Data[m_Size] = 0;
 	}
 
 	String::String(const char* _begin, size_t _count)
-		: Sequence<char> { }
+		: Sequence<char> { _begin, _count }
 	{
-		m_Size = _count;
-		m_Data = new char[_count + 1];
-		memcpy_s(m_Data, _count + 1, _begin, _count);
-		m_Data[_count] = 0;
 	}
 
 	String::String(const char* _begin, const char* _end)
-		: Sequence<char> { }
+		: Sequence<char> { _begin, _end }
 	{
-		const size_t size = strlen(_begin) - strlen(_end) + 1;
-		m_Data = new char[size];
-		for (char* iter = (char*) _begin; iter != _end; ++iter, m_Size++)
-		{
-			m_Data[m_Size] = *iter;
-		}
-		m_Data[m_Size] = 0;
-	}
-
-	String::~String()
-	{
-		free(m_Data);
 	}
 
 	// Utility
@@ -324,6 +265,13 @@ namespace mtk
 		m_Size += length;
 		m_Data[m_Size] = 0;
 		return *this;
+	}
+
+	void String::Clear()
+	{
+		free(m_Data);
+		m_Data = nullptr;
+		m_Size = 0;
 	}
 
 	void String::Insert(char _character, size_t _index) const
@@ -943,8 +891,9 @@ namespace mtk
 		return *this;
 	}
 
-	List<String> String::Split(char _delimiter) const
+	Sequence<String> String::Split(char _delimiter) const
 	{
+		// TODO: Refactor when List is modified
 		List<String> splitList(m_Size);
 		for (size_t i = 0, prev = 0; i < m_Size + 1; i++) {
 			if (m_Data[i] == '\r' || m_Data[i] == '\n') {
@@ -957,13 +906,14 @@ namespace mtk
 				prev = i + 1;
 			}
 		}
-		return splitList;
+		return { splitList.Data(), splitList.Size() };
 	}
 
-	List<String> String::Split(std::initializer_list<char>&& _characters) const
+	Sequence<String> String::Split(std::initializer_list<char>&& _characters) const
 	{
+		// TODO: Refactor when List is modified
 		List<String> splitList(m_Size);
-		if (_characters.size() == 0) return splitList;
+		if (_characters.size() == 0) return { };
 
 		Set<char> set((std::initializer_list<char>&&)_characters);
 		for (size_t i = 0, prev = 0; i < m_Size + 1; i++) {
@@ -977,7 +927,7 @@ namespace mtk
 				prev = i + 1;
 			}
 		}
-		return splitList;
+		return { splitList.Data(), splitList.Size() };
 	}
 
 	// IHashable Overrides
@@ -1008,7 +958,7 @@ namespace mtk
 	{
 		return m_Data;
 	}
-	
+
 	const char& String::operator[](const size_t& _index)
 	{
 		if (_index >= m_Size) {
@@ -1309,7 +1259,7 @@ namespace mtk
 	}
 
 	BufferView::BufferView()
-		: Sequence { 0 }, c_StartRef(nullptr), c_EndRef(nullptr)
+		: Sequence { (size_t) 0 }, c_StartRef(nullptr), c_EndRef(nullptr)
 	{
 	}
 

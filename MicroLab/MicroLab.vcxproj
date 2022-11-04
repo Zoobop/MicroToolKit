@@ -107,8 +107,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\TestRunner.h" />
+    <ClInclude Include="src\Example\Object.h" />
+    <ClInclude Include="src\Example\Person.h" />
+    <ClInclude Include="src\Example\Type.h" />
     <ClInclude Include="src\Tests\StringTestRunner.h" />
+    <ClInclude Include="src\Tests\TestRunner.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

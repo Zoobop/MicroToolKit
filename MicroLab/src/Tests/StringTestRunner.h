@@ -22,16 +22,7 @@ private:
     /* ======== Tests ======== */
 
     // Constructors
-    static bool Test_Default_Constructor();
-    static bool Test_Copy_Constructor();
-    static bool Test_Move_Constructor();
-    static bool Test_Explicit_Char_Constructor();
-    static bool Test_Char_Pointer_Constructor();
-    static bool Test_Const_Char_Pointer_Constructor();
-    static bool Test_Std_String_Copy_Constructor();
-    static bool Test_Std_String_Move_Constructor();
-    static bool Test_Std_StringView_Constructor();
-    static bool Test_Const_Char_Pointer_Range_Constructor();
+    static bool Test_Constructors();
 
     // Utility
     static bool Test_IndexOf_Char();

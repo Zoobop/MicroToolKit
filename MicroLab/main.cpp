@@ -1,4 +1,4 @@
-#include "Tests/StringTestRunner.h"
+#include "Example/Person.h"
 #include "IO/IOHandler.h"
 
 int main()
@@ -10,14 +10,9 @@ int main()
     //List<String> splitList = str.Split({ ' ', 'o' });
 
     //IOHandler::WriteLine(splitList);
-    String strings[10];
-    strings[0] = "Zoobop";
-    
-    Sequence sequence { strings, 6 };
-    for (const auto& item : sequence)
-    {
-        IOHandler::Write(item);
-    }
+
+    String string = "Zoobop";
+    IOHandler::WriteLine(string);
     
     return 0;
 }

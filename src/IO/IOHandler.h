@@ -28,7 +28,14 @@ namespace mtk
         template<typename _Type>
         static void WriteLine(const _Type& _object)
         {
-            std::cout << _object << "\n";
+            try
+            {
+                std::cout << _object << "\n";
+            }
+            catch (const std::exception&)
+            {
+                std::cout << &_object << "\n";
+            }
         }
         
         template<typename ... _Args>
@@ -40,7 +47,14 @@ namespace mtk
         template<typename _Type>
         static void Write(const _Type& _object)
         {
-            std::cout << _object;
+            try
+            {
+                std::cout << _object;
+            }
+            catch (const std::exception&)
+            {
+                std::cout << &_object;
+            }
         }
         
         template<typename ... _Args>
