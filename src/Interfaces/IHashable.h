@@ -7,8 +7,6 @@ namespace mtk {
 	class IHashable
 	{
 	public:
-		virtual ~IHashable() = default;
-		
 		NODISCARD virtual _HashType HashCode() const = 0;
 	};
 

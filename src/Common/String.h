@@ -1,5 +1,4 @@
 #pragma once
-#include <ostream>
 #include "Core/Core.h"
 #include "Collections/Sequence.h"
 #include "Interfaces/IHashable.h"
@@ -13,9 +12,10 @@ namespace mtk {
 	public:
 		// Constructors/Destructors
 		String();
+		explicit String(size_t _size);
 		String(const String& _other);
 		String(String&& _other) noexcept;
-		explicit String(char _char);
+		explicit String(const char _char);
 		String(char* _char);
 		String(const char* _char);
 		String(const std::string& _string);
@@ -77,6 +77,7 @@ namespace mtk {
 		NODISCARD newhash_t HashCode() const override;
 		
 		// Operator Overloads
+		explicit operator const char*() const;
 		explicit operator std::string() const;
 		explicit operator BufferView() const;
 		
@@ -116,6 +117,7 @@ namespace mtk {
 		friend String;
 
 		// Constructors/Destructors
+		BufferView();
 		BufferView(const char* _ref);
 		BufferView(const String& _ref);
 		BufferView(const BufferView&) = default;
@@ -144,7 +146,6 @@ namespace mtk {
 
 	private:
 		BufferView(const char* _startRef, const char* _endRef);
-		BufferView();
 
 	public:
 		// Static

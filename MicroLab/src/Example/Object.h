@@ -7,7 +7,7 @@
 using namespace mtk;
 
 template<typename _Type>
-class Object : public IHashable<>
+class BaseObject : public IHashable<>
 {
 public:
     virtual _Type& Assign(const _Type& _object) = 0;
@@ -38,29 +38,48 @@ public:
         return NAMEOF(EVAL(&this));
     }
 
-    Object& operator=(const Object& _other)
+    _Type& operator=(const _Type& _other)
     {
         return Assign(_other);
     }
     
-    Object& operator=(Object&& _other) noexcept
+    _Type& operator=(_Type&& _other) noexcept
     {
         return Assign(std::move(_other));
     }
     
-    friend bool operator==(const Object& _left, const Object& _right)
+    friend bool operator==(const _Type& _left, const _Type& _right)
     {
         return _left.Equals(_right);
     }
     
-    friend bool operator!=(const Object& _left, const Object& _right)
+    friend bool operator!=(const _Type& _left, const _Type& _right)
     {
         return !(_left == _right);
     }
     
-    friend std::ostream& operator<<(std::ostream& _stream, const Object& _object)
+    friend std::ostream& operator<<(std::ostream& _stream, const BaseObject& _object)
     {
         _stream << _object.ToString();
         return _stream;
+    }
+};
+
+class Object : public BaseObject<Object>
+{
+public:
+    Object& Assign(const Object& _object) override
+    {
+        return *this;
+    }
+    
+    Object& Assign(Object&& _object) override
+    {
+        return *this;
+    }
+    
+    NODISCARD String ToString() const override
+    {
+        return { "Object" };
     }
 };

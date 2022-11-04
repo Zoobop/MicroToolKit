@@ -1,4 +1,6 @@
-﻿#include "Common/String.h"
+﻿#include <utility>
+
+#include "Common/String.h"
 
 #include "List.h"
 #include "Common/Set.h"
@@ -11,7 +13,14 @@ namespace mtk
 		: Sequence<char> { }
 	{
 	}
-	
+
+	String::String(size_t _size)
+		: Sequence<char> { _size }
+	{
+		m_Data = new char[_size + 1];
+		m_Data[_size] = 0;
+	}
+
 	String::String(const String& _other)
 		: Sequence<char> { _other.Data(), _other.Size() }
 	{
@@ -24,7 +33,7 @@ namespace mtk
 		_other.m_Size = 0;
 	}
 
-	String::String(char _char)
+	String::String(const char _char)
 		: Sequence<char> { _char }
 	{
 	}
@@ -127,7 +136,7 @@ namespace mtk
 			m_Data = new char[m_Size + 2];
 			memmove_s(m_Data, m_Size + 2, oldData, m_Size+1);
 			m_Data[m_Size] = _character;
-			free(oldData);
+			delete[] oldData;
 		}
 		
 		m_Size += 1;
@@ -417,7 +426,7 @@ namespace mtk
 		memmove_s(string, stringCount + 1, buffer, stringCount + 1);
 		string[stringCount] = 0;
 
-		free(buffer);
+		delete[] buffer;
 		return string;
 	}
 
@@ -468,7 +477,7 @@ namespace mtk
 		memmove_s(string, stringCount + 1, buffer, stringCount + 1);
 		string[stringCount] = 0;
 
-		free(buffer);
+		delete[] buffer;
 		return string;
 	}
 
@@ -508,7 +517,7 @@ namespace mtk
 		memmove_s(string, stringCount + 1, buffer, stringCount + 1);
 		string[stringCount] = 0;
 
-		free(buffer);
+		delete[] buffer;
 		return string;
 	}
 
@@ -947,6 +956,11 @@ namespace mtk
 		return hash;
 	}
 
+	String::operator const char*() const
+	{
+		return m_Data;
+	}
+
 	// Operator Overloads
 	
 	String::operator std::string() const
@@ -977,31 +991,38 @@ namespace mtk
 
 	String& String::operator=(const String& _other)
 	{
+		const size_t size = _other.m_Size;
 		if (_other.m_Size == 0) return *this;
-			
-		if (m_Data != nullptr && m_Size != _other.m_Size)
+		
+		if (m_Data != nullptr)
 		{
-			free(m_Data);
-			m_Data = _other.m_Data;
+			Reallocate(size);
 		}
-			
-		m_Size = _other.m_Size;
+		else
+		{
+			Allocate(size);
+		}
+
+		memcpy_s(m_Data, m_Size + 1, _other.Data(), m_Size);
 		return *this;
 	}
 
 	String& String::operator=(String&& _other) noexcept
 	{
+		const size_t size = _other.m_Size;
 		if (_other.m_Size == 0) return *this;
-			
+		
 		if (m_Data != nullptr)
 		{
-			free(m_Data);
+			Reallocate(size);
+		}
+		else
+		{
+			Allocate(size);
 		}
 
-		m_Data = _other.m_Data;
-		m_Size = _other.m_Size;
-
-		_other.m_Data = nullptr;
+		memmove_s(m_Data, m_Size + 1, _other.Data(), m_Size);
+		_other.Clear();
 		return *this;
 	}
 
@@ -1009,32 +1030,17 @@ namespace mtk
 	{
 		const size_t size = strlen(_other);
 		if (size == 0) return *this;
-			
+		
 		if (m_Data != nullptr)
 		{
-			if (m_Size != size)
-			{
-				free(m_Data);
-			}
-			else
-			{
-				for (size_t i = 0; i < size; i++)
-				{
-					m_Data[i] = _other[i];
-				}
-
-				m_Size = size;
-				return *this;
-			}
+			Reallocate(size);
 		}
 		else
 		{
-			m_Data = new char[size + 1];
+			Allocate(size);
 		}
 
-		strcpy_s(m_Data, size + 1, _other);
-		m_Data[size] = 0;
-		m_Size = size;
+		memcpy_s(m_Data, m_Size + 1, _other, m_Size);
 		return *this;
 	}
 
@@ -1042,79 +1048,72 @@ namespace mtk
 	{
 		const size_t size = strlen(_other);
 		if (size == 0) return *this;
+		
 		if (m_Data != nullptr)
 		{
-			if (m_Size != size)
-			{
-				free(m_Data);
-			}
-			else 
-			{
-				for (size_t i = 0; i < size; i++)
-				{
-					m_Data[i] = _other[i];
-				}
-
-				m_Size = size;
-				return *this;
-			}
+			Reallocate(size);
 		}
-		else 
+		else
 		{
-			m_Data = new char[size + 1];
+			Allocate(size);
 		}
 
-		strcpy_s(m_Data, size+1, _other);
-		m_Data[size] = 0;
-		m_Size = size;
+		memcpy_s(m_Data, m_Size + 1, _other, m_Size);
 		return *this;
 	}
 
 	String& String::operator=(const std::string& _other)
 	{
-		if (_other.empty()) return *this;
-			
+		const size_t size = _other.size();
+		if (size == 0) return *this;
+		
 		if (m_Data != nullptr)
 		{
-			free(m_Data);
-			m_Data = new char[_other.size() + 1];
-			strcpy_s(m_Data, _other.size() + 1, _other.c_str());
-			m_Data[_other.size()] = 0;
+			Reallocate(size);
 		}
-			
-		m_Size = _other.size();
+		else
+		{
+			Allocate(size);
+		}
+
+		memcpy_s(m_Data, m_Size + 1, _other.data(), m_Size);
 		return *this;
 	}
 	
 	String& String::operator=(std::string&& _other)
 	{
-		if (_other.empty()) return *this;
-			
+		const size_t size = _other.size();
+		if (size == 0) return *this;
+		
 		if (m_Data != nullptr)
 		{
-			free(m_Data);
-			m_Data = new char[_other.size() + 1];
-			memmove_s(m_Data, strlen(m_Data) + 1, _other.c_str(), _other.size() + 1);
-			m_Data[_other.size()] = 0;
+			Reallocate(size);
 		}
-			
-		m_Size = _other.size();
+		else
+		{
+			Allocate(size);
+		}
+
+		memmove_s(m_Data, m_Size + 1, _other.data(), m_Size);
+		_other.clear();
 		return *this;
 	}
 	
 	String& String::operator=(std::string_view _other)
 	{
-		if (_other.empty()) return *this;
-			
+		const size_t size = _other.size();
+		if (size == 0) return *this;
+		
 		if (m_Data != nullptr)
 		{
-			free(m_Data);
-			m_Data = new char[_other.size() + 1];
-			strcpy_s(m_Data, _other.size() + 1, _other.data());
-			m_Data[_other.size() + 1] = 0;
+			Reallocate(size);
 		}
-			
-		m_Size = _other.size();
+		else
+		{
+			Allocate(size);
+		}
+
+		memcpy_s(m_Data, m_Size + 1, _other.data(), m_Size);
 		return *this;
 	}
 
@@ -1160,7 +1159,7 @@ namespace mtk
 
 	String& String::operator+=(BufferView _other)
 	{
-		return Append(_other);
+		return Append(std::move(_other));
 	}
 
 	String operator+(const String& _left, const String& _right)
@@ -1242,6 +1241,11 @@ namespace mtk
 	// BufferView Class
 
 	BufferView BufferView::Empty = { };
+
+	BufferView::BufferView()
+		: Sequence { (size_t) 0 }, c_StartRef(nullptr), c_EndRef(nullptr)
+	{
+	}
 	
 	BufferView::BufferView(const char* _ref)
 		: Sequence { strlen(_ref) }, c_StartRef(_ref), c_EndRef(_ref + strlen(_ref))
@@ -1255,11 +1259,6 @@ namespace mtk
 
 	BufferView::BufferView(const char* _startRef, const char* _endRef)
 		: Sequence { strlen(_startRef) - strlen(_endRef) }, c_StartRef(_startRef), c_EndRef(_endRef)
-	{
-	}
-
-	BufferView::BufferView()
-		: Sequence { (size_t) 0 }, c_StartRef(nullptr), c_EndRef(nullptr)
 	{
 	}
 

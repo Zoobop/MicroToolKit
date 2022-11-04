@@ -3,6 +3,7 @@
 #define VALUE(x)		x
 #define NAMEOF(x)	    #x
 #define EVAL(x)			STRINGIFY(##x)
+#define MIN(a, b)       (((a) < (b)) ? (a) : (b))
 
 #if defined(_WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Windows Platform

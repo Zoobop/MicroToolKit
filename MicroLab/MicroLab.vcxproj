@@ -113,6 +113,9 @@
     <ClInclude Include="src\Tests\StringTestRunner.h" />
     <ClInclude Include="src\Tests\TestRunner.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="src\Output\output.out" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

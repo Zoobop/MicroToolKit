@@ -4,7 +4,7 @@
 
 using namespace mtk;
 
-class Person final : public Object<Person>
+class Person final : public BaseObject<Person>
 {
 public:
     

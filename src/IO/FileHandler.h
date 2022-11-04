@@ -1,87 +1,190 @@
 #pragma once
-#include <string>
 #include <fstream>
 
+#include "Common/String.h"
+
 namespace mtk {
-
-	struct FileData
+	
+	struct FileInfo final
 	{
-		std::string _contents;
-		std::string _path;
-		std::string_view _extension;
+		String contents;
+		String path;
+		BufferView extension;
 
-		FileData(std::string_view _path, const std::string& _contents)
-			: _path(_path), _contents(_contents)
+		FileInfo(const String& _path, const String& _contents)
+			: contents(_contents), path(_path)
 		{
-			auto stringEnd = _path.substr(_path.length() - 5, 5);
-			size_t loc = 0;
-			for (auto i = 0; i < stringEnd.length(); i++) {
-				if (stringEnd[i] == '.') {
-					loc = i;
-					break;
-				}
-			}
-			_extension = stringEnd.substr(loc, stringEnd.length() - loc);
+			const int32_t index = _path.IndexOf('.');
+			if (index == -1) return;
+
+			const BufferView bufferView = _path;
+			extension = bufferView.Slice(index);
 		}
 
 	};
 
-	class FileHandler
+#define FILE_APPEND		8
+#define FILE_WRITE		16
+#define FILE_READ		2
+	
+	class FileHandler final
 	{
 	public:
+		FileHandler() = delete;
 
-		static FileData ReadFromFile(const char* _path)
+		static bool Create(const char* _path)
 		{
-			std::ifstream in(_path, std::ios::binary);
-			if (in) {
-				std::string contents;
+			if (std::ofstream out(_path); out) {
+				out.close();
+				return true;
+			}
+
+			return false;
+		}
+
+		static bool Create(const String& _path)
+		{
+			if (std::ofstream out(_path.Data()); out) {
+				out.close();
+				return true;
+			}
+
+			return false;
+		}
+		
+		static FileInfo Read(const char* _path)
+		{
+			if (std::ifstream in(_path, FILE_READ); in) {
 				in.seekg(0, std::ios::end);
-				contents.resize(in.tellg());
+				String contents { (size_t) in.tellg() };
 				in.seekg(0, std::ios::beg);
-				in.read(&contents[0], contents.size());
+				in.read((char*) contents.Data(), (int64_t) contents.Size());
 				in.close();
 				return { _path, contents };
 			}
-			throw(errno);
+			throw errno;
+		}
+		
+		static FileInfo Read(const String& _path)
+		{
+			if (std::ifstream in(_path.Data(), FILE_READ); in) {
+				in.seekg(0, std::ios::end);
+				String contents { (size_t) in.tellg() };
+				in.seekg(0, std::ios::beg);
+				in.read((char*) contents.Data(), (int64_t) contents.Size());
+				in.close();
+				return { _path, contents };
+			}
+			throw errno;
 		}
 
-		static void WriteToFile(const char* _path, const char* _contents, const std::string& _opt = "a")
+		static void Write(const char* _path, const char* _contents)
 		{
-			int openMode = 0;
-			if (_opt == "a")
-				openMode = std::ios::app;
-			else if (_opt == "r")
-				openMode = std::ios::fixed;
-			else if (_opt == "w")
-				openMode = std::ios::out;
-
-			std::ofstream out(_path, openMode);
-			if (out) {
+			if (std::ofstream out(_path, FILE_WRITE); out) {
 				out << _contents;
 				out.close();
 			}
 		}
 
-		static void WriteToFile(const char* _path, const std::string& _contents, const std::string& _opt = "a")
+		static void Write(const char* _path, const String& _contents)
 		{
-			int openMode = 0;
-			if (_opt == "a")
-				openMode = std::ios::app;
-			else if (_opt == "r")
-				openMode = std::ios::fixed;
-			else if (_opt == "w")
-				openMode = std::ios::out;
-
-			std::ofstream out(_path, openMode);
-			if (out) {
+			if (std::ofstream out(_path, FILE_WRITE); out) {
 				out << _contents;
 				out.close();
 			}
 		}
 
+		static void Write(const String& _path, const char* _contents)
+		{
+			if (std::ofstream out(_path.Data(), FILE_WRITE); out) {
+				out << _contents;
+				out.close();
+			}
+		}
 
-	private:
-		FileHandler() = delete;
+		static void Write(const String& _path, const String& _contents)
+		{
+			if (std::ofstream out(_path.Data(), FILE_WRITE); out) {
+				out << _contents;
+				out.close();
+			}
+		}
+
+		static void WriteLines(const char* _path, const Sequence<String>& _contents)
+		{
+			if (std::ofstream out(_path, FILE_WRITE); out) {
+				for (const String& line : _contents)
+				{
+					out << line << "\n";
+				}
+				out.close();
+			}
+		}
+
+		static void WriteLines(const String& _path, const Sequence<String>& _contents)
+		{
+			if (std::ofstream out(_path.Data(), FILE_WRITE); out) {
+				for (const String& line : _contents)
+				{
+					out << line << "\n";
+				}
+				out.close();
+			}
+		}
+
+		static void Append(const char* _path, const char* _contents)
+		{
+			if (std::ofstream out(_path, FILE_APPEND); out) {
+				out << _contents;
+				out.close();
+			}
+		}
+
+		static void Append(const char* _path, const String& _contents)
+		{
+			if (std::ofstream out(_path, FILE_APPEND); out) {
+				out << _contents;
+				out.close();
+			}
+		}
+
+		static void Append(const String& _path, const char* _contents)
+		{
+			if (std::ofstream out(_path.Data(), FILE_APPEND); out) {
+				out << _contents;
+				out.close();
+			}
+		}
+
+		static void Append(const String& _path, const String& _contents)
+		{
+			if (std::ofstream out(_path.Data(), FILE_APPEND); out) {
+				out << _contents;
+				out.close();
+			}
+		}
+
+		static void AppendLines(const char* _path, const Sequence<String>& _contents)
+		{
+			if (std::ofstream out(_path, FILE_APPEND); out) {
+				for (const String& line : _contents)
+				{
+					out << line << "\n";
+				}
+				out.close();
+			}
+		}
+
+		static void AppendLines(const String& _path, const Sequence<String>& _contents)
+		{
+			if (std::ofstream out(_path.Data(), FILE_APPEND); out) {
+				for (const String& line : _contents)
+				{
+					out << line << "\n";
+				}
+				out.close();
+			}
+		}
 	};
 
 }

@@ -26,9 +26,9 @@ namespace mtk {
 	}
 
 	template<typename _Type>
-	void* Alloc(size_t _size)
+	_Type* Alloc(size_t _size)
 	{
-		return ::operator new(_size * sizeof(_Type));
+		return (_Type*) operator new(_size * sizeof(_Type));
 	}
 
 	template<typename _Type>

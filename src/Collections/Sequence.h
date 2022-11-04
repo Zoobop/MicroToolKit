@@ -119,17 +119,16 @@ namespace mtk
             const size_t length = _data.size();
             if (length == 0) return;
             
-            m_Data = new _Type[length + 1];
+            m_Data = new _Type[length];
             for (const _Type& elem : _data)
             {
-                m_Data[m_Size++] = elem;
+                m_Data[m_Size++] = (_Type&&)std::move(elem);
             }
-            m_Data[m_Size] = 0;
         }
-        
+
         virtual ~Sequence()
         {
-            free(m_Data);
+            delete[] m_Data;
         }
 
         // Accessors
@@ -157,13 +156,34 @@ namespace mtk
             return count;
         }
 
-        static void Contains(const Sequence<_Type>& _sequence, const Predicate<_Type>& _predicate)
+        static bool Contains(const Sequence<_Type>& _sequence, const Predicate<_Type>& _predicate)
         {
-            int32_t count = 0;
             for (const _Type& elem : _sequence)
             {
-                if (_predicate(elem)) count++;
+                if (_predicate(elem)) return true;
             }
+            return false;
+        }
+        
+    protected:
+        void Allocate(size_t size)
+        {
+            m_Data = new _Type[size];
+            m_Size = size;
+        }
+        
+        void Reallocate(size_t size)
+        {
+            _Type* newBlock = new _Type[size];
+
+            if (m_Data != nullptr)
+            {
+                memmove_s(newBlock, size, m_Data, MIN(size, m_Size));
+                delete[] m_Data;
+            }
+
+            m_Data = newBlock;
+            m_Size = size;
         }
         
     protected:
@@ -171,7 +191,12 @@ namespace mtk
         size_t m_Size = 0;
     };
 
-    // String specification
+    
+    ////
+    //// String specification
+    ////
+
+    
     template<>
     class Sequence<char>
     {
@@ -188,66 +213,59 @@ namespace mtk
 
         Sequence(char _char)
         {
-            m_Data = new char[2];
-            m_Size = 1;
+            Allocate(1);
             m_Data[0] = _char;
-            m_Data[m_Size] = 0;
         }
 
         Sequence(char* _data, size_t _size)
         {
-            m_Size = _size;
-            if (m_Size == 0) return;
+            if (_size == 0) return;
 
-            m_Data = new char[m_Size + 1];
+            Allocate(_size);
             strcpy_s(m_Data, m_Size + 1, _data);
-            m_Data[m_Size] = 0;
         }
 
         Sequence(const char* _data)
         {
-            m_Size = strlen(_data);
-            if (m_Size == 0) return;
+            const size_t length = strlen(_data);
+            if (length == 0) return;
 
-            m_Data = new char[m_Size + 1];
+            Allocate(length);
             strcpy_s(m_Data, m_Size + 1, _data);
-            m_Data[m_Size] = 0;
         }
         
         Sequence(const char*& _data, size_t _size)
         {
-            m_Size = _size;
-            if (m_Size == 0) return;
+            if (_size == 0) return;
 
-            m_Data = new char[m_Size + 1];
+            Allocate(_size);
             memcpy_s(m_Data, m_Size + 1, _data, _size);
-            m_Data[m_Size] = 0;
         }
 
         Sequence(const char*&& _data, size_t _size)
         {
-            m_Size = _size;
-            if (m_Size == 0) return;
+            if (_size == 0) return;
 
-            m_Data = new char[m_Size+1];
-            memmove_s(m_Data, m_Size+1, _data, m_Size+1);
-            m_Data[m_Size] = 0;
+            Allocate(_size);
+            memmove_s(m_Data, m_Size+1, _data, _size);
         }
         
         Sequence(const char* _begin, const char* _end)
         {
             const size_t size = strlen(_begin) - strlen(_end) + 1;
+            if (size == 0) return;
+            
             m_Data = new char[size];
-            for (char* iter = (char*) _begin; iter != _end; ++iter, m_Size++)
+            for (char* iter = (char*) _begin; iter != _end; ++iter)
             {
-                m_Data[m_Size] = *iter;
+                m_Data[m_Size++] = *iter;
             }
             m_Data[m_Size] = 0;
         }
         
         virtual ~Sequence()
         {
-            free(m_Data);
+            delete[] m_Data;
         }
 
         // Accessors
@@ -263,6 +281,29 @@ namespace mtk
         Iterator end() { return { m_Data + m_Size }; }
         NODISCARD ConstIterator begin() const { return { m_Data }; }
         NODISCARD ConstIterator end() const { return { m_Data + m_Size }; }
+
+    protected:
+        void Allocate(size_t size)
+        {
+            m_Data = new char[size + 1];
+            m_Data[size] = 0;
+            m_Size = size;
+        }
+        
+        void Reallocate(size_t size)
+        {
+            char* newBlock = new char[size + 1];
+
+            if (m_Data != nullptr)
+            {
+                memmove_s(newBlock, size + 1, m_Data, MIN(size, m_Size));
+                delete[] m_Data;
+            }
+
+            m_Data = newBlock;
+            m_Data[size] = 0;
+            m_Size = size;
+        }
         
     protected:
         char* m_Data = nullptr;

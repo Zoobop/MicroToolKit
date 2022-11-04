@@ -1,4 +1,6 @@
+#include "Common/List.h"
 #include "Example/Person.h"
+#include "IO/FileHandler.h"
 #include "IO/IOHandler.h"
 
 int main()
@@ -11,8 +13,12 @@ int main()
 
     //IOHandler::WriteLine(splitList);
 
-    String string = "Zoobop";
-    IOHandler::WriteLine(string);
+    const String path = R"(C:\dev\MicroToolKit\MicroToolKit\MicroLab\src\Output\output.out)";
+    
+    Sequence<String> data = { "aaaa", "bbbb", "cccc", "dddd", "eeee", "ffff" };
+    
+    FileHandler::WriteLines(path, data);
+    IOHandler::WriteLine(data.Data());
     
     return 0;
 }
