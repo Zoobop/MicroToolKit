@@ -1,5 +1,6 @@
 #pragma once
-#include "TestRunner.h"
+#include "Tests/TestRunner.h"
+
 #include "Common/String.h"
 #include "Core/Function.h"
 

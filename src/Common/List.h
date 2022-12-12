@@ -1,265 +1,398 @@
 #pragma once
-#include "Interfaces/IStruct.h"
-#include "Interfaces/IExtendable.h"
+#include <ostream>
 
-namespace mtk {
+#include "Collections/Sequence.h"
+#include "Interfaces/IList.h"
+#include "Utility/Range.h"
 
-	template<typename _Type>
-	class List : public IStruct<_Type>, public IExtendable<_Type>
+namespace mtk
+{
+	template<typename T>
+	class List final : public Sequence<T>, public IList<T>
 	{
 	public:
-		using Iterator = IStruct<_Type>::Iterator;
-
-		friend class IExtendable<_Type>;
-
-	public:
-		List() 
+		List()
+			: Sequence<T> { }
 		{
-			ReAlloc(2);
+			Reallocate(c_DefaultCapacity);
 		}
 
-		List(size_t _size)
-			: m_Capacity(_size)
+		List(const List<T>& _other)
+			: Sequence<T> { _other }, IList<T>{ }, m_Capacity(_other.m_Capacity)
 		{
-			ReAlloc(m_Capacity);
 		}
 
-		List(std::initializer_list<_Type>&& _initList)
+		List(List<T>&& _other) noexcept
+			: Sequence<T> { std::move(_other) }, IList<T>{ }, m_Capacity(_other.m_Capacity)
 		{
-			size_t size = 0;
-			for (const auto& _item : _initList)
-				size++;
-
-			ReAlloc(size);
-			for (const auto& _item : _initList)
-				Add(std::move(_item));
 		}
 
-		List(const std::vector<_Type>& _vector)
-			: m_Data(const_cast<_Type*>(_vector.data())), m_Capacity(_vector.capacity())
+		List(const Sequence<T>& _other)
+			: Sequence<T> { _other }, IList<T>{ }, m_Capacity(_other.Size())
 		{
-			_SIZE = _vector.size();
 		}
 
-		List(std::vector<_Type>&& _vector)
-			: m_Data(const_cast<_Type*>(_vector.data())), m_Capacity(_vector.capacity())
+		List(Sequence<T>&& _other) noexcept
+			: Sequence<T> { std::move(_other) }, IList<T>{ }, m_Capacity(_other.Size())
 		{
-			_SIZE = _vector.size();
+		}
+
+		List(const std::vector<T>& _vector)
+			: Sequence<T> { _vector.data(), _vector.size(), _vector.capacity() }, IList<T>{ }, m_Capacity(_vector.capacity())
+		{
+		}
+
+		List(std::vector<T>&& _vector)
+			: Sequence<T> { (T*&&) _vector.data(), _vector.size() }, IList<T>{ }, m_Capacity(_vector.capacity())
+		{
 			_vector.clear();
 		}
 
-		List(const List<_Type>& _other)
-			: m_Data(_other.m_Data), m_Capacity(_other.m_Capacity)
+		List(std::initializer_list<T>&& _initList)
+			: Sequence<T> { std::move(_initList) }, IList<T>{ }, m_Capacity(_initList.size())
 		{
-			_SIZE = _other.m_Size;
 		}
 
-		List(List<_Type>&& _other) noexcept
-			: m_Capacity(_other.m_Capacity)
+		explicit List(size_t _capacity)
+			: Sequence<T> { }, IList<T>{ }
 		{
-			m_Data = _other.m_Data;
-			_SIZE = _other.m_Size;
-
-			_other.m_Data = nullptr;
+			Reallocate(_capacity);
 		}
 
-		~List()
+		// Utility
+		void Add(const T& _value) override
 		{
-			//Clear();
-			Delete(m_Data, m_Capacity);
-		}
-
-		// Override Methods
-		virtual bool Add(const _Type& _value) override
-		{
-			if (_SIZE >= m_Capacity) {
-				ReAlloc(m_Capacity + m_Capacity / 2);
+			if (Sequence<T>::m_Size >= m_Capacity) {
+				Reallocate(m_Capacity + m_Capacity);
 			}
 
-			m_Data[_SIZE] = _value;
-			_SIZE++;
-
-			return true;
+			Sequence<T>::m_Data[Sequence<T>::m_Size++] = _value;
 		}
 
-		virtual bool Add(_Type&& _value) override
+		void Add(T&& _value) override
 		{
-			if (_SIZE >= m_Capacity) {
-				ReAlloc(m_Capacity + m_Capacity / 2);
+			if (Sequence<T>::m_Size >= m_Capacity) {
+				Reallocate(m_Capacity + m_Capacity);
 			}
 
-			m_Data[_SIZE] = std::move(_value);
-			_SIZE++;
-
-			return true;
+			Sequence<T>::m_Data[Sequence<T>::m_Size++] = std::move(_value);
 		}
 
 		template<typename ... _Args>
-		_Type& Emplace(_Args&&... args)
+		T& Emplace(_Args&&... args)
 		{
-			if (_SIZE >= m_Capacity) {
-				ReAlloc(m_Capacity + m_Capacity / 2);
+			if (Sequence<T>::m_Size >= m_Capacity) {
+				Reallocate(m_Capacity + m_Capacity);
 			}
 
-			new(&m_Data[_SIZE]) _Type(std::forward<_Args>(args)...);
-			return m_Data[_SIZE++];
+			new(&Sequence<T>::m_Data[Sequence<T>::m_Size]) T(std::forward<_Args>(args)...);
+			return Sequence<T>::m_Data[Sequence<T>::m_Size++];
 		}
 
-		virtual bool AddRange(const IDataHandler<_Type>& _container) override
+		void AddRange(const Sequence<T>& _sequence)
 		{
-			if (_container.Data()) {
-				size_t size = _container.Capacity();
-				for (size_t i = 0; i < size; i++)
-					Add(_container.Data()[i]);
-				return true;
+			if (_sequence.IsEmpty()) return;
+
+			const size_t size = _sequence.Size();
+			const T* data = _sequence.Data();
+			for (size_t i = 0; i < size; i++)
+			{
+				Add(data[i]);
 			}
-			return false;
 		}
 
-		virtual bool AddRange(std::initializer_list<_Type>&& _initList)
+		void AddRange(Sequence<T>&& _sequence)
 		{
-			if (_initList.size() > 0) {
-				for (auto& item : _initList)
-					Add(std::move(item));
-				return true;
+			if (_sequence.IsEmpty()) return;
+
+			const size_t size = _sequence.Size();
+			const T* data = _sequence.Data();
+			for (size_t i = 0; i < size; i++)
+			{
+				Add(std::move(data[i]));
 			}
-			return false;
 		}
 
-		virtual bool AddRange(const std::vector<_Type>& _vector)
+		void AddRange(std::initializer_list<T>&& _initList)
 		{
-			if (_vector.data()) {
-				size_t size = _vector.size();
-				for (size_t i = 0; i < size; i++)
-					Add(_vector.data()[i]);
-				return true;
+			if (_initList.size() == 0) return;
+
+			for (auto& item : _initList)
+			{
+				Add(std::move(item));
 			}
-			return false;
 		}
 
-		virtual bool Remove(const _Type& _value) override
+		void Insert(size_t _index, const T& _value) override
 		{
-			if (_SIZE > 0) {
-				size_t currentIndex = 0;
-				while (currentIndex < _SIZE) {
-					if (m_Data[currentIndex] == _value) {
-						currentIndex++;
-						while (currentIndex < _SIZE) {
-							m_Data[currentIndex - 1] = std::move(m_Data[currentIndex]);
-							currentIndex++;
-						}
+			if (_index >= Sequence<T>::m_Size) {
+				DEBUG_BREAK();
+			}
+			
+			Sequence<T>::m_Data[_index] = _value;
+		}
+		
+		void Insert(size_t _index, T&& _value) override
+		{
+			if (_index >= Sequence<T>::m_Size) {
+				DEBUG_BREAK();
+			}
+			
+			Sequence<T>::m_Data[_index] = std::move(_value);
+		}
+
+		void InsertRange(size_t _index, const Sequence<T>& _sequence)
+		{
+			if (_sequence.Size() == 0) return;
+
+			for (auto& item : _sequence)
+			{
+				Insert(_index++, item);
+			}
+		}
+
+		void InsertRange(size_t _index, Sequence<T>&& _sequence)
+		{
+			if (_sequence.Size() == 0) return;
+
+			for (auto& item : _sequence)
+			{
+				Insert(_index++, std::move(item));
+			}
+		}
+
+		void InsertRange(size_t _index, std::initializer_list<T>&& _initList)
+		{
+			if (_initList.size() == 0) return;
+
+			for (auto& item : _initList)
+			{
+				Insert(_index++, std::move(item));
+			}
+		}
+		
+		bool Remove(const T& _value) override
+		{
+			// Return if empty
+			if (Sequence<T>::IsEmpty()) return false;
+
+			// Get and return if invalid index
+			const int32_t index = Sequence<T>::IndexOf(this->AsSequence(), _value);
+			if (index == -1) return false;
+
+			// Shift items down
+			const size_t size = Sequence<T>::Size();
+			for (size_t i = index + 1; i < size; ++i)
+			{
+				Sequence<T>::m_Data[i - 1] = std::move(Sequence<T>::m_Data[i]);
+			}
+
+			// Decrement size
+			--Sequence<T>::m_Size;
+			return true;
+		}
+
+		uint32_t RemoveAll(const Predicate<T>& _predicate)
+		{
+			// TODO: Finish implementation
+			uint32_t count = 0;
+			const T* data = Sequence<T>::m_Data;
+			const size_t size = Sequence<T>::m_Size;
+			
+			// Find indexes of elements matching predicate
+			for (size_t i = 0; i < size; i++)
+			{
+				const T& elem = data[i];
+				if (_predicate(elem))
+				{
+					const size_t index1 = i;
+					const size_t index2 = i + 1;
+					if (index2 < size)
+					{
+						const T copy = Sequence<T>::m_Data[index2];
+						Sequence<T>::m_Data[index1] = copy;
 					}
-					currentIndex++;
+					
+					count++;
 				}
-
-				_SIZE--;
-				return true;
-
 			}
+
+			Sequence<T>::m_Size -= count;
+			return count;
+		}
+
+		void RemoveAt(size_t _index) override
+		{
+			if (_index >= Sequence<T>::m_Size) return;
+			
+			Remove(Sequence<T>::m_Data[_index]);
+		}
+
+		void RemoveRange(size_t _index, size_t _count)
+		{
+			// TODO: Finish implementation
+		}
+
+		NODISCARD bool Contains(const T& _value) const override
+		{
+			return Sequence<T>::Contains(this->AsSequence(), _value);
+		}
+
+		NODISCARD bool Exists(const Predicate<T>& _predicate) const
+		{
+			for (size_t i = 0 ; i < Sequence<T>::m_Size; i++)
+			{
+				if (_predicate(Sequence<T>::m_Data[i])) return true;
+			}
+			
 			return false;
 		}
 
-		virtual bool Remove(_Type&& _value) override
+		NODISCARD T* Find(const Predicate<T>& _predicate) const
 		{
-			if (_SIZE > 0) {
-				size_t currentIndex = 0;
-				while (currentIndex < _SIZE) {
-					if (m_Data[currentIndex] == _value) {
-						currentIndex++;
-						while (currentIndex < _SIZE) {
-							m_Data[currentIndex - 1] = std::move(m_Data[currentIndex]);
-							currentIndex++;
-						}
-					}
-					currentIndex++;
+			T item = nullptr;
+			for (size_t i = 0 ; i < Sequence<T>::m_Size; i++)
+			{
+				const T& elem = Sequence<T>::m_Data[i];
+				if (_predicate(elem))
+				{
+					item = elem;
+					break;
 				}
-
-				_SIZE--;
-				return true;
-
 			}
-			return false;
+			return item;
 		}
 
-		virtual bool RemoveAt(size_t _index) override
+		NODISCARD int32_t FindIndex(const Predicate<T>& _predicate) const
 		{
-			if (_index >= 0 && _index < _SIZE) {
-				return Remove(m_Data[_index]);
+			int32_t index = -1;
+			for (size_t i = 0 ; i < Sequence<T>::m_Size; i++)
+			{
+				const T& elem = Sequence<T>::m_Data[i];
+				if (_predicate(elem))
+				{
+					index = (int32_t) i;
+					break;
+				}
 			}
-			return false;
+			return index;
 		}
 
-		virtual bool Contains(const _Type& _value) const override
+		NODISCARD T* FindLast(const Predicate<T>& _predicate) const
 		{
-			for (size_t i = 0; i < _SIZE; i++) {
-				if (m_Data[i] == _value)
-					return true;
+			T item = nullptr;
+			for (size_t i = 0 ; i < Sequence<T>::m_Size; i++)
+			{
+				const T& elem = Sequence<T>::m_Data[i];
+				if (_predicate(elem))
+				{
+					item = elem;
+				}
 			}
-			return false;
+			
+			return item;
 		}
 
-		virtual bool Contains(_Type&& _value) const override
+		NODISCARD int32_t FindLastIndex(const Predicate<T>& _predicate) const
 		{
-			for (size_t i = 0; i < _SIZE; i++) {
-				if (m_Data[i] == _value)
-					return true;
+			int32_t index = -1;
+			for (size_t i = 0 ; i < Sequence<T>::m_Size; i++)
+			{
+				const T& elem = Sequence<T>::m_Data[i];
+				if (_predicate(elem))
+				{
+					index = (int32_t) i;
+				}
 			}
-			return false;
+			return index;
 		}
 
-		virtual void Clear() override
+		NODISCARD List<T> FindAll(const Predicate<T>& _predicate) const
 		{
-			for (size_t i = 0; i < _SIZE; i++)
-				m_Data[i].~_Type();
-
-			_SIZE = 0;
-		}
-
-		// IExtendable
-		virtual void ForEach(const Action<const _Type&>& _param) override
-		{
-			for (size_t i = 0; i < _SIZE; i++) {
-				_param(m_Data[i]);
+			List<T> list(Sequence<T>::m_Size);
+			for (size_t i = 0 ; i < Sequence<T>::m_Size; i++)
+			{
+				const T& elem = Sequence<T>::m_Data[i];
+				if (_predicate(elem))
+				{
+					list.Add(elem);
+				}
 			}
+			return list;
 		}
 
-		constexpr virtual const _Type* Data() const override { return m_Data; }
+		void Clear() override
+		{
+			for (size_t i = 0; i < Sequence<T>::m_Size; i++)
+			{
+				Sequence<T>::m_Data[i].~T();
+			}
 
-		constexpr virtual _Type* Data() override { return m_Data; }
+			Sequence<T>::m_Size = 0;
+		}
 
 		// Accessors
-		constexpr virtual inline size_t Capacity() const override { return m_Capacity; }
-
-		constexpr inline void Reserve(size_t _capacity) { ReAlloc(_capacity); }
-
-		// Iterator
-		constexpr Iterator begin() override
-		{
-			return Iterator(m_Data);
-		}
-
-		constexpr Iterator end() override
-		{
-			return Iterator(m_Data + _SIZE);
-		}
+		NODISCARD constexpr size_t Capacity() const override { return m_Capacity; }
+		NODISCARD constexpr void Reserve(size_t _capacity) override { Reallocate(_capacity); }
 
 		// Operator Overloads
-		const _Type& operator[](size_t _index) const 
+		const T& operator[](size_t _index) const 
 		{
 			if (_index >= m_Capacity) {
 				DEBUG_BREAK();
 			}
-			return m_Data[_index];
+			return Sequence<T>::m_Data[_index];
 		}
 
-		void operator=(const List<_Type>& _other)
+		Sequence<T> operator[](Range _range) const 
 		{
-			m_Data = _other.m_Data;
-			_SIZE = _other._SIZE;
-			m_Capacity = _other.m_Capacity;
+			if (_range.end >= m_Capacity || _range.start >= _range.end) {
+				DEBUG_BREAK();
+			}
+			
+			return { Sequence<T>::m_Data + _range.start, _range.end - _range.start };
 		}
 
-		friend std::ostream& operator<<(std::ostream& _stream, const List<_Type>& _current)
+		List<T>& operator=(const List<T>& _other)
+		{
+			const size_t size = _other.m_Size;
+			if (size == 0) return *this;
+			
+			if (!Sequence<T>::IsEmpty())
+			{
+				Reallocate(_other.m_Capacity);
+			}
+			else
+			{
+				Allocate(_other.m_Capacity);
+			}
+
+			Sequence<T>::m_Size = size;
+			memcpy_s(Sequence<T>::m_Data, m_Capacity, _other.Data(), m_Capacity);
+			return *this;
+		}
+
+		List<T>& operator=(List<T>&& _other) noexcept
+		{
+			const size_t size = _other.m_Size;
+			if (size == 0) return *this;
+			
+			if (!Sequence<T>::IsEmpty())
+			{
+				Reallocate(_other.m_Capacity);
+			}
+			else
+			{
+				Allocate(_other.m_Capacity);
+			}
+
+			Sequence<T>::m_Size = size;
+			memmove_s(Sequence<T>::m_Data, m_Capacity, _other.Data(), m_Capacity);
+			_other.Clear();
+			return *this;
+		}
+
+		friend std::ostream& operator<<(std::ostream& _stream, const List<T>& _current)
 		{
 			_stream << "[ ";
 			for (size_t i = 0; i < _current.m_Size; i++) {
@@ -272,30 +405,44 @@ namespace mtk {
 			return _stream;
 		}
 
-	private:
-		void ReAlloc(size_t _capacity)
+	protected:
+		void Allocate(size_t _capacity) override
 		{
-			_Type* newBlock = (_Type*)Alloc<_Type>(_capacity);
+			if (m_Capacity == _capacity) return;
+			
+			Sequence<T>::m_Data = new T[_capacity];
+			m_Capacity = _capacity;
+		}
+		
+		void Reallocate(size_t _capacity) override
+		{
+			if (m_Capacity == _capacity) return;
+			
+			T* newBlock = new T[_capacity];
 
-			if (_capacity < _SIZE)
-				_SIZE = _capacity;
-
-			for (size_t i = 0; i < _SIZE; i++) {
-				newBlock[i] = std::move(m_Data[i]);
+			if (_capacity < Sequence<T>::m_Size)
+			{
+				Sequence<T>::m_Size = _capacity;
 			}
 
-			for (size_t i = 0; i < _SIZE; i++)
-				m_Data[i].~_Type();
+			for (size_t i = 0; i < Sequence<T>::m_Size; i++)
+			{
+				newBlock[i] = std::move(Sequence<T>::m_Data[i]);
+			}
 
-			Delete(m_Data, m_Capacity);
-			m_Data = newBlock;
+			for (size_t i = 0; i < Sequence<T>::m_Size; i++)
+			{
+				Sequence<T>::m_Data[i].~T();
+			}
+
+			delete[] Sequence<T>::m_Data;
+			Sequence<T>::m_Data = newBlock;
 			m_Capacity = _capacity;
 		}
 
 	private:
-		_Type* m_Data = nullptr;
-	
 		size_t m_Capacity = 0;
+		static constexpr size_t c_DefaultCapacity = 4;
 	};
 
 }

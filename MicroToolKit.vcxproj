@@ -115,6 +115,8 @@
     <ClInclude Include="src\Core\Function.h" />
     <ClInclude Include="src\Core\Memory.h" />
     <ClInclude Include="src\Core\Typedef.h" />
+    <ClInclude Include="src\Interfaces\IList.h" />
+    <ClInclude Include="src\Interfaces\IMemory.h" />
     <ClInclude Include="src\IO\FileHandler.h" />
     <ClInclude Include="src\Interfaces\IConvert.h" />
     <ClInclude Include="src\Interfaces\IDataHandler.h" />
@@ -130,6 +132,7 @@
     <ClInclude Include="src\Utility\HashNode.h" />
     <ClInclude Include="src\Utility\MultiNode.h" />
     <ClInclude Include="src\Utility\Random.h" />
+    <ClInclude Include="src\Utility\Range.h" />
     <ClInclude Include="src\Utility\SingleNode.h" />
     <ClInclude Include="src\Utility\Sort.h" />
     <ClInclude Include="src\Utility\StringUtils.h" />

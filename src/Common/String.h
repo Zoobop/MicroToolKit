@@ -2,16 +2,17 @@
 #include "Core/Core.h"
 #include "Collections/Sequence.h"
 #include "Interfaces/IHashable.h"
+#include "Interfaces/IMemory.h"
 
 namespace mtk {
 
 	class BufferView;
 	
-	class String final : public IHashable<>, public Sequence<char>
+	class String final : public IHashable<>, public IMemory<char>
 	{
 	public:
 		// Constructors/Destructors
-		String();
+		String() = default;
 		explicit String(size_t _size);
 		String(const String& _other);
 		String(String&& _other) noexcept;
@@ -24,7 +25,13 @@ namespace mtk {
 		String(BufferView _string);
 		String(const char* _begin, size_t _count);
 		String(const char* _begin, const char* _end);
+		~String();
 
+		// Accessors
+		NODISCARD bool IsEmpty() const override { return m_Data == nullptr || m_Size == 0; }
+		NODISCARD constexpr size_t Size() const override { return m_Size; }
+		NODISCARD constexpr const char* Data() const override  { return m_Data; }
+		
 		// Utility
 		String& Append(const String& _string);
 		String& Append(String&& _string) noexcept;
@@ -35,7 +42,7 @@ namespace mtk {
 		String& Append(std::string&& _string) noexcept;
 		String& Append(std::string_view _string);
 		String& Append(BufferView _string);
-		void Clear();
+		void Clear() override;
 		NODISCARD void Insert(char _character, size_t _index) const;
 		NODISCARD int32_t IndexOf(char _character) const;
 		NODISCARD int32_t IndexOf(const String& _string, size_t _startIndex, size_t _length) const;
@@ -73,6 +80,8 @@ namespace mtk {
 		NODISCARD Sequence<String> Split(char _delimiter = ' ') const;
 		NODISCARD Sequence<String> Split(std::initializer_list<char>&& _characters) const;
 
+		NODISCARD BufferView AsBufferView() const;
+		
 		// IHashable Overrides
 		NODISCARD newhash_t HashCode() const override;
 		
@@ -80,6 +89,7 @@ namespace mtk {
 		explicit operator const char*() const;
 		explicit operator std::string() const;
 		explicit operator BufferView() const;
+		operator Sequence<char>() const;
 		
 		NODISCARD const char& operator[](const size_t& _index);
 		NODISCARD const char& operator[](const size_t& _index) const;
@@ -106,12 +116,21 @@ namespace mtk {
 		friend bool operator==(const String& _left, const String& _right);
 		friend bool operator!=(const String& _left, const String& _right);
 		friend std::ostream& operator<<(std::ostream& _stream, const String& _current);
-
+		
+	protected:
+		void Reallocate(size_t _capacity) override;
+		void Allocate(size_t _capacity) override;
+		
+	public:
 		// Static
 		static String Empty;
+		
+	private:
+		char* m_Data = nullptr;
+		size_t m_Size = 0;
 	};
 
-	class BufferView final : public Sequence<char>
+	class BufferView final : public IMemory<char>
 	{
 	public:
 		friend String;
@@ -122,15 +141,17 @@ namespace mtk {
 		BufferView(const String& _ref);
 		BufferView(const BufferView&) = default;
 		BufferView(BufferView&&) = default;
-		~BufferView() override = default;
+		~BufferView() = default;
 
 		// Accessors
 		NODISCARD const char* Data() const override { return c_StartRef; }
+		NODISCARD constexpr size_t Size() const override { return m_Size; }
 
 		// Utility
 		NODISCARD BufferView Slice(size_t _start) const;
 		NODISCARD BufferView Slice(size_t _start, size_t _length) const;
 		NODISCARD bool IsEmpty() const override;
+		void Clear() override;
 		NODISCARD bool Equals(const BufferView& _other) const;
 
 		// Operator Overloads
@@ -146,7 +167,11 @@ namespace mtk {
 
 	private:
 		BufferView(const char* _startRef, const char* _endRef);
-
+	
+	protected:
+		void Reallocate(size_t _capacity) override { }
+		void Allocate(size_t _capacity) override { }
+		
 	public:
 		// Static
 		static BufferView Empty;
@@ -154,5 +179,6 @@ namespace mtk {
 	private:
 		const char* c_StartRef;
 		const char* c_EndRef;
+		size_t m_Size;
 	};
 }

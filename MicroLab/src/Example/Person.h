@@ -8,14 +8,15 @@ class Person final : public BaseObject<Person>
 {
 public:
     
-    Person()
-    {
-    }
+    Person() = default;
+    //Person(const Person&) = default;
+    //Person(Person&&) = default;
 
     Person(const String& _firstName, const String& _lastName, uint16_t _age)
     : m_FirstName(_firstName), m_LastName(_lastName), m_Age(_age)
     {
     }
+    ~Person() = default;
 
     NODISCARD const String& FirstName() const { return m_FirstName; }
     NODISCARD const String& LastName() const { return m_LastName; }
@@ -60,3 +61,5 @@ private:
     String m_LastName;
     uint16_t m_Age = 0;
 };
+
+typedef Person ComplexType;

@@ -8,75 +8,117 @@
 namespace mtk
 {
 	String String::Empty = {};
-	
-	String::String()
-		: Sequence<char> { }
-	{
-	}
 
 	String::String(size_t _size)
-		: Sequence<char> { _size }
 	{
 		m_Data = new char[_size + 1];
 		m_Data[_size] = 0;
 	}
 
 	String::String(const String& _other)
-		: Sequence<char> { _other.Data(), _other.Size() }
 	{
+		if (_other.m_Size == 0) return;
+
+		Allocate(_other.m_Size);
+		memcpy_s(m_Data, m_Size + 1, _other.m_Data, m_Size);
 	}
 
 	String::String(String&& _other) noexcept
-		: Sequence<char> { _other.Data(), _other.Size() }
 	{
+		if (_other.m_Size == 0) return;
+
+		Allocate(_other.m_Size);
+		memmove_s(m_Data, m_Size + 1, _other.m_Data, m_Size);
+
 		_other.m_Data = nullptr;
 		_other.m_Size = 0;
 	}
 
 	String::String(const char _char)
-		: Sequence<char> { _char }
 	{
+		Allocate(1);
+		m_Data[0] = _char;
 	}
 
 	String::String(char* _char)
-		: Sequence<char> { _char, strlen(_char) }
 	{
+		const size_t length = strlen(_char);
+		if (length == 0) return;
+
+		Allocate(length);
+		memcpy_s(m_Data, m_Size + 1, _char, m_Size);
 	}
 
 	String::String(const char* _char)
-		: Sequence<char> { _char, strlen(_char) }
 	{
+		const size_t length = strlen(_char);
+		if (length == 0) return;
+
+		Allocate(length);
+		memcpy_s(m_Data, m_Size + 1, _char, m_Size);
 	}
 
 	String::String(const std::string& _string)
-		: Sequence<char> { _string.data(), _string.size() }
 	{
+		const size_t length = _string.size();
+		if (length == 0) return;
+
+		Allocate(length);
+		memcpy_s(m_Data, m_Size + 1, _string.data(), m_Size);
 	}
 	
 	String::String(std::string&& _string)
-		: Sequence<char> { (const char*&&)_string.data(), _string.size() }
 	{
+		const size_t length = _string.size();
+		if (length == 0) return;
+
+		Allocate(length);
+		memmove_s(m_Data, m_Size + 1, _string.data(), m_Size);
 		_string.clear();
 	}
 	
 	String::String(std::string_view _string)
-		: Sequence<char> { _string.data(), _string.size() }
 	{
+		const size_t length = _string.size();
+		if (length == 0) return;
+
+		Allocate(length);
+		memcpy_s(m_Data, m_Size + 1, _string.data(), m_Size);
 	}
 
 	String::String(BufferView _string)
-		: Sequence<char> { _string.Data(), _string.Size() }
 	{
+		const size_t length = _string.Size();
+		if (length == 0) return;
+
+		Allocate(length);
+		memcpy_s(m_Data, m_Size + 1, _string.Data(), m_Size);
 	}
 
 	String::String(const char* _begin, size_t _count)
-		: Sequence<char> { _begin, _count }
 	{
+		if (_count == 0) return;
+
+		Allocate(_count);
+		memcpy_s(m_Data, m_Size + 1, _begin, _count);
 	}
 
 	String::String(const char* _begin, const char* _end)
-		: Sequence<char> { _begin, _end }
 	{
+		const size_t size = strlen(_begin) - strlen(_end) + 1;
+		if (size == 0) return;
+            
+		m_Data = new char[size];
+		for (char* iter = (char*) _begin; iter != _end; ++iter)
+		{
+			m_Data[m_Size++] = *iter;
+		}
+		m_Data[m_Size] = 0;
+	}
+
+	String::~String()
+	{
+		delete[] m_Data;
 	}
 
 	// Utility
@@ -278,7 +320,7 @@ namespace mtk
 
 	void String::Clear()
 	{
-		free(m_Data);
+		delete[] m_Data;
 		m_Data = nullptr;
 		m_Size = 0;
 	}
@@ -915,7 +957,7 @@ namespace mtk
 				prev = i + 1;
 			}
 		}
-		return { splitList.Data(), splitList.Size() };
+		return { splitList };
 	}
 
 	Sequence<String> String::Split(std::initializer_list<char>&& _characters) const
@@ -923,7 +965,7 @@ namespace mtk
 		// TODO: Refactor when List is modified
 		List<String> splitList(m_Size);
 		if (_characters.size() == 0) return { };
-
+		
 		Set<char> set((std::initializer_list<char>&&)_characters);
 		for (size_t i = 0, prev = 0; i < m_Size + 1; i++) {
 			if (m_Data[i] == '\r' || m_Data[i] == '\n') {
@@ -936,7 +978,34 @@ namespace mtk
 				prev = i + 1;
 			}
 		}
-		return { splitList.Data(), splitList.Size() };
+		return { splitList };
+	}
+
+	BufferView String::AsBufferView() const
+	{
+		return { *this };
+	}
+
+	void String::Allocate(size_t _capacity)
+	{
+		m_Data = new char[_capacity + 1];
+		m_Data[_capacity] = 0;
+		m_Size = _capacity;
+	}
+        
+	void String::Reallocate(size_t _capacity)
+	{
+		char* newBlock = new char[_capacity + 1];
+
+		if (m_Data != nullptr)
+		{
+			memmove_s(newBlock, _capacity + 1, m_Data, MIN(_capacity, m_Size));
+			delete[] m_Data;
+		}
+
+		m_Data = newBlock;
+		m_Data[_capacity] = 0;
+		m_Size = _capacity;
 	}
 
 	// IHashable Overrides
@@ -956,12 +1025,12 @@ namespace mtk
 		return hash;
 	}
 
+	// Operator Overloads
+
 	String::operator const char*() const
 	{
 		return m_Data;
 	}
-
-	// Operator Overloads
 	
 	String::operator std::string() const
 	{
@@ -971,6 +1040,11 @@ namespace mtk
 	String::operator BufferView() const
 	{
 		return m_Data;
+	}
+
+	String::operator Sequence<char>() const
+	{
+		return Sequence<char>::CreateView(m_Data, m_Size);
 	}
 
 	const char& String::operator[](const size_t& _index)
@@ -994,11 +1068,11 @@ namespace mtk
 		const size_t size = _other.m_Size;
 		if (_other.m_Size == 0) return *this;
 		
-		if (m_Data != nullptr)
+		if (m_Data != nullptr && m_Size != _other.m_Size)
 		{
 			Reallocate(size);
 		}
-		else
+		else if (m_Data == nullptr)
 		{
 			Allocate(size);
 		}
@@ -1012,11 +1086,11 @@ namespace mtk
 		const size_t size = _other.m_Size;
 		if (_other.m_Size == 0) return *this;
 		
-		if (m_Data != nullptr)
+		if (m_Data != nullptr && m_Size != _other.m_Size)
 		{
 			Reallocate(size);
 		}
-		else
+		else if (m_Data == nullptr)
 		{
 			Allocate(size);
 		}
@@ -1243,22 +1317,22 @@ namespace mtk
 	BufferView BufferView::Empty = { };
 
 	BufferView::BufferView()
-		: Sequence { (size_t) 0 }, c_StartRef(nullptr), c_EndRef(nullptr)
+		: c_StartRef(nullptr), c_EndRef(nullptr), m_Size(0)
 	{
 	}
 	
 	BufferView::BufferView(const char* _ref)
-		: Sequence { strlen(_ref) }, c_StartRef(_ref), c_EndRef(_ref + strlen(_ref))
+		: c_StartRef(_ref), c_EndRef(_ref + strlen(_ref)), m_Size(strlen(_ref))
 	{
 	}
 
 	BufferView::BufferView(const String& _ref)
-		: Sequence { _ref.Size() }, c_StartRef(_ref.Data()), c_EndRef(_ref.Data() + _ref.Size())
+		: c_StartRef(_ref.Data()), c_EndRef(_ref.Data() + _ref.Size()), m_Size(_ref.Size())
 	{
 	}
 
 	BufferView::BufferView(const char* _startRef, const char* _endRef)
-		: Sequence { strlen(_startRef) - strlen(_endRef) }, c_StartRef(_startRef), c_EndRef(_endRef)
+		: c_StartRef(_startRef), c_EndRef(_endRef), m_Size(strlen(_startRef) - strlen(_endRef))
 	{
 	}
 
@@ -1283,6 +1357,13 @@ namespace mtk
 	bool BufferView::IsEmpty() const
 	{
 		return c_StartRef == nullptr || c_EndRef == nullptr || m_Size == 0;
+	}
+
+	void BufferView::Clear()
+	{
+		c_StartRef = nullptr;
+		c_EndRef = nullptr;
+		m_Size = 0;
 	}
 
 	bool BufferView::Equals(const BufferView& _other) const
