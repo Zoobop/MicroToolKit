@@ -3,6 +3,7 @@
 #include "Utility/Tuple.h"
 #include "Interfaces/IStruct.h"
 #include "Interfaces/IHashTable.h"
+#include "Utility/HashNode.h"
 
 namespace mtk {
 	

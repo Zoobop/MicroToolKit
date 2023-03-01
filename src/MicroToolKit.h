@@ -9,24 +9,19 @@
 #include "Core/Memory.h"
 #include "Core/Typedef.h"
 
-#include "File/FileHandler.h"
+#include "IO/FileHandler.h"
+#include "IO/Log.h"
 
-#include "Common/Array.h"
-#include "Common/List.h"
-#include "Common/Set.h"
-#include "Common/Map.h"
-#include "Common/Stack.h"
-#include "Common/Queue.h"
-#include "Common/LinkedList.h"
+#include "Collections/Array.h"
+#include "Collections/List.h"
+#include "Collections/Set.h"
+#include "Collections/Map.h"
+#include "Collections/Stack.h"
+#include "Collections/Queue.h"
+#include "Collections/LinkedList.h"
 
 #include "Utility/Timer.h"
-#include "Utility/Log.h"
 #include "Utility/Sort.h"
 #include "Utility/Tuple.h"
 #include "Utility/Random.h"
 #include "Utility/StringUtils.h"
-
-#ifdef MTK_EXPERIMENTAL
-//#include "Structures/BinaryTree.h"
-//#include "Structures/Graph.h"
-#endif

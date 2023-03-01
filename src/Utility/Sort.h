@@ -34,8 +34,7 @@ namespace mtk {
 	{
 		_Type* data = const_cast<_Type*>(_dataHandler.Data());
 		size_t size = _dataHandler.Size();
-
-		PROFILER();
+		
 		for (size_t i = 0; i < size; i++) {
 			for (size_t j = i + 1; j < size; j++) {
 				if (_predicate(data[i], data[j])) {
@@ -48,15 +47,14 @@ namespace mtk {
 	}
 
 	template<typename _Type>
-	void RSort(const IDataHandler<_Type>& _dataHandler, 
+	void ReverseSort(const IDataHandler<_Type>& _dataHandler, 
 		const Func<bool, const _Type&, const _Type&>& _predicate = GreaterThan<_Type>)
 	{
 		_Type* data = const_cast<_Type*>(_dataHandler.Data());
-		size_t size = _dataHandler.Size();
-
-		PROFILER();
-		for (int32_t i = size - 1; i > 0; i--) {
-			for (int32_t j = i - 1; j >= 0; j--) {
+		const size_t size = _dataHandler.Size();
+		
+		for (int32_t i = size - 1; i > 0; --i) {
+			for (int32_t j = i - 1; j >= 0; --j) {
 				if (_predicate(data[i], data[j])) {
 					_Type temp = std::move(data[i]);
 					data[i] = std::move(data[j]);

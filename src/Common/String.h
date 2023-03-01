@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+
 #include "Core/Core.h"
 #include "Collections/Sequence.h"
 #include "Interfaces/IHashable.h"

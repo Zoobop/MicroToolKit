@@ -1,11 +1,14 @@
 #pragma once
 #include <random>
-#include "DebugUtils/Timer.h"
+#include "Utility/Timer.h"
 
 namespace mtk {
 
 	class Random
 	{
+	public:
+		Random() = delete;
+		
 	public:
 		static double Rand(double _start, double _stop, bool _inclusive = true)
 		{
@@ -160,9 +163,6 @@ namespace mtk {
 			std::uniform_int_distribution<uint64_t> dist(0, _stop - incluCount);
 			return dist(gen);
 		}
-
-	private:
-		Random() = delete;
 	};
 
 }

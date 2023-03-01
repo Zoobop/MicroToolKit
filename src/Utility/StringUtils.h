@@ -243,7 +243,7 @@ namespace mtk {
 	inline String& ToUpper(String& _string)
 	{
 		for (size_t i = 0; i < _string.Size(); i++) {
-			_string[i] = (char) std::toupper(_string[i]);
+			//_string[i] = (char) std::toupper(_string[i]);
 		}
 		return _string;
 	}
@@ -251,7 +251,7 @@ namespace mtk {
 	inline String& ToLower(String& _string)
 	{
 		for (size_t i = 0; i < _string.Size(); i++) {
-			_string[i] = (char) std::tolower(_string[i]);
+			//_string[i] = (char) std::tolower(_string[i]);
 		}
 		return _string;
 	}
