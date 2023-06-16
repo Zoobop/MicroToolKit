@@ -6,61 +6,69 @@
 
 namespace mtk
 {
-    class IOHandler
-    {
-    public:
-        IOHandler() = delete;
-        
-        static String ReadLine()
-        {
-            std::string dummy;
-            std::getline(std::cin, dummy);
-            return std::move(dummy);
-        }
+	class IOHandler final
+	{
+	public:
+		IOHandler() = delete;
 
-        static int8_t ReadKey()
-        {
-            int8_t key;
-            std::cin >> key;
-            return key;
-        }
-        
-        template<typename _Type>
-        static void WriteLine(const _Type& _object)
-        {
-            try
-            {
-                std::cout << _object << "\n";
-            }
-            catch (const std::exception&)
-            {
-                std::cout << &_object << "\n";
-            }
-        }
-        
-        template<typename ... _Args>
-        static void WriteLine(const char* _content, _Args ... _args)
-        {
-            std::cout << std::vformat(_content, std::make_format_args(std::forward<_Args>(std::move(_args))...)) << "\n";
-        }
+		static String ReadLine()
+		{
+			std::string dummy;
+			std::getline(std::cin, dummy);
+			return std::move(dummy);
+		}
 
-        template<typename _Type>
-        static void Write(const _Type& _object)
-        {
-            try
-            {
-                std::cout << _object;
-            }
-            catch (const std::exception&)
-            {
-                std::cout << &_object;
-            }
-        }
-        
-        template<typename ... _Args>
-        static void Write(const char* _content, _Args ... _args)
-        {
-            std::cout << std::vformat(_content, std::make_format_args(std::forward<_Args>(std::move(_args))...));
-        }
-    };
+		static int8_t ReadKey()
+		{
+			int8_t key;
+			std::cin >> key;
+			return key;
+		}
+
+		static void WriteLine()
+		{
+			std::cout << '\n';
+		}
+
+		template <typename T>
+		static void WriteLine(const T& object)
+		{
+			try
+			{
+				std::cout << object << "\n";
+			}
+			catch (const std::exception&)
+			{
+				std::cout << &object << "\n";
+			}
+		}
+
+		template <typename... Args>
+		static void WriteLine(const char* content, Args... args)
+		{
+			std::cout << std::vformat(content, std::make_format_args(std::forward<Args>(std::move(args))...)) <<
+				"\n";
+		}
+
+		template <typename T>
+		static void Write(const T& object)
+		{
+			try
+			{
+				std::cout << object;
+			}
+			catch (const std::exception&)
+			{
+				std::cout << &object;
+			}
+		}
+
+		template <typename... Args>
+		static void Write(const char* content, Args... args)
+		{
+			std::cout << std::vformat(content, std::make_format_args(std::forward<Args>(std::move(args))...));
+		}
+	};
+
+	using IO = IOHandler;
 }

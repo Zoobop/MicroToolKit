@@ -1,8 +1,8 @@
 #pragma once
 
-namespace mtk {
-
-	template<typename _Type>
+namespace mtk
+{
+	template <typename _Type>
 	struct SingleNode
 	{
 		_Type _value;
@@ -15,24 +15,24 @@ namespace mtk {
 		}
 
 		SingleNode(Ctrl _control)
-			: _control(_control) 
+			: _control(_control)
 		{
 		}
 
 		SingleNode(const _Type& _value)
-			: _value(_value), _control(Ctrl::kFull) 
+			: _value(_value), _control(Ctrl::kFull)
 		{
 		}
 
 		SingleNode(_Type&& _value)
-			: _value(_value), _control(Ctrl::kFull) 
+			: _value(_value), _control(Ctrl::kFull)
 		{
 		}
 
 		~SingleNode()
 		{
 			_next = nullptr;
-			free_smem(_next);
+			delete _next;
 		}
 
 		friend std::ostream& operator<<(std::ostream& _stream, const SingleNode<_Type>& _current)
@@ -41,5 +41,4 @@ namespace mtk {
 			return _stream;
 		}
 	};
-
 }

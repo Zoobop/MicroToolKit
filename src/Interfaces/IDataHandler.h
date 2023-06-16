@@ -1,18 +1,17 @@
 #pragma once
 
-#include "Core/Core.h"
+#include "Core/Core.hpp"
 
-namespace mtk {
-
-	template<typename _Type>
+namespace mtk
+{
+	template <typename T>
 	class IDataHandler
 	{
 	public:
-		virtual const _Type* Data() const = 0;
-		virtual _Type* Data() = 0;
+		virtual const T* Data() const = 0;
+		virtual T* Data() = 0;
 
-		virtual size_t Capacity() const = 0;
-		virtual size_t Size() const = 0;
+		NODISCARD virtual size_t Capacity() const = 0;
+		NODISCARD virtual size_t Size() const = 0;
 	};
-
 }

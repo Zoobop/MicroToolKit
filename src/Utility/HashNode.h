@@ -1,8 +1,8 @@
 #pragma once
 #include "mtkpch.h"
 
-namespace mtk {
-
+namespace mtk
+{
 	enum class Ctrl : int8_t
 	{
 		kInvalid = 0,
@@ -10,7 +10,7 @@ namespace mtk {
 		kFull = 2
 	};
 
-	template<typename _Type>
+	template <typename _Type>
 	struct HashNode
 	{
 		_Type _value;
@@ -34,11 +34,14 @@ namespace mtk {
 		~HashNode()
 		{
 			_next = nullptr;
-			free_smem(_next);
+			delete _next;
 		}
 
-		bool IsValid() const { return _control == Ctrl::kEmpty || _control == Ctrl::kFull || _control == Ctrl::kInvalid; }
-		
+		bool IsValid() const
+		{
+			return _control == Ctrl::kEmpty || _control == Ctrl::kFull || _control == Ctrl::kInvalid;
+		}
+
 		friend bool operator==(const HashNode<_Type>& _current, const _Type& _value)
 		{
 			return _current._value == _value;

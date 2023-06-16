@@ -48,13 +48,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)\intermediate\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir)Output\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)Output\intermediate\$(Configuration)-$(Platform)\</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
+    <IncludePath>
+    </IncludePath>
+    <SourcePath>$(SolutionDir)Dependencies\MicroCore\src\</SourcePath>
+    <PublicIncludeDirectories>$(SolutionDir)Dependencies\MicroCore\src\</PublicIncludeDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(SolutionDir)\intermediate\$(Configuration)-$(Platform)\</IntDir>
-    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)Output\intermediate\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir)Output\bin\$(Configuration)-$(Platform)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
+    <IncludePath>
+    </IncludePath>
+    <SourcePath>$(SolutionDir)Dependencies\MicroCore\src\</SourcePath>
+    <PublicIncludeDirectories>$(SolutionDir)Dependencies\MicroCore\src\</PublicIncludeDirectories>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -67,12 +77,15 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\;$(ProjectDir)\src\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\;$(SolutionDir)Dependencies\MicroCore\src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -87,7 +100,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\;$(ProjectDir)\src\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\;$(SolutionDir)Dependencies\MicroCore\src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -95,35 +108,25 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Common\String.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Collections\Array.h" />
+    <ClInclude Include="src\Collections\Array.hpp" />
     <ClInclude Include="src\Collections\LinkedList.h" />
-    <ClInclude Include="src\Collections\List.h" />
+    <ClInclude Include="src\Collections\List.hpp" />
     <ClInclude Include="src\Collections\Map.h" />
     <ClInclude Include="src\Collections\Queue.h" />
-    <ClInclude Include="src\Collections\Sequence.h" />
     <ClInclude Include="src\Collections\Set.h" />
     <ClInclude Include="src\Collections\Stack.h" />
-    <ClInclude Include="src\Common\BinaryTree.h" />
-    <ClInclude Include="src\Common\Graph.h" />
-    <ClInclude Include="src\Common\String.h" />
-    <ClInclude Include="src\Core\Core.h" />
-    <ClInclude Include="src\Core\Function.h" />
-    <ClInclude Include="src\Core\Memory.h" />
-    <ClInclude Include="src\Core\Typedef.h" />
     <ClInclude Include="src\Interfaces\IList.h" />
-    <ClInclude Include="src\Interfaces\IMemory.h" />
-    <ClInclude Include="src\IO\FileHandler.h" />
     <ClInclude Include="src\Interfaces\IConvert.h" />
     <ClInclude Include="src\Interfaces\IDataHandler.h" />
     <ClInclude Include="src\Interfaces\IExtendable.h" />
-    <ClInclude Include="src\Interfaces\IHashable.h" />
     <ClInclude Include="src\Interfaces\IHashTable.h" />
     <ClInclude Include="src\Interfaces\IStruct.h" />
+    <ClInclude Include="src\IO\FileHandler.h" />
     <ClInclude Include="src\IO\IOHandler.h" />
     <ClInclude Include="src\IO\Log.h" />
     <ClInclude Include="src\MicroToolKit.h" />
@@ -136,8 +139,18 @@
     <ClInclude Include="src\Utility\SingleNode.h" />
     <ClInclude Include="src\Utility\Sort.h" />
     <ClInclude Include="src\Utility\StringUtils.h" />
-    <ClInclude Include="src\Utility\Timer.h" />
     <ClInclude Include="src\Utility\Tuple.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Interfaces\IParsable.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Dependencies\MicroCore\MicroCore.vcxproj">
+      <Project>{9bf2eacf-e865-47c8-a06f-0889414c6213}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\internal.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

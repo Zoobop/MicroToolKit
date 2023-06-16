@@ -1,29 +1,25 @@
-#include "Collections/List.h"
-#include "IO/IOHandler.h"
-#include "Tests/ListTests/ListTestRunner.h"
-#include "Tests/StringTests/StringTestRunner.h"
+#define ENABLE_LOGGING
 
-template<typename T>
-void Swap(T* data, size_t index1, size_t index2)
+#include "Collections/List.hpp"
+#include "IO/IOHandler.h"
+#include "Common/String.h"
+
+using namespace mtk;
+
+template <typename T>
+void LogSize()
 {
-    const T temp = data[index1];
-    data[index1] = data[index2];
-    data[index2] = temp;
+	IOHandler::WriteLine("{}: {}", typeid(T).name(), sizeof(T));
 }
 
 int main()
 {
-    //TestRunner<String>::Run();
-    //TestRunner<List<ComplexType>>::Run();
+	// TODO: Fix up List class
+	List<String> list;
 
-    List<String> list = { "Brandon", "Nathan", "Ruby", "Montrell", "Austin", "Gale" };
+	IO::WriteLine(list);
 
-    IOHandler::WriteLine(list);
-    
-    uint32_t removedCount = list.RemoveAll([](const String& string) { return string.Contains('a'); });
-    
-    IOHandler::WriteLine(list);
-    IOHandler::WriteLine(removedCount);
-    
-    return 0;
+
+	IO::WriteLine(list);
+	return 0;
 }
