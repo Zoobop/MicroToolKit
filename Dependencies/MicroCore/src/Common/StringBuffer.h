@@ -9,7 +9,7 @@ namespace mtk
 	struct UInt64;
 	class String;
 
-	class StringBuffer final : public Memory<char>
+	class StringBuffer final
 	{
 	public:
 		friend String;
@@ -20,16 +20,16 @@ namespace mtk
 		StringBuffer(const String& ref);
 		StringBuffer(const StringBuffer&) = default;
 		StringBuffer(StringBuffer&&) noexcept = default;
-		~StringBuffer() override = default;
+		~StringBuffer() = default;
 
 		// Accessors
-		NODISCARD const char* Data() const override;
-		NODISCARD constexpr size_t Capacity() const override;
+		NODISCARD const char* Data() const;
+		NODISCARD size_t Size() const;
 
 		// Utility
 		NODISCARD StringBuffer Slice(size_t start) const;
 		NODISCARD StringBuffer Slice(size_t start, size_t length) const;
-		NODISCARD bool IsEmpty() const override;
+		NODISCARD bool IsEmpty() const;
 		void Clear();
 		NODISCARD bool Equals(const StringBuffer& other) const;
 

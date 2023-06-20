@@ -20,17 +20,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Example\Object.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Example\Person.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Example\Type.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <Text Include="Files\test.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Files\test.txt" />
+    <ClInclude Include="src\Test\Object.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

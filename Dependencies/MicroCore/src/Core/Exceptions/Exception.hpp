@@ -25,6 +25,22 @@ namespace mtk
 		NODISCARD const char* Message() const { return what(); }
 	};
 
+	class BadCopyException final : public Exception
+	{
+	public:
+		BadCopyException() : Exception("Unable to copy data from source to destination.")
+		{
+		}
+	};
+
+	class BadMoveException final : public Exception
+	{
+	public:
+		BadMoveException() : Exception("Unable to move data from source to destination.")
+		{
+		}
+	};
+
 	class IndexOutOfRangeException final : public Exception
 	{
 	public:
@@ -43,6 +59,12 @@ namespace mtk
 	public:
 		ArgumentOutOfRangeException() : Exception(
 			"Index was out of range. Must be non-negative and less than the size of the collection.")
+		{
+		}
+
+		explicit ArgumentOutOfRangeException(const char* parameterName) : Exception(
+			"Index was out of range. Must be non-negative and less than the size of the collection.\nParameter name: {}",
+			parameterName)
 		{
 		}
 

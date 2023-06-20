@@ -37,9 +37,9 @@ namespace mtk
 			{
 				std::cout << object << "\n";
 			}
-			catch (const std::exception&)
+			catch (const Exception&)
 			{
-				std::cout << &object << "\n";
+				std::cout << typeid(T).name() << ": " << &object << "\n";
 			}
 		}
 
@@ -57,7 +57,7 @@ namespace mtk
 			{
 				std::cout << object;
 			}
-			catch (const std::exception&)
+			catch (const Exception&)
 			{
 				std::cout << &object;
 			}

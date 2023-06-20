@@ -7,7 +7,7 @@ namespace mtk
 {
 	class StringBuffer;
 
-	class String final : public Memory<char>
+	class String final
 	{
 	public:
 		// Constructors/Destructors
@@ -25,13 +25,13 @@ namespace mtk
 		String(char character, size_t count);
 		String(const char* begin, size_t count);
 		String(const char* begin, const char* end);
-		~String() override;
+		~String();
 
 		// Accessors
-		NODISCARD bool IsEmpty() const override;
+		NODISCARD bool IsEmpty() const;
 		NODISCARD constexpr size_t Length() const;
-		NODISCARD constexpr size_t Capacity() const override;
-		NODISCARD constexpr const char* Data() const override;
+		NODISCARD constexpr size_t Capacity() const;
+		NODISCARD constexpr const char* Data() const;
 
 		// Utility
 		String& Append(const String& string);

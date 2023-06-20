@@ -144,6 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Core\Allocator.hpp" />
     <ClInclude Include="src\Core\Hash.hpp" />
     <ClInclude Include="src\Core\Exceptions\Exception.hpp" />
     <ClInclude Include="src\Common\Sequence.hpp" />

@@ -100,11 +100,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Example\Object.h" />
-    <ClInclude Include="src\Example\Person.h" />
-    <ClInclude Include="src\Example\Type.h" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="src\Output\output.out" />
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +109,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Files\test.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Test\Object.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

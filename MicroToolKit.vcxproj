@@ -114,6 +114,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Collections\Array.hpp" />
+    <ClInclude Include="src\Collections\Container.hpp" />
     <ClInclude Include="src\Collections\LinkedList.h" />
     <ClInclude Include="src\Collections\List.hpp" />
     <ClInclude Include="src\Collections\Map.h" />
@@ -131,6 +132,7 @@
     <ClInclude Include="src\IO\Log.h" />
     <ClInclude Include="src\MicroToolKit.h" />
     <ClInclude Include="src\mtkpch.h" />
+    <ClInclude Include="src\Utility\CollectionUtils.hpp" />
     <ClInclude Include="src\Utility\DoubleNode.h" />
     <ClInclude Include="src\Utility\HashNode.h" />
     <ClInclude Include="src\Utility\MultiNode.h" />

@@ -11,21 +11,30 @@ namespace mtk
 	const String String::Empty = {};
 
 	// Constructors/Destructors
-	String::String(size_t size) { Allocate(size); }
+	String::String(const size_t size) { Allocate(size); }
 
 	String::String(const String& other)
 	{
 		Allocate(other.m_Size);
-		memcpy_s(m_Data, m_Size + 1, other.m_Data, m_Size);
+
+		if (m_Data != nullptr)
+			memcpy_s(m_Data, m_Size + 1, other.m_Data, m_Size);
 	}
 
 	String::String(String&& other) noexcept
 		: m_Data(other.m_Data), m_Size(other.m_Size)
 	{
+		if (!IsValidMemory(other.m_Data))
+		{
+			m_Data = nullptr;
+			m_Size = 0;
+		}
+
 		other.m_Data = nullptr;
 		other.m_Size = 0;
 
-		m_Data[m_Size] = 0;
+		if (m_Data != nullptr)
+			m_Data[m_Size] = 0;
 	}
 
 	String::String(const char character)
@@ -82,7 +91,7 @@ namespace mtk
 
 	String::String(StringBuffer string)
 	{
-		const size_t length = string.Capacity();
+		const size_t length = string.Size();
 		if (length == 0) return;
 
 		Allocate(length);
@@ -284,7 +293,7 @@ namespace mtk
 
 	String& String::Append(StringBuffer string)
 	{
-		const size_t length = string.Capacity();
+		const size_t length = string.Size();
 		if (length == 0) return *this;
 
 		if (m_Data == nullptr)
@@ -1041,7 +1050,7 @@ namespace mtk
 	String& String::operator=(const String& other)
 	{
 		const size_t length = other.m_Size;
-		if (m_Data == nullptr)
+		if (!IsValidMemory(m_Data))
 		{
 			Allocate(length);
 			memcpy_s(m_Data, length + 1, other.m_Data, length);
@@ -1050,7 +1059,6 @@ namespace mtk
 		{
 			if (length != m_Size)
 			{
-				delete[] m_Data;
 				Reallocate(length);
 			}
 

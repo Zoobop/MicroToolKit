@@ -6,7 +6,7 @@ namespace mtk
 {
 	class String;
 
-	class StringBuilder final : public Memory<char>
+	class StringBuilder final
 	{
 	public:
 		friend String;
@@ -16,14 +16,14 @@ namespace mtk
 		StringBuilder(const StringBuilder&) = default;
 		StringBuilder(StringBuilder&&) noexcept = default;
 		explicit StringBuilder(size_t size);
-		~StringBuilder() override = default;
+		~StringBuilder() = default;
 
 		// Accessors
-		NODISCARD bool IsEmpty() const override;
-		NODISCARD constexpr size_t Capacity() const override;
-		NODISCARD constexpr const char* Data() const override;
+		NODISCARD bool IsEmpty() const;
+		NODISCARD constexpr size_t Capacity() const;
+		NODISCARD constexpr const char* Data() const;
 		NODISCARD char* ToCharArray() const;
-		NODISCARD size_t Size() const;
+		NODISCARD constexpr size_t Size() const;
 		NODISCARD String ToString() const;
 
 		// Utility

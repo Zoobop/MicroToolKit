@@ -110,7 +110,7 @@ namespace mtk
 
 
 	template <typename T>
-	class Sequence : public Memory<T>
+	class Sequence
 	{
 	public:
 		using Iterator = Iterator<T>;
@@ -162,11 +162,11 @@ namespace mtk
 
 		explicit Sequence(size_t size) { Allocate(size); }
 
-		~Sequence() override { delete[] m_Data; }
+		~Sequence() { delete[] m_Data; }
 
 		// Utility
-		NODISCARD bool IsEmpty() const override { return m_Capacity == 0; }
-		NODISCARD bool Contains(const T& item)
+		NODISCARD constexpr virtual bool IsEmpty() const { return m_Capacity == 0; }
+		NODISCARD virtual bool Contains(const T& item) const
 		{
 			for (size_t i = 0; i < m_Capacity; i++)
 			{
@@ -176,18 +176,18 @@ namespace mtk
 			return false;
 		}
 
-		NODISCARD void Clear()
+		NODISCARD virtual void Clear()
 		{
 			delete[] m_Data;
 			m_Data = nullptr;
 			m_Capacity = 0;
 		}
 
-		NODISCARD constexpr Sequence& AsSequence() const { return *this; }
+		NODISCARD constexpr Sequence& AsSequence() const { return this; }
 
 		// Accessors
-		NODISCARD constexpr size_t Capacity() const override { return m_Capacity; }
-		NODISCARD constexpr const T* Data() const override { return m_Data; }
+		NODISCARD constexpr size_t Capacity() const { return m_Capacity; }
+		NODISCARD constexpr const T* Data() const { return m_Data; }
 
 		// Iterators
 		NODISCARD constexpr Iterator begin() { return {m_Data}; }
@@ -196,18 +196,18 @@ namespace mtk
 		NODISCARD constexpr ConstIterator end() const { return {m_Data + m_Capacity}; }
 
 		// Operator Overloads
-		T& operator[](const size_t index)
+		NODISCARD T& operator[](const size_t index)
 		{
 			if (index >= m_Capacity || index < 0)
-				throw Exception("The index of '{}' is out of range.", index);
+				throw IndexOutOfRangeException(index);
 
 			return m_Data[index];
 		}
 
-		const T& operator[](const size_t index) const
+		NODISCARD const T& operator[](const size_t index) const
 		{
 			if (index >= m_Capacity || index < 0)
-				throw Exception("The index of '{}' is out of range.", index);
+				throw IndexOutOfRangeException(index);
 
 			return m_Data[index];
 		}
@@ -248,22 +248,15 @@ namespace mtk
 
 		friend std::ostream& operator<<(std::ostream& stream, const Sequence& current)
 		{
-			if (current.m_Capacity > 0)
+			stream << "[";
+			for (size_t i = 0; i < current.m_Capacity; ++i)
 			{
-				stream << "[";
-				for (size_t i = 0; i < current.m_Capacity; ++i)
-				{
-					stream << current.m_Data[i];
+				stream << current.m_Data[i];
 
-					if (i + 1 < current.m_Capacity)
-						stream << ", ";
-				}
-				stream << "]";
+				if (i + 1 < current.m_Capacity)
+					stream << ", ";
 			}
-			else
-			{
-				stream << "";
-			}
+			stream << "]";
 			return stream;
 		}
 

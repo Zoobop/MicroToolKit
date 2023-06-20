@@ -14,7 +14,7 @@ namespace mtk
 	bool StringBuilder::IsEmpty() const { return m_Data == nullptr || m_Size == 0; }
 	constexpr size_t StringBuilder::Size() const { return m_Size; }
 	constexpr const char* StringBuilder::Data() const { return m_Data; }
-	size_t StringBuilder::Capacity() const { return m_Capacity; }
+	constexpr size_t StringBuilder::Capacity() const { return m_Capacity; }
 	char* StringBuilder::ToCharArray() const { return m_Data; }
 	String StringBuilder::ToString() const { return {m_Data, m_Size}; }
 
@@ -128,6 +128,10 @@ namespace mtk
 		// Reallocation
 		if (m_Data != nullptr)
 		{
+			//const auto newBlock = new char[length];
+			//memmove_s(newBlock, length, m_Data, m_Capacity);
+			//delete[] m_Data;
+
 			m_Data = static_cast<char*>(realloc(m_Data, length));
 			m_Data[capacity] = 0;
 			m_Capacity = capacity;

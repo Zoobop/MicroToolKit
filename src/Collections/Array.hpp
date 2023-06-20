@@ -5,7 +5,7 @@
 namespace mtk
 {
 	template <typename T, size_t TSize>
-	class Array final : public Memory<T>
+	class Array final
 	{
 	public:
 		using Iterator = Iterator<T>;
@@ -31,7 +31,7 @@ namespace mtk
 			Set(std::move(data));
 		}
 
-		~Array() override = default;
+		~Array() = default;
 
 		// Utility
 		void Initialize()
@@ -86,14 +86,9 @@ namespace mtk
 			return false;
 		}
 
-		NODISCARD bool IsEmpty() const override
-		{
-			return false;
-		}
-
 		// Accessors
-		NODISCARD constexpr const T* Data() const override { return reinterpret_cast<const T*>(&m_Data); }
-		NODISCARD constexpr size_t Capacity() const override { return TSize; }
+		NODISCARD constexpr const T* Data() const { return reinterpret_cast<const T*>(&m_Data); }
+		NODISCARD constexpr size_t Capacity() const { return TSize; }
 
 		// Iterator
 		NODISCARD constexpr Iterator begin() { return Iterator(m_Data); }
@@ -102,6 +97,8 @@ namespace mtk
 		NODISCARD constexpr ConstIterator end() const { return {m_Data + TSize}; }
 
 		// Operator Overloads
+		operator Sequence<T>() const { return {m_Data, TSize}; }
+
 		T& operator[](const size_t index)
 		{
 			if (index >= TSize || index < 0)

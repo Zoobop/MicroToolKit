@@ -28,7 +28,7 @@ namespace mtk
 
 	// Accessors
 	NODISCARD const char* StringBuffer::Data() const { return c_PtrRef; }
-	NODISCARD constexpr size_t StringBuffer::Capacity() const { return m_Size; }
+	NODISCARD size_t StringBuffer::Size() const { return m_Size; }
 
 	NODISCARD StringBuffer StringBuffer::Slice(size_t start) const
 	{
