@@ -23,7 +23,7 @@ namespace mtk
 
 	StringBuilder& StringBuilder::Append(const String& string)
 	{
-		const size_t length = string.Capacity();
+		const size_t length = string.Length();
 		if (length == 0) return *this;
 
 		if (m_Data == nullptr || m_Size == 0)

@@ -7,22 +7,23 @@ namespace mtk
 	{
 	public:
 		Exception()
-			: exception("")
+			: std::exception("")
 		{
 		}
 
 		explicit Exception(const char* message)
-			: exception(message)
+			: std::exception(message)
 		{
 		}
 
 		template <typename... Args>
 		explicit Exception(const char* message, Args... args)
-			: exception(std::vformat(message, std::make_format_args(std::forward<Args>(std::move(args))...)).data())
+			: std::exception(
+				std::vformat(message, std::make_format_args(std::forward<Args>(std::move(args))...)).data())
 		{
 		}
 
-		NODISCARD const char* Message() const { return what(); }
+		NODISCARD constexpr const char* Message() const { return std::exception::what(); }
 	};
 
 	class BadCopyException final : public Exception

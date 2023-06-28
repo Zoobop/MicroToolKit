@@ -1,12 +1,8 @@
 #pragma once
-#include <ostream>
-
-#include "Core/Core.hpp"
-#include "Core/Memory.hpp"
+#include "Core/Memory/Memory.hpp"
 
 namespace mtk
 {
-	struct UInt64;
 	class String;
 
 	class StringBuffer final
@@ -15,12 +11,13 @@ namespace mtk
 		friend String;
 
 		// Constructors/Destructors
-		StringBuffer();
-		StringBuffer(const char* ref);
-		StringBuffer(const String& ref);
-		StringBuffer(const StringBuffer&) = default;
-		StringBuffer(StringBuffer&&) noexcept = default;
-		~StringBuffer() = default;
+		constexpr StringBuffer() noexcept = default;
+		constexpr StringBuffer(std::nullptr_t) noexcept;
+		StringBuffer(const char* ptr) noexcept;
+		StringBuffer(const String& string) noexcept;
+		constexpr StringBuffer(const StringBuffer&) noexcept = default;
+		constexpr StringBuffer(StringBuffer&&) noexcept = default;
+		constexpr ~StringBuffer() noexcept = default;
 
 		// Accessors
 		NODISCARD const char* Data() const;
@@ -45,14 +42,14 @@ namespace mtk
 		friend std::ostream& operator<<(std::ostream& stream, const StringBuffer& current);
 
 	private:
-		StringBuffer(const char* startRef, const char* endRef);
+		StringBuffer(const char* begin, const char* end);
 
 	public:
 		// Static
 		static const StringBuffer Empty;
 
 	private:
-		const char* c_PtrRef;
-		size_t m_Size;
+		const char* m_Ptr = nullptr;
+		size_t m_Size = 0;
 	};
 }

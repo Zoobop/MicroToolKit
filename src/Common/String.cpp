@@ -24,7 +24,7 @@ namespace mtk
 	String::String(String&& other) noexcept
 		: m_Data(other.m_Data), m_Size(other.m_Size)
 	{
-		if (!IsValidMemory(other.m_Data))
+		if (!other.m_Data)
 		{
 			m_Data = nullptr;
 			m_Size = 0;
@@ -134,8 +134,7 @@ namespace mtk
 
 	// Accessors
 	NODISCARD bool String::IsEmpty() const { return m_Data == nullptr || m_Size == 0; }
-	NODISCARD constexpr size_t String::Length() const { return Capacity(); };
-	NODISCARD constexpr size_t String::Capacity() const { return m_Size; }
+	NODISCARD constexpr size_t String::Length() const { return m_Size; };
 	NODISCARD constexpr const char* String::Data() const { return m_Data; }
 
 	// Utility
@@ -338,16 +337,16 @@ namespace mtk
 
 	int32_t String::IndexOf(const String& _string, size_t _startIndex, size_t _length) const
 	{
-		if (_string.IsEmpty() || _string.Capacity() > m_Size) return -1;
+		if (_string.IsEmpty() || _string.Length() > m_Size) return -1;
 		if (_startIndex >= m_Size || _length < 1 || _length > m_Size - _startIndex) return -1;
 
 		for (size_t i = 0; i < _length; ++i)
 		{
 			if (m_Data[i] == _string[0])
 			{
-				if (i + _string.Capacity() < m_Size)
+				if (i + _string.Length() < m_Size)
 				{
-					if (memcmp(m_Data + i, _string.Data(), _string.Capacity()) == 0)
+					if (memcmp(m_Data + i, _string.Data(), _string.Length()) == 0)
 					{
 						return i;
 					}
@@ -373,7 +372,7 @@ namespace mtk
 
 	int32_t String::LastIndexOf(const String& _string, size_t _startIndex, size_t _length) const
 	{
-		if (_string.IsEmpty() || _string.Capacity() > m_Size) return -1;
+		if (_string.IsEmpty() || _string.Length() > m_Size) return -1;
 		if (_startIndex >= m_Size || _length < 1 || _length > m_Size - _startIndex) return -1;
 
 		int32_t index = -1;
@@ -381,9 +380,9 @@ namespace mtk
 		{
 			if (m_Data[i] == _string[0])
 			{
-				if (i + _string.Capacity() < m_Size)
+				if (i + _string.Length() < m_Size)
 				{
-					if (memcmp(m_Data + i, _string.Data(), _string.Capacity()) == 0)
+					if (memcmp(m_Data + i, _string.Data(), _string.Length()) == 0)
 					{
 						index = static_cast<int32_t>(i);
 					}
@@ -420,142 +419,151 @@ namespace mtk
 
 	String String::Replace(const String& oldString, char newChar) const
 	{
-		const size_t length = oldString.Capacity();
+		// TODO: Implement method
+
+		const size_t length = oldString.Length();
 		if (m_Size == 0 || m_Size < length || !Contains(oldString)) return *this;
 
-		Sequence<size_t> indices(m_Size);
+		//Sequence<size_t> indices(m_Size);
 
-		for (size_t i = 0, index = 0; i < m_Size; ++i)
-		{
-			size_t stringIndex = 0;
-			while (m_Data[i] == oldString[stringIndex])
-			{
-				++stringIndex;
+		//for (size_t i = 0, index = 0; i < m_Size; ++i)
+		//{
+		//	size_t stringIndex = 0;
+		//	while (m_Data[i] == oldString[stringIndex])
+		//	{
+		//		++stringIndex;
 
-				if (stringIndex == length)
-				{
-					const size_t value = i - length + static_cast<size_t>(1);
-					indices[index++] = value;
-					break;
-				}
+		//		if (stringIndex == length)
+		//		{
+		//			const size_t value = i - length + static_cast<size_t>(1);
+		//			indices[index++] = value;
+		//			break;
+		//		}
 
-				++i;
-			}
-		}
+		//		++i;
+		//	}
+		//}
 
-		if (indices.IsEmpty()) return *this;
+		//if (indices.IsEmpty()) return *this;
 
-		const auto buffer = new char[m_Size + 1];
-		size_t stringCount = 0;
-		for (size_t i = 0; i < m_Size; ++i, ++stringCount)
-		{
-			if (mtk::Contains(indices, i))
-			{
-				buffer[stringCount] = newChar;
-				i += oldString.Capacity() - 1;
-				continue;
-			}
+		//const auto buffer = new char[m_Size + 1];
+		//size_t stringCount = 0;
+		//for (size_t i = 0; i < m_Size; ++i, ++stringCount)
+		//{
+		//	if (mtk::Contains(indices, i))
+		//	{
+		//		buffer[stringCount] = newChar;
+		//		i += oldString.Capacity() - 1;
+		//		continue;
+		//	}
 
-			buffer[stringCount] = m_Data[i];
-		}
+		//	buffer[stringCount] = m_Data[i];
+		//}
 
-		const auto string = new char[stringCount + 1];
-		memmove_s(string, stringCount + 1, buffer, stringCount + 1);
-		string[stringCount] = 0;
+		//const auto string = new char[stringCount + 1];
+		//memmove_s(string, stringCount + 1, buffer, stringCount + 1);
+		//string[stringCount] = 0;
 
-		delete[] buffer;
-		return string;
+		//delete[] buffer;
+		//return string;
+		return *this;
 	}
 
 	String String::Replace(const String& oldString, const String& newString) const
 	{
-		const size_t length = oldString.Capacity();
-		if (m_Size == 0 || m_Size < length || !Contains(oldString)) return *this;
+		// TODO: Implement method
 
-		Sequence<size_t> indices(m_Size);
-		for (size_t i = 0, index = 0; i < m_Size; ++i)
-		{
-			size_t stringIndex = 0;
-			while (m_Data[i] == oldString[stringIndex])
-			{
-				++stringIndex;
+		//const size_t length = oldString.Capacity();
+		//if (m_Size == 0 || m_Size < length || !Contains(oldString)) return *this;
 
-				if (stringIndex == length)
-				{
-					indices[index] = i - length + 1;
-					break;
-				}
+		//Sequence<size_t> indices(m_Size);
+		//for (size_t i = 0, index = 0; i < m_Size; ++i)
+		//{
+		//	size_t stringIndex = 0;
+		//	while (m_Data[i] == oldString[stringIndex])
+		//	{
+		//		++stringIndex;
 
-				++i;
-			}
-		}
+		//		if (stringIndex == length)
+		//		{
+		//			indices[index] = i - length + 1;
+		//			break;
+		//		}
 
-		if (indices.Capacity() == 0) return *this;
+		//		++i;
+		//	}
+		//}
 
-		const size_t newSize = m_Size + indices.Capacity() * newString.Capacity();
-		const auto buffer = new char[newSize + 1];
-		size_t stringCount = 0;
-		for (size_t i = 0; i < m_Size; ++i)
-		{
-			if (mtk::Contains(indices, i))
-			{
-				for (size_t n = 0; n < newString.Capacity(); ++n)
-				{
-					buffer[stringCount++] = newString[n];
-				}
-				i += length - 1;
-				continue;
-			}
+		//if (indices.Capacity() == 0) return *this;
 
-			buffer[stringCount++] = m_Data[i];
-		}
+		//const size_t newSize = m_Size + indices.Capacity() * newString.Capacity();
+		//const auto buffer = new char[newSize + 1];
+		//size_t stringCount = 0;
+		//for (size_t i = 0; i < m_Size; ++i)
+		//{
+		//	if (mtk::Contains(indices, i))
+		//	{
+		//		for (size_t n = 0; n < newString.Capacity(); ++n)
+		//		{
+		//			buffer[stringCount++] = newString[n];
+		//		}
+		//		i += length - 1;
+		//		continue;
+		//	}
 
-		const auto string = new char[stringCount + 1];
-		memmove_s(string, stringCount + 1, buffer, stringCount + 1);
-		string[stringCount] = 0;
+		//	buffer[stringCount++] = m_Data[i];
+		//}
 
-		delete[] buffer;
-		return string;
+		//const auto string = new char[stringCount + 1];
+		//memmove_s(string, stringCount + 1, buffer, stringCount + 1);
+		//string[stringCount] = 0;
+
+		//delete[] buffer;
+		//return string;
+		return *this;
 	}
 
 	String String::Replace(char oldChar, const String& newString) const
 	{
+		// TODO: Implement method
+
 		if (m_Size == 0 || !Contains(oldChar)) return *this;
 
-		Sequence<size_t> indices(m_Size);
-		for (size_t i = 0, index = 0; i < m_Size; ++i)
-		{
-			if (m_Data[i] == oldChar)
-			{
-				indices[index++] = i;
-			}
-		}
+		//Sequence<size_t> indices(m_Size);
+		//for (size_t i = 0, index = 0; i < m_Size; ++i)
+		//{
+		//	if (m_Data[i] == oldChar)
+		//	{
+		//		indices[index++] = i;
+		//	}
+		//}
 
-		if (indices.IsEmpty()) return *this;
+		//if (indices.IsEmpty()) return *this;
 
-		const size_t newSize = m_Size + indices.Capacity() * newString.Capacity();
-		const auto buffer = new char[newSize + 1];
-		size_t stringCount = 0;
-		for (size_t i = 0; i < m_Size; ++i)
-		{
-			if (mtk::Contains(indices, i))
-			{
-				for (size_t n = 0; n < newString.Capacity(); ++n)
-				{
-					buffer[stringCount++] = newString[n];
-				}
-				continue;
-			}
+		//const size_t newSize = m_Size + indices.Capacity() * newString.Capacity();
+		//const auto buffer = new char[newSize + 1];
+		//size_t stringCount = 0;
+		//for (size_t i = 0; i < m_Size; ++i)
+		//{
+		//	if (mtk::Contains(indices, i))
+		//	{
+		//		for (size_t n = 0; n < newString.Capacity(); ++n)
+		//		{
+		//			buffer[stringCount++] = newString[n];
+		//		}
+		//		continue;
+		//	}
 
-			buffer[stringCount++] = m_Data[i];
-		}
+		//	buffer[stringCount++] = m_Data[i];
+		//}
 
-		const auto string = new char[stringCount + 1];
-		memmove_s(string, stringCount + 1, buffer, stringCount + 1);
-		string[stringCount] = 0;
+		//const auto string = new char[stringCount + 1];
+		//memmove_s(string, stringCount + 1, buffer, stringCount + 1);
+		//string[stringCount] = 0;
 
-		delete[] buffer;
-		return string;
+		//delete[] buffer;
+		//return string;
+		return *this;
 	}
 
 	String String::Substring(size_t _start) const
@@ -642,7 +650,7 @@ namespace mtk
 
 	bool String::Contains(const String& string) const
 	{
-		const size_t length = string.Capacity();
+		const size_t length = string.Length();
 		if (length == 0) return false;
 
 		for (size_t i = 0, charIndex = 0; i < m_Size; ++i)
@@ -703,7 +711,7 @@ namespace mtk
 
 	bool String::StartsWith(const String& string) const
 	{
-		const size_t length = string.Capacity();
+		const size_t length = string.Length();
 		if (m_Size == 0 || m_Size < length) return false;
 
 		for (size_t i = 0; i < length; ++i)
@@ -759,7 +767,7 @@ namespace mtk
 
 	bool String::EndsWith(const String& string) const
 	{
-		const size_t length = string.Capacity();
+		const size_t length = string.Length();
 		if (m_Size == 0 || m_Size < length) return false;
 
 		for (size_t i = 0; i < length; ++i)
@@ -939,47 +947,54 @@ namespace mtk
 
 	Sequence<String> String::Split(char delimiter) const
 	{
-		Sequence<String> splitList(m_Size);
-		size_t index = 0;
-		for (size_t i = 0, prev = 0; i < m_Size + 1; ++i)
-		{
-			if (m_Data[i] == '\r' || m_Data[i] == '\n')
-			{
-				if (i - prev == 0)
-					++prev;
-			}
+		// TODO: Implement method
 
-			if (m_Data[i] == delimiter || m_Data[i] == '\0')
-			{
-				const String string = {m_Data + prev, i - prev};
-				prev = i + 1;
-			}
-		}
+		//Sequence<String> splitList(m_Size);
+		//size_t index = 0;
+		//for (size_t i = 0, prev = 0; i < m_Size + 1; ++i)
+		//{
+		//	if (m_Data[i] == '\r' || m_Data[i] == '\n')
+		//	{
+		//		if (i - prev == 0)
+		//			++prev;
+		//	}
 
-		return splitList;
+		//	if (m_Data[i] == delimiter || m_Data[i] == '\0')
+		//	{
+		//		const String string = {m_Data + prev, i - prev};
+		//		prev = i + 1;
+		//	}
+		//}
+
+		//return splitList;
+		return {};
 	}
 
 	Sequence<String> String::Split(std::initializer_list<char>&& characters) const
 	{
-		Sequence<String> splitList(m_Size);
-		if (characters.size() == 0) return {};
+		// TODO: Implement method
 
-		const Sequence set(characters.begin(), characters.size());
-		for (size_t i = 0, prev = 0, index = 0; i < m_Size + 1; ++i)
-		{
-			if (m_Data[i] == '\r' || m_Data[i] == '\n')
-			{
-				if (i - prev == 0)
-					++prev;
-			}
+		//Sequence<String> splitList(m_Size);
+		//if (characters.size() == 0) return {};
 
-			if (mtk::Contains(set, m_Data[i]) || m_Data[i] == '\0')
-			{
-				splitList[index++] = String{m_Data + prev, i - prev};
-				prev = i + 1;
-			}
-		}
-		return splitList;
+		//const Sequence set(characters.begin(), characters.size());
+		//for (size_t i = 0, prev = 0, index = 0; i < m_Size + 1; ++i)
+		//{
+		//	if (m_Data[i] == '\r' || m_Data[i] == '\n')
+		//	{
+		//		if (i - prev == 0)
+		//			++prev;
+		//	}
+
+		//	if (mtk::Contains(set, m_Data[i]) || m_Data[i] == '\0')
+		//	{
+		//		splitList[index++] = String{m_Data + prev, i - prev};
+		//		prev = i + 1;
+		//	}
+		//}
+		//return splitList;
+
+		return {};
 	}
 
 	StringBuffer String::AsStringBuffer() const
@@ -1050,7 +1065,7 @@ namespace mtk
 	String& String::operator=(const String& other)
 	{
 		const size_t length = other.m_Size;
-		if (!IsValidMemory(m_Data))
+		if (!m_Data)
 		{
 			Allocate(length);
 			memcpy_s(m_Data, length + 1, other.m_Data, length);
@@ -1258,5 +1273,5 @@ namespace mtk
 
 	// Hash Function
 	template <>
-	NODISCARD inline size_t Hash(const String& object) { return typeid(String).hash_code() + object.Capacity(); }
+	NODISCARD inline size_t Hash(const String& object) { return typeid(String).hash_code() + object.Length(); }
 }

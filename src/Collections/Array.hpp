@@ -1,49 +1,48 @@
 #pragma once
 
-#include "Common/Sequence.hpp"
+#include "Collections/Container.hpp"
 
 namespace mtk
 {
 	template <typename T, size_t TSize>
-	class Array final
+	class Array final : public FixedContainer<T, TSize>
 	{
 	public:
-		using Iterator = Iterator<T>;
-		using ConstIterator = const Iterator;
+		// Aliases
+		using Base = FixedContainer<T, TSize>;
 
 		// Constructors/Destructors
-		Array() = default;
+		constexpr Array() noexcept = default;
 
-		Array(const Array& other)
+		Array(const Array& other) noexcept : Base(other)
 		{
-			for (size_t i = 0; i < TSize; i++)
-				m_Data[i] = other.m_Data[i];
 		}
 
-		Array(Array&& other) noexcept
+		Array(Array&& other) noexcept : Base(std::move(other))
 		{
-			for (size_t i = 0; i < TSize; i++)
-				m_Data[i] = std::move(other.m_Data[i]);
 		}
 
-		Array(std::initializer_list<T>&& data) noexcept
+		Array(std::initializer_list<T>&& data) noexcept : Base(std::move(data))
 		{
-			Set(std::move(data));
 		}
 
-		~Array() = default;
+		explicit Array(std::convertible_to<T> auto... elements) noexcept : Base(std::forward<T>(elements)...)
+		{
+		}
+
+		constexpr ~Array() noexcept override = default;
 
 		// Utility
 		void Initialize()
 		{
 			for (size_t i = 0; i < TSize; i++)
-				new(&m_Data[i]) T();
+				new(&Base::m_Data[i]) T();
 		}
 
 		void Fill(const T& value)
 		{
 			for (size_t i = 0; i < TSize; i++)
-				m_Data[i] = value;
+				Base::m_Data[i] = value;
 		}
 
 		void Set(std::initializer_list<T>&& initList) noexcept
@@ -54,7 +53,21 @@ namespace mtk
 				if (index == TSize)
 					return;
 
-				m_Data[index++] = std::move(const_cast<T&&>(elem));
+				Base::m_Data[index++] = std::move(const_cast<T&&>(elem));
+			}
+		}
+
+		void Set(std::convertible_to<T> auto... elements) noexcept
+		{
+			size_t index = 0;
+
+			auto values = {elements...};
+			for (auto& elem : values)
+			{
+				if (index == TSize)
+					return;
+
+				Base::m_Data[index++] = std::move(elem);
 			}
 		}
 
@@ -63,15 +76,15 @@ namespace mtk
 			const size_t size = MIN(container.Capacity(), TSize);
 			const T* data = container.Data();
 			for (size_t i = 0; i < size; i++)
-				m_Data[i] = data[i];
+				Base::m_Data[i] = data[i];
 		}
 
 		void Swap(Array& other) noexcept
 		{
 			for (size_t i = 0; i < TSize; i++)
 			{
-				auto temp = std::move(m_Data[i]);
-				m_Data[i] = std::move(other.m_Data[i]);
+				auto temp = std::move(Base::m_Data[i]);
+				Base::m_Data[i] = std::move(other.m_Data[i]);
 				other.m_Data[i] = std::move(temp);
 			}
 		}
@@ -79,46 +92,25 @@ namespace mtk
 		NODISCARD bool Contains(const T& value) const
 		{
 			for (size_t i = 0; i < TSize; i++)
-			{
-				if (m_Data[i] == value)
+				if (Base::m_Data[i] == value)
 					return true;
-			}
 			return false;
 		}
 
-		// Accessors
-		NODISCARD constexpr const T* Data() const { return reinterpret_cast<const T*>(&m_Data); }
-		NODISCARD constexpr size_t Capacity() const { return TSize; }
-
-		// Iterator
-		NODISCARD constexpr Iterator begin() { return Iterator(m_Data); }
-		NODISCARD constexpr Iterator end() { return Iterator(m_Data + TSize); }
-		NODISCARD constexpr ConstIterator begin() const { return {m_Data}; }
-		NODISCARD constexpr ConstIterator end() const { return {m_Data + TSize}; }
-
-		// Operator Overloads
-		operator Sequence<T>() const { return {m_Data, TSize}; }
-
-		T& operator[](const size_t index)
+		NODISCARD T& operator[](const size_t index)
 		{
-			if (index >= TSize || index < 0)
+			if (index >= TSize)
 				throw IndexOutOfRangeException(index);
 
-			return m_Data[index];
+			return Base::m_Data[index];
 		}
 
-		const T& operator[](const size_t index) const
+		NODISCARD const T& operator[](const size_t index) const
 		{
-			if (index >= TSize || index < 0)
+			if (index >= TSize)
 				throw IndexOutOfRangeException(index);
 
-			return m_Data[index];
-		}
-
-		Array& operator=(std::initializer_list<T>&& initList) noexcept
-		{
-			Set(std::move(initList));
-			return *this;
+			return Base::m_Data[index];
 		}
 
 		Array& operator=(const Array& array)
@@ -126,8 +118,7 @@ namespace mtk
 			if (this == &array)
 				return *this;
 
-			for (size_t i = 0; i < TSize; i++)
-				m_Data[i] = array.m_Data[i];
+			Base::CopyFrom(array);
 
 			return *this;
 		}
@@ -137,27 +128,15 @@ namespace mtk
 			if (this == &array)
 				return *this;
 
-			for (size_t i = 0; i < TSize; i++)
-				m_Data[i] = std::move(array.m_Data[i]);
+			Base::MoveFrom(std::move(array));
 
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const Array& current)
+		Array& operator=(std::initializer_list<T>&& initList) noexcept
 		{
-			stream << '[';
-			for (size_t i = 0; i < TSize; i++)
-			{
-				stream << current.m_Data[i];
-				if (i != TSize - 1)
-					stream << ", ";
-			}
-
-			stream << ']';
-			return stream;
+			Set(std::move(initList));
+			return *this;
 		}
-
-	private:
-		T m_Data[TSize];
 	};
 }

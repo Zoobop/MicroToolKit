@@ -2,12 +2,12 @@
 
 namespace mtk
 {
-	template <typename _Type>
-	struct SingleNode
+	template <typename T>
+	struct SingleNode final
 	{
-		_Type _value;
+		T _value;
 		Ctrl _control = Ctrl::kEmpty;
-		SingleNode<_Type>* _next = nullptr;
+		SingleNode<T>* _next = nullptr;
 
 		SingleNode()
 			: _control(Ctrl::kEmpty)
@@ -19,12 +19,12 @@ namespace mtk
 		{
 		}
 
-		SingleNode(const _Type& _value)
+		SingleNode(const T& _value)
 			: _value(_value), _control(Ctrl::kFull)
 		{
 		}
 
-		SingleNode(_Type&& _value)
+		SingleNode(T&& _value)
 			: _value(_value), _control(Ctrl::kFull)
 		{
 		}
@@ -35,7 +35,7 @@ namespace mtk
 			delete _next;
 		}
 
-		friend std::ostream& operator<<(std::ostream& _stream, const SingleNode<_Type>& _current)
+		friend std::ostream& operator<<(std::ostream& _stream, const SingleNode<T>& _current)
 		{
 			_stream << _current._value << " -> ";
 			return _stream;

@@ -30,7 +30,6 @@ namespace mtk
 		// Accessors
 		NODISCARD bool IsEmpty() const;
 		NODISCARD constexpr size_t Length() const;
-		NODISCARD constexpr size_t Capacity() const;
 		NODISCARD constexpr const char* Data() const;
 
 		// Utility

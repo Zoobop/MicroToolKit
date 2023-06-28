@@ -1,9 +1,9 @@
 #pragma once
-
 #include <memory>
-#include "Exceptions/Exception.hpp"
 
-#define INVALID_MEM_ADDRESS 0xcdcdcdcdcdcdcdcd
+#include "Core/Core.hpp"
+#include "Core/Typedef.hpp"
+#include "Core/Exceptions/Exception.hpp"
 
 namespace mtk
 {
@@ -11,9 +11,16 @@ namespace mtk
 	constexpr errno_t Error = -1;
 
 	template <typename T>
-	constexpr bool IsValidMemory(T* data)
+	NODISCARD constexpr bool Equals(const T& obj1, const T& obj2)
 	{
-		return !(data == nullptr || data == reinterpret_cast<T*>(INVALID_MEM_ADDRESS));
+		try
+		{
+			return obj1 == obj2;
+		}
+		catch (const Exception&)
+		{
+			return &obj1 == &obj2;
+		}
 	}
 
 	template <typename T>
@@ -43,11 +50,11 @@ namespace mtk
 	template <typename T>
 	void ShiftRight(T* data, const size_t size, const size_t startIndex, const size_t amount = 1)
 	{
-		for (size_t i = size - 1; i >= startIndex; i--)
+		for (size_t i = size; i > startIndex; i--)
 		{
-			const size_t offset = i + amount;
-			auto temp = std::move(data[i]);
-			data[i] = std::move(data[offset]);
+			const size_t offset = (i - 1) + amount;
+			auto temp = std::move(data[i - 1]);
+			data[i - 1] = std::move(data[offset]);
 			data[offset] = std::move(temp);
 		}
 	}
@@ -71,7 +78,7 @@ namespace mtk
 	using Scope = std::unique_ptr<T>;
 
 	template <typename T, typename... Args>
-	constexpr Scope<T> CreateScope(Args&&... args)
+	NODISCARD constexpr Scope<T> CreateScope(Args&&... args)
 	{
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
@@ -80,13 +87,19 @@ namespace mtk
 	using Ref = std::shared_ptr<T>;
 
 	template <typename T, typename... Args>
-	constexpr Ref<T> CreateRef(Args&&... args)
+	NODISCARD constexpr Ref<T> CreateRef(Args&&... args)
 	{
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
 
 	template <typename T>
-	T* Alloc(const size_t size)
+	NODISCARD T* StackAlloc(const size_t size)
+	{
+		return static_cast<T*>(alloca(size * sizeof(T)));
+	}
+
+	template <typename T>
+	NODISCARD T* Alloc(const size_t size)
 	{
 		return static_cast<T*>(operator new(size * sizeof(T)));
 	}
@@ -97,7 +110,6 @@ namespace mtk
 		::operator delete(block, size * sizeof(T));
 	}
 
-
 	enum struct MemStatus : uint8_t { Valid = 0, Invalid = 1 };
 
 	template <typename T>
@@ -107,13 +119,18 @@ namespace mtk
 		{
 		}
 
-		constexpr Memory(std::nullptr_t) noexcept : Data(nullptr), Status(MemStatus::Valid)
+		constexpr Memory(const Memory&) noexcept = default;
+		constexpr Memory(Memory&&) noexcept = default;
+
+		constexpr Memory(Null) noexcept : Data(nullptr), Status(MemStatus::Valid)
 		{
 		}
 
 		constexpr Memory(T* data) noexcept : Data(data), Status(MemStatus::Valid)
 		{
 		}
+
+		constexpr ~Memory() noexcept = default;
 
 		constexpr void Invalidate() noexcept
 		{
@@ -124,6 +141,16 @@ namespace mtk
 		NODISCARD constexpr bool IsValidMemory() noexcept
 		{
 			return !(Data == nullptr || Status != MemStatus::Valid);
+		}
+
+		Memory& operator=(const Memory& other)
+		{
+			if (this == &other)
+				return *this;
+
+			Data = other.Data;
+
+			return *this;
 		}
 
 		Memory& operator=(Memory&& other) noexcept

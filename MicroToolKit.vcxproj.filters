@@ -18,7 +18,7 @@
     <ClInclude Include="src\Collections\Array.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Collections\LinkedList.h">
+    <ClInclude Include="src\Collections\LinkedList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Collections\List.hpp">
@@ -27,13 +27,13 @@
     <ClInclude Include="src\Collections\Map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Collections\Queue.h">
+    <ClInclude Include="src\Collections\Queue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Collections\Set.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Collections\Stack.h">
+    <ClInclude Include="src\Collections\Stack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Interfaces\IList.h">
@@ -99,15 +99,69 @@
     <ClInclude Include="src\Utility\StringUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\CollectionUtils.hpp">
+    <ClInclude Include="src\Utility\ContainerUtils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Collections\Container.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Utility\Result.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Expected.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\Iterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\Sequence.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\String.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\StringBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\StringBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Exceptions\Exception.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Memory\Allocator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Memory\Memory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Core.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Function.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Hash.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Timer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Typedef.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\internal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common\String.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common\StringBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common\StringBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

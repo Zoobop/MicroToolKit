@@ -7,7 +7,7 @@
 
 namespace mtk
 {
-	enum struct FileAccess
+	enum struct FileAccess : uint8_t
 	{
 		Read = 2,
 		Append = 8,

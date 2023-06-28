@@ -143,24 +143,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Core\Allocator.hpp" />
-    <ClInclude Include="src\Core\Hash.hpp" />
-    <ClInclude Include="src\Core\Exceptions\Exception.hpp" />
-    <ClInclude Include="src\Common\Sequence.hpp" />
-    <ClInclude Include="src\Common\String.h" />
-    <ClInclude Include="src\Core\Core.hpp" />
-    <ClInclude Include="src\Core\Function.hpp" />
-    <ClInclude Include="src\Core\Memory.hpp" />
-    <ClInclude Include="src\Common\StringBuffer.h" />
-    <ClInclude Include="src\Core\Timer.hpp" />
-    <ClInclude Include="src\Common\StringBuilder.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\Common\String.cpp" />
-    <ClCompile Include="src\Common\StringBuffer.cpp" />
-    <ClCompile Include="src\Common\StringBuilder.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

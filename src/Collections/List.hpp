@@ -1,19 +1,16 @@
 #pragma once
-#include <ostream>
-
-#include "Core/Memory.hpp"
 #include "Collections/Container.hpp"
-#include "Common/Sequence.hpp"
 #include "Utility/Range.h"
-
+#include "Utility/Result.hpp"
 
 namespace mtk
 {
 	template <typename T>
-	class List final : public Container<T, Allocator<T>>
+	class List final : public ContiguousContainer<T, Allocator<T>>
 	{
 	public:
-		using Base = Container<T, Allocator<T>>;
+		// Aliases
+		using Base = ContiguousContainer<T, Allocator<T>>;
 		using Sequence = Sequence<T>;
 
 		friend Base;
@@ -58,10 +55,10 @@ namespace mtk
 
 		explicit List(const size_t capacity) : Base()
 		{
-			Base::Allocate(capacity);
+			Reserve(capacity);
 		}
 
-		~List() override = default;
+		constexpr ~List() noexcept override = default;
 
 		// Utility
 		void Add(const T& value)
@@ -71,7 +68,7 @@ namespace mtk
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
-			new(&Base::m_Data[Base::m_Size++]) T(value);
+			Base::m_Data[Base::m_Size++] = value;
 		}
 
 		void Add(T&& value)
@@ -81,7 +78,7 @@ namespace mtk
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
-			new(&Base::m_Data[Base::m_Size++]) T(std::move(value));
+			Base::m_Data[Base::m_Size++] = std::move(value);
 		}
 
 		template <typename... Args>
@@ -126,7 +123,7 @@ namespace mtk
 
 		void Insert(const size_t index, const T& value)
 		{
-			if (Base::m_Size <= index || index < 0)
+			if (Base::m_Size <= index)
 				throw ArgumentOutOfRangeException(NAMEOF(index), index);
 
 			if (Base::m_Capacity <= Base::m_Size + 1)
@@ -134,13 +131,13 @@ namespace mtk
 
 			ShiftRight(Base::m_Data.Data, Base::m_Size, index);
 
-			new(&Base::m_Data[index]) T(value);
+			Base::m_Data[index] = value;
 			++Base::m_Size;
 		}
 
 		void Insert(const size_t index, T&& value)
 		{
-			if (Base::m_Size <= index || index < 0)
+			if (Base::m_Size <= index)
 				throw ArgumentOutOfRangeException(NAMEOF(index), index);
 
 			if (Base::m_Capacity <= Base::m_Size + 1)
@@ -148,7 +145,7 @@ namespace mtk
 
 			ShiftRight(Base::m_Data.Data, Base::m_Size, index);
 
-			new(&Base::m_Data[index]) T(std::move(value));
+			Base::m_Data[index] = std::move(value);
 			++Base::m_Size;
 		}
 
@@ -158,7 +155,7 @@ namespace mtk
 			if (container.IsEmpty()) return;
 
 			// Index validation
-			if (Base::m_Size <= startIndex || startIndex < 0)
+			if (Base::m_Size <= startIndex)
 				throw ArgumentOutOfRangeException(NAMEOF(startIndex), startIndex);
 
 			// Reallocate, if too small
@@ -184,7 +181,7 @@ namespace mtk
 			if (container.IsEmpty()) return;
 
 			// Index validation
-			if (Base::m_Size <= startIndex || startIndex < 0)
+			if (Base::m_Size <= startIndex)
 				throw ArgumentOutOfRangeException(NAMEOF(startIndex), startIndex);
 
 			// Reallocate, if too small
@@ -210,7 +207,7 @@ namespace mtk
 		void InsertRange(const size_t startIndex, T firstElem, std::convertible_to<T> auto... elements)
 		{
 			// Index validation
-			if (Base::m_Size <= startIndex || startIndex < 0)
+			if (Base::m_Size <= startIndex)
 				throw ArgumentOutOfRangeException(NAMEOF(startIndex), startIndex);
 
 			// Reallocate, if too small
@@ -240,13 +237,33 @@ namespace mtk
 				return false;
 
 			// Get and return if invalid index
-			const int32_t index = Base::IndexOf(*this, value);
+			const int32_t index = mtk::IndexOf(*this, value);
 			if (index == -1)
 				return false;
 
 			// Dispose
 			RemoveAt(index);
 			return true;
+		}
+
+		void RemoveAt(const size_t index)
+		{
+			if (index >= Base::m_Size)
+				throw ArgumentOutOfRangeException(NAMEOF(index), index);
+
+			// Free memory
+			Base::m_Data[index].~T();
+
+			// Shift items down (+1 to shift invalid data to the end)
+			ShiftLeft(Base::m_Data, Base::m_Size, index + 1);
+
+			// Decrement size
+			--Base::m_Size;
+		}
+
+		void RemoveRange(const size_t index, const size_t count)
+		{
+			// TODO: Finish implementation
 		}
 
 		size_t RemoveAll(const Predicate<T>& predicate)
@@ -269,111 +286,60 @@ namespace mtk
 			return count;
 		}
 
-		void RemoveAt(const size_t index)
+		NODISCARD Result<T> Find(const Predicate<const T&>& predicate) const
 		{
-			if (index >= Base::m_Size || index < 0)
-				return;
-
-			// Free memory
-			Base::m_Data[index].~T();
-
-			// Shift items down (+1 to shift invalid data to the end)
-			ShiftLeft(Base::m_Data, Base::m_Size, index + 1);
-
-			// Decrement size
-			--Base::m_Size;
-		}
-
-		void RemoveRange(size_t _index, size_t _count)
-		{
-			// TODO: Finish implementation
-		}
-
-		NODISCARD bool Contains(const T& value) const
-		{
-			return mtk::Contains(*this, value);
-		}
-
-		NODISCARD bool Exists(const Predicate<T>& _predicate) const
-		{
-			for (size_t i = 0; i < Base::m_Size; i++)
-			{
-				if (_predicate(Base::m_Data[i])) return true;
-			}
-
-			return false;
-		}
-
-		NODISCARD T* Find(const Predicate<T>& _predicate) const
-		{
-			T item = nullptr;
 			for (size_t i = 0; i < Base::m_Size; i++)
 			{
 				const T& elem = Base::m_Data[i];
-				if (_predicate(elem))
-				{
-					item = elem;
-					break;
-				}
+				if (predicate(elem))
+					return Result(elem);
 			}
-			return item;
+
+			return Result<T>::Empty();
 		}
 
-		NODISCARD int32_t FindIndex(const Predicate<T>& _predicate) const
+		NODISCARD Result<size_t> FindIndex(const Predicate<const T&>& predicate) const
 		{
-			int32_t index = -1;
+			for (size_t i = 0; i < Base::m_Size; i++)
+				if (predicate(Base::m_Data[i]))
+					return Result(i);
+			return Result<T>::Empty();
+		}
+
+		NODISCARD Result<T> FindLast(const Predicate<const T&>& predicate) const
+		{
+			for (size_t i = Base::m_Size; i > 0; --i)
+			{
+				const T& elem = Base::m_Data[i - 1ULL];
+				if (predicate(elem))
+					return Result(elem);
+			}
+
+			return Result<T>::Empty();
+		}
+
+		NODISCARD Result<size_t> FindLastIndex(const Predicate<const T&>& predicate) const
+		{
+			for (size_t i = Base::m_Size; i > 0; --i)
+			{
+				const T& elem = Base::m_Data[i - 1ULL];
+				if (predicate(elem))
+					return Result(i - 1ULL);
+			}
+			return Result<T>::Empty();
+		}
+
+		NODISCARD List FindAll(const Predicate<const T&>& predicate) const
+		{
+			List list(Base::m_Size);
+
 			for (size_t i = 0; i < Base::m_Size; i++)
 			{
 				const T& elem = Base::m_Data[i];
-				if (_predicate(elem))
-				{
-					index = static_cast<int32_t>(i);
-					break;
-				}
-			}
-			return index;
-		}
-
-		NODISCARD T* FindLast(const Predicate<T>& _predicate) const
-		{
-			T item = nullptr;
-			for (size_t i = 0; i < Base::m_Size; i++)
-			{
-				const T& elem = Base::m_Data[i];
-				if (_predicate(elem))
-				{
-					item = elem;
-				}
+				if (predicate(elem))
+					list.Emplace(elem);
 			}
 
-			return item;
-		}
-
-		NODISCARD int32_t FindLastIndex(const Predicate<T>& _predicate) const
-		{
-			int32_t index = -1;
-			for (size_t i = 0; i < Base::m_Size; i++)
-			{
-				const T& elem = Base::m_Data[i];
-				if (_predicate(elem))
-				{
-					index = static_cast<int32_t>(i);
-				}
-			}
-			return index;
-		}
-
-		NODISCARD List<T> FindAll(const Predicate<T>& _predicate) const
-		{
-			List<T> list(Base::m_Size);
-			for (size_t i = 0; i < Base::m_Size; i++)
-			{
-				const T& elem = Base::m_Data[i];
-				if (_predicate(elem))
-				{
-					list.Add(elem);
-				}
-			}
 			return list;
 		}
 
@@ -381,17 +347,23 @@ namespace mtk
 		NODISCARD constexpr void Reserve(const size_t capacity) { Base::Reallocate(capacity); }
 
 		// Operator Overloads
-		operator Sequence() const { return {Base::m_Data, Base::m_Size}; }
-
 		NODISCARD const T& operator[](const size_t index) const
 		{
-			if (index >= Base::m_Size || index < 0)
+			if (index >= Base::m_Size)
 				throw IndexOutOfRangeException(index);
 
 			return Base::m_Data[index];
 		}
 
-		NODISCARD Base operator[](Range range) const
+		NODISCARD T& operator[](const size_t index)
+		{
+			if (index >= Base::m_Size)
+				throw IndexOutOfRangeException(index);
+
+			return Base::m_Data[index];
+		}
+
+		NODISCARD Base operator[](Range range)
 		{
 			if (range.end >= Base::m_Size || range.start >= range.end)
 				throw ArgumentOutOfRangeException(NAMEOF(range));
@@ -406,7 +378,8 @@ namespace mtk
 				return *this;
 
 			const size_t size = other.m_Capacity;
-			if (size == 0) return *this;
+			if (size == 0)
+				return *this;
 
 			// Allocation
 			if (!Base::IsEmpty())
@@ -437,20 +410,6 @@ namespace mtk
 			// Assignment
 			Move(other.m_Data, other.m_Size, Base::m_Data, Base::m_Capacity);
 			return *this;
-		}
-
-		friend std::ostream& operator<<(std::ostream& stream, const List& current)
-		{
-			stream << "[";
-			for (size_t i = 0; i < current.m_Size; i++)
-			{
-				stream << current.m_Data[i];
-				if (i != current.m_Size - 1)
-					stream << ", ";
-			}
-
-			stream << "]";
-			return stream;
 		}
 
 	private:

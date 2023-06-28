@@ -6,6 +6,12 @@
 
 namespace mtk
 {
+	template <typename T>
+	concept Streamable = requires(std::ostream& os, const T& value)
+	{
+		{ os << value } -> std::convertible_to<std::ostream&>;
+	};
+
 	class IOHandler final
 	{
 	public:
@@ -30,7 +36,7 @@ namespace mtk
 			std::cout << '\n';
 		}
 
-		template <typename T>
+		template <Streamable T>
 		static void WriteLine(const T& object)
 		{
 			try
@@ -43,27 +49,20 @@ namespace mtk
 			}
 		}
 
-		template <typename... Args>
+		template <Streamable... Args>
 		static void WriteLine(const char* content, Args... args)
 		{
 			std::cout << std::vformat(content, std::make_format_args(std::forward<Args>(std::move(args))...)) <<
 				"\n";
 		}
 
-		template <typename T>
+		template <Streamable T>
 		static void Write(const T& object)
 		{
-			try
-			{
-				std::cout << object;
-			}
-			catch (const Exception&)
-			{
-				std::cout << &object;
-			}
+			std::cout << object;
 		}
 
-		template <typename... Args>
+		template <Streamable... Args>
 		static void Write(const char* content, Args... args)
 		{
 			std::cout << std::vformat(content, std::make_format_args(std::forward<Args>(std::move(args))...));

@@ -1,6 +1,5 @@
 #pragma once
-#include "Core/Core.hpp"
-#include "Core/Memory.hpp"
+#include "Core/Memory/Memory.hpp"
 
 namespace mtk
 {

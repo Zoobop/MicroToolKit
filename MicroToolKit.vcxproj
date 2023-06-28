@@ -115,12 +115,25 @@
   <ItemGroup>
     <ClInclude Include="src\Collections\Array.hpp" />
     <ClInclude Include="src\Collections\Container.hpp" />
-    <ClInclude Include="src\Collections\LinkedList.h" />
+    <ClInclude Include="src\Collections\LinkedList.hpp" />
     <ClInclude Include="src\Collections\List.hpp" />
     <ClInclude Include="src\Collections\Map.h" />
-    <ClInclude Include="src\Collections\Queue.h" />
+    <ClInclude Include="src\Collections\Queue.hpp" />
     <ClInclude Include="src\Collections\Set.h" />
-    <ClInclude Include="src\Collections\Stack.h" />
+    <ClInclude Include="src\Collections\Stack.hpp" />
+    <ClInclude Include="src\Common\Iterator.hpp" />
+    <ClInclude Include="src\Common\Sequence.hpp" />
+    <ClInclude Include="src\Common\String.h" />
+    <ClInclude Include="src\Common\StringBuffer.h" />
+    <ClInclude Include="src\Common\StringBuilder.h" />
+    <ClInclude Include="src\Core\Core.hpp" />
+    <ClInclude Include="src\Core\Exceptions\Exception.hpp" />
+    <ClInclude Include="src\Core\Function.hpp" />
+    <ClInclude Include="src\Core\Hash.hpp" />
+    <ClInclude Include="src\Core\Memory\Allocator.hpp" />
+    <ClInclude Include="src\Core\Memory\Memory.hpp" />
+    <ClInclude Include="src\Core\Timer.hpp" />
+    <ClInclude Include="src\Core\Typedef.hpp" />
     <ClInclude Include="src\Interfaces\IList.h" />
     <ClInclude Include="src\Interfaces\IConvert.h" />
     <ClInclude Include="src\Interfaces\IDataHandler.h" />
@@ -132,10 +145,12 @@
     <ClInclude Include="src\IO\Log.h" />
     <ClInclude Include="src\MicroToolKit.h" />
     <ClInclude Include="src\mtkpch.h" />
-    <ClInclude Include="src\Utility\CollectionUtils.hpp" />
+    <ClInclude Include="src\Utility\ContainerUtils.hpp" />
     <ClInclude Include="src\Utility\DoubleNode.h" />
+    <ClInclude Include="src\Utility\Expected.hpp" />
     <ClInclude Include="src\Utility\HashNode.h" />
     <ClInclude Include="src\Utility\MultiNode.h" />
+    <ClInclude Include="src\Utility\Result.hpp" />
     <ClInclude Include="src\Utility\Random.h" />
     <ClInclude Include="src\Utility\Range.h" />
     <ClInclude Include="src\Utility\SingleNode.h" />
@@ -147,11 +162,9 @@
     <ClInclude Include="src\Interfaces\IParsable.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Dependencies\MicroCore\MicroCore.vcxproj">
-      <Project>{9bf2eacf-e865-47c8-a06f-0889414c6213}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="src\Common\String.cpp" />
+    <ClCompile Include="src\Common\StringBuffer.cpp" />
+    <ClCompile Include="src\Common\StringBuilder.cpp" />
     <ClCompile Include="src\internal.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
