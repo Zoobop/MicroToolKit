@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mtk
+namespace Micro
 {
 	using Null = decltype(__nullptr);
 }

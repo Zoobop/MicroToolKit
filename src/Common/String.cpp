@@ -5,7 +5,7 @@
 #include "Common/String.h"
 #include "Common/StringBuffer.h"
 
-namespace mtk
+namespace Micro
 {
 	// Constants
 	const String String::Empty = {};
@@ -121,9 +121,7 @@ namespace mtk
 
 		m_Data = new char[size];
 		for (auto iter = const_cast<char*>(begin); iter != end; ++iter)
-		{
 			m_Data[m_Size++] = *iter;
-		}
 		m_Data[m_Size] = 0;
 	}
 
@@ -319,18 +317,14 @@ namespace mtk
 	void String::Insert(char _character, size_t _index) const
 	{
 		if (_index >= m_Size)
-		{
 			DEBUG_BREAK();
-		}
 		m_Data[_index] = _character;
 	}
 
 	int32_t String::IndexOf(char character) const
 	{
 		for (size_t i = 0; i < m_Size; ++i)
-		{
 			if (m_Data[i] == character) return i;
-		}
 
 		return -1;
 	}
@@ -341,20 +335,14 @@ namespace mtk
 		if (_startIndex >= m_Size || _length < 1 || _length > m_Size - _startIndex) return -1;
 
 		for (size_t i = 0; i < _length; ++i)
-		{
 			if (m_Data[i] == _string[0])
 			{
 				if (i + _string.Length() < m_Size)
-				{
 					if (memcmp(m_Data + i, _string.Data(), _string.Length()) == 0)
-					{
 						return i;
-					}
-				}
 
 				break;
 			}
-		}
 
 		return -1;
 	}
@@ -363,9 +351,7 @@ namespace mtk
 	{
 		int32_t index = -1;
 		for (size_t i = 0; i < m_Size; ++i)
-		{
 			if (m_Data[i] == character) index = static_cast<int32_t>(i);
-		}
 
 		return index;
 	}
@@ -377,22 +363,18 @@ namespace mtk
 
 		int32_t index = -1;
 		for (size_t i = 0; i < _length; ++i)
-		{
 			if (m_Data[i] == _string[0])
 			{
 				if (i + _string.Length() < m_Size)
 				{
 					if (memcmp(m_Data + i, _string.Data(), _string.Length()) == 0)
-					{
 						index = static_cast<int32_t>(i);
-					}
 
 					continue;
 				}
 
 				break;
 			}
-		}
 
 		return index;
 	}
@@ -406,9 +388,7 @@ namespace mtk
 		{
 			char character = m_Data[i];
 			if (m_Data[i] == oldChar)
-			{
 				character = newChar;
-			}
 
 			string[i] = character;
 		}
@@ -450,7 +430,7 @@ namespace mtk
 		//size_t stringCount = 0;
 		//for (size_t i = 0; i < m_Size; ++i, ++stringCount)
 		//{
-		//	if (mtk::Contains(indices, i))
+		//	if (Micro::Contains(indices, i))
 		//	{
 		//		buffer[stringCount] = newChar;
 		//		i += oldString.Capacity() - 1;
@@ -501,7 +481,7 @@ namespace mtk
 		//size_t stringCount = 0;
 		//for (size_t i = 0; i < m_Size; ++i)
 		//{
-		//	if (mtk::Contains(indices, i))
+		//	if (Micro::Contains(indices, i))
 		//	{
 		//		for (size_t n = 0; n < newString.Capacity(); ++n)
 		//		{
@@ -545,7 +525,7 @@ namespace mtk
 		//size_t stringCount = 0;
 		//for (size_t i = 0; i < m_Size; ++i)
 		//{
-		//	if (mtk::Contains(indices, i))
+		//	if (Micro::Contains(indices, i))
 		//	{
 		//		for (size_t n = 0; n < newString.Capacity(); ++n)
 		//		{
@@ -622,9 +602,7 @@ namespace mtk
 	bool String::Contains(char character) const
 	{
 		for (size_t i = 0; i < m_Size; ++i)
-		{
 			if (m_Data[i] == character) return true;
-		}
 
 		return false;
 	}
@@ -635,7 +613,6 @@ namespace mtk
 		if (length == 0) return false;
 
 		for (size_t i = 0, charIndex = 0; i < m_Size; ++i)
-		{
 			while (m_Data[i] == string[charIndex])
 			{
 				++i;
@@ -643,7 +620,6 @@ namespace mtk
 
 				if (charIndex == length) return true;
 			}
-		}
 
 		return false;
 	}
@@ -654,7 +630,6 @@ namespace mtk
 		if (length == 0) return false;
 
 		for (size_t i = 0, charIndex = 0; i < m_Size; ++i)
-		{
 			while (m_Data[i] == string[charIndex])
 			{
 				++i;
@@ -662,7 +637,6 @@ namespace mtk
 
 				if (charIndex == length) return true;
 			}
-		}
 
 		return false;
 	}
@@ -673,7 +647,6 @@ namespace mtk
 		if (length == 0) return false;
 
 		for (size_t i = 0, charIndex = 0; i < m_Size; ++i)
-		{
 			while (m_Data[i] == string[charIndex])
 			{
 				++i;
@@ -681,7 +654,6 @@ namespace mtk
 
 				if (charIndex == length) return true;
 			}
-		}
 
 		return false;
 	}
@@ -699,12 +671,8 @@ namespace mtk
 		if (m_Size == 0 || m_Size < length) return false;
 
 		for (size_t i = 0; i < length; ++i)
-		{
 			if (m_Data[i] != string[i])
-			{
 				return false;
-			}
-		}
 
 		return true;
 	}
@@ -715,12 +683,8 @@ namespace mtk
 		if (m_Size == 0 || m_Size < length) return false;
 
 		for (size_t i = 0; i < length; ++i)
-		{
 			if (m_Data[i] != string[i])
-			{
 				return false;
-			}
-		}
 
 		return true;
 	}
@@ -731,12 +695,8 @@ namespace mtk
 		if (m_Size == 0 || m_Size < length) return false;
 
 		for (size_t i = 0; i < length; ++i)
-		{
 			if (m_Data[i] != string[i])
-			{
 				return false;
-			}
-		}
 
 		return true;
 	}
@@ -757,9 +717,7 @@ namespace mtk
 		{
 			const size_t index = m_Size - i - 1;
 			if (m_Data[index] != string[index])
-			{
 				return false;
-			}
 		}
 
 		return true;
@@ -774,9 +732,7 @@ namespace mtk
 		{
 			const size_t index = m_Size - i - 1;
 			if (m_Data[index] != string[index])
-			{
 				return false;
-			}
 		}
 
 		return true;
@@ -791,9 +747,7 @@ namespace mtk
 		{
 			const size_t index = m_Size - i - 1;
 			if (m_Data[index] != string[index])
-			{
 				return false;
-			}
 		}
 
 		return true;
@@ -844,13 +798,13 @@ namespace mtk
 
 		for (size_t i = 0; i < m_Size && searchBegin || searchEnd; ++i)
 		{
-			if (mtk::Contains(set, m_Data[i]) && searchBegin)
+			if (Micro::Contains(set, m_Data[i]) && searchBegin)
 			{
 				searchBegin = false;
 				begin = i;
 			}
 
-			if (mtk::Contains(set, m_Data[m_Size - i - 1]) && searchEnd)
+			if (Micro::Contains(set, m_Data[m_Size - i - 1]) && searchEnd)
 			{
 				searchEnd = false;
 				end = m_Size - i - 1;
@@ -869,13 +823,11 @@ namespace mtk
 		bool searchBegin = true;
 
 		for (size_t i = 0; i < m_Size || !searchBegin; ++i)
-		{
 			if (m_Data[i] != character && searchBegin)
 			{
 				searchBegin = false;
 				begin = i;
 			}
-		}
 
 		if (searchBegin) return Substring(begin);
 		return *this;
@@ -892,13 +844,11 @@ namespace mtk
 		bool searchBegin = true;
 
 		for (size_t i = 0; i < m_Size; ++i)
-		{
-			if (mtk::Contains(set, m_Data[i]) && searchBegin)
+			if (Micro::Contains(set, m_Data[i]) && searchBegin)
 			{
 				searchBegin = false;
 				begin = i;
 			}
-		}
 
 		if (searchBegin) return Substring(begin);
 		return *this;
@@ -910,13 +860,11 @@ namespace mtk
 		bool searchEnd = true;
 
 		for (size_t i = 0; i < m_Size || !searchEnd; ++i)
-		{
 			if (m_Data[m_Size - i - 1] != character && searchEnd)
 			{
 				searchEnd = false;
 				end = m_Size - i - 1;
 			}
-		}
 
 		if (searchEnd) return Substring(0, end);
 		return *this;
@@ -933,13 +881,11 @@ namespace mtk
 		bool searchEnd = true;
 
 		for (size_t i = 0; i < m_Size || !searchEnd; ++i)
-		{
-			if (mtk::Contains(set, m_Data[m_Size - i - 1]) && searchEnd)
+			if (Micro::Contains(set, m_Data[m_Size - i - 1]) && searchEnd)
 			{
 				searchEnd = false;
 				end = m_Size - i - 1;
 			}
-		}
 
 		if (searchEnd) return Substring(0, end);
 		return *this;
@@ -986,7 +932,7 @@ namespace mtk
 		//			++prev;
 		//	}
 
-		//	if (mtk::Contains(set, m_Data[i]) || m_Data[i] == '\0')
+		//	if (Micro::Contains(set, m_Data[i]) || m_Data[i] == '\0')
 		//	{
 		//		splitList[index++] = String{m_Data + prev, i - prev};
 		//		prev = i + 1;
@@ -1073,9 +1019,7 @@ namespace mtk
 		else
 		{
 			if (length != m_Size)
-			{
 				Reallocate(length);
-			}
 
 			memcpy_s(m_Data, length + 1, other.m_Data, length);
 		}
@@ -1100,13 +1044,9 @@ namespace mtk
 		if (size == 0) return *this;
 
 		if (m_Data != nullptr)
-		{
 			Reallocate(size);
-		}
 		else
-		{
 			Allocate(size);
-		}
 
 		memcpy_s(m_Data, m_Size + 1, other, m_Size);
 		return *this;
@@ -1118,13 +1058,9 @@ namespace mtk
 		if (size == 0) return *this;
 
 		if (m_Data != nullptr)
-		{
 			Reallocate(size);
-		}
 		else
-		{
 			Allocate(size);
-		}
 
 		memcpy_s(m_Data, m_Size + 1, other, m_Size);
 		return *this;
@@ -1136,13 +1072,9 @@ namespace mtk
 		if (size == 0) return *this;
 
 		if (m_Data != nullptr)
-		{
 			Reallocate(size);
-		}
 		else
-		{
 			Allocate(size);
-		}
 
 		memcpy_s(m_Data, m_Size + 1, other.data(), m_Size);
 		return *this;
@@ -1154,13 +1086,9 @@ namespace mtk
 		if (size == 0) return *this;
 
 		if (m_Data != nullptr)
-		{
 			Reallocate(size);
-		}
 		else
-		{
 			Allocate(size);
-		}
 
 		memmove_s(m_Data, m_Size + 1, other.data(), m_Size);
 		other.clear();
@@ -1173,13 +1101,9 @@ namespace mtk
 		if (size == 0) return *this;
 
 		if (m_Data != nullptr)
-		{
 			Reallocate(size);
-		}
 		else
-		{
 			Allocate(size);
-		}
 
 		memcpy_s(m_Data, m_Size + 1, other.data(), m_Size);
 		return *this;
@@ -1261,17 +1185,9 @@ namespace mtk
 	std::ostream& operator<<(std::ostream& stream, const String& current)
 	{
 		if (current.m_Size > 0)
-		{
 			stream << current.m_Data;
-		}
 		else
-		{
 			stream << "";
-		}
 		return stream;
-	};
-
-	// Hash Function
-	template <>
-	NODISCARD inline size_t Hash(const String& object) { return typeid(String).hash_code() + object.Length(); }
+	}
 }

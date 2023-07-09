@@ -1,7 +1,7 @@
 #pragma once
 #include "Memory.hpp"
 
-namespace mtk
+namespace Micro
 {
 	template <typename T>
 	class Allocator
@@ -14,7 +14,7 @@ namespace mtk
 		constexpr Allocator(Allocator&&) noexcept = default;
 		constexpr virtual ~Allocator() noexcept = default;
 
-		virtual size_t Allocate(Memory& data, const size_t currentCapacity, const size_t newCapacity)
+		NODISCARD virtual size_t Allocate(Memory& data, const size_t currentCapacity, const size_t newCapacity)
 		{
 			// Don't allocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -24,7 +24,7 @@ namespace mtk
 			return newCapacity;
 		}
 
-		virtual size_t Reallocate(Memory& data, const size_t currentCapacity, const size_t newCapacity)
+		NODISCARD virtual size_t Reallocate(Memory& data, const size_t currentCapacity, const size_t newCapacity)
 		{
 			// Don't reallocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -63,7 +63,6 @@ namespace mtk
 		constexpr Allocator& operator=(const Allocator&) noexcept = default;
 		constexpr Allocator& operator=(Allocator&&) noexcept = default;
 	};
-
 
 	template <typename T, std::derived_from<Allocator<T>> TAllocator>
 	class AllocatorProxy

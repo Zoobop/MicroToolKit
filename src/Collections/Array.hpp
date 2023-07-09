@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Collections/Container.hpp"
+#include "Collections/Base/Container.hpp"
 
-namespace mtk
+namespace Micro
 {
 	template <typename T, size_t TSize>
 	class Array final : public FixedContainer<T, TSize>

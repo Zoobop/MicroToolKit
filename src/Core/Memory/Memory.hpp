@@ -1,11 +1,12 @@
 #pragma once
 #include <memory>
+#include <ostream>
 
 #include "Core/Core.hpp"
 #include "Core/Typedef.hpp"
 #include "Core/Exceptions/Exception.hpp"
 
-namespace mtk
+namespace Micro
 {
 	constexpr errno_t Success = 0;
 	constexpr errno_t Error = -1;
@@ -111,6 +112,12 @@ namespace mtk
 	}
 
 	enum struct MemStatus : uint8_t { Valid = 0, Invalid = 1 };
+
+	inline std::ostream& operator<<(std::ostream& stream, MemStatus memStatus)
+	{
+		stream << (memStatus == MemStatus::Valid ? "Valid" : "Invalid");
+		return stream;
+	}
 
 	template <typename T>
 	struct Memory final

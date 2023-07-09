@@ -1,7 +1,7 @@
 #pragma once
 #include <format>
 
-namespace mtk
+namespace Micro
 {
 	class Exception : public std::exception
 	{
@@ -72,6 +72,18 @@ namespace mtk
 		explicit ArgumentOutOfRangeException(const char* parameterName, const size_t index) : Exception(
 			"Index was out of range. Must be non-negative and less than the size of the collection.\nParameter name: {}\nIndex value: {}",
 			parameterName, index)
+		{
+		}
+	};
+
+	class InvalidOperationException final : public Exception
+	{
+	public:
+		InvalidOperationException() : Exception("")
+		{
+		}
+
+		explicit InvalidOperationException(const char* message) : Exception(message)
 		{
 		}
 	};

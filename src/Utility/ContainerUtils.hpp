@@ -4,7 +4,7 @@
 #include "Common/StringBuilder.h"
 #include "Collections/Array.hpp"
 
-namespace mtk
+namespace Micro
 {
 	template <typename T, size_t TSize>
 	NODISCARD String ArrayToString(const Array<T, TSize>& array)

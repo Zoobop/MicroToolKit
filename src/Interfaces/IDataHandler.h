@@ -2,7 +2,7 @@
 
 #include "Core/Core.hpp"
 
-namespace mtk
+namespace Micro
 {
 	template <typename T>
 	class IDataHandler

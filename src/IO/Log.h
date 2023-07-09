@@ -3,7 +3,7 @@
 #ifdef ENABLE_LOGGING
 #include <iostream>
 
-namespace mtk {
+namespace Micro {
 	
 	class Logger
 	{
@@ -27,8 +27,8 @@ namespace mtk {
 
 }
 
-#define LOG(context)			::mtk::Logger::Log(context, "\n")
-#define PROMPT(context)			::mtk::Logger::Log(context)
+#define LOG(context)			::Micro::Logger::Log(context, "\n")
+#define PROMPT(context)			::Micro::Logger::Log(context)
 #define LOGF(context, ...)		printf(context, __VA_ARGS__); printf("\n")
 #define PROMPTF(context, ...)	printf(context, __VA_ARGS__)
 

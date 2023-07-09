@@ -2,16 +2,17 @@
 #include <ostream>
 
 #include "Core/Function.hpp"
+#include "Core/Hash.hpp"
 #include "Core/Memory/Memory.hpp"
-#include "Common/Iterator.hpp"
+#include "Collections/Base/Iterator.hpp"
 
-namespace mtk
+namespace Micro
 {
 	template <typename T>
-	class Sequence
+	class Sequence final
 	{
 	public:
-		using Iterator = Iterator<T>;
+		using Iterator = ContiguousIterator<T>;
 		using ConstIterator = const Iterator;
 		using Memory = Memory<T>;
 
@@ -116,6 +117,11 @@ namespace mtk
 		size_t m_Capacity = 0;
 	};
 
+	template <typename T>
+	NODISCARD size_t Hash(const Sequence<T>& object) noexcept
+	{
+		return typeid(T).hash_code() + typeid(Sequence<T>).hash_code() + object.Capacity();
+	}
 
 	template <typename T>
 	NODISCARD int32_t IndexOf(const Sequence<T>& sequence, const T& item)
@@ -123,10 +129,8 @@ namespace mtk
 		const T* data = sequence.Data();
 		const size_t capacity = sequence.Capacity();
 		for (size_t i = 0; i < capacity; ++i)
-		{
 			if (data[i] == item)
 				return i;
-		}
 
 		return -1;
 	}
@@ -136,10 +140,8 @@ namespace mtk
 	{
 		int32_t count = 0;
 		for (const T& elem : sequence)
-		{
 			if (predicate(elem))
 				++count;
-		}
 		return count;
 	}
 
@@ -147,10 +149,8 @@ namespace mtk
 	NODISCARD bool Contains(const Sequence<T>& container, const T& item)
 	{
 		for (const T& elem : container)
-		{
 			if (elem == item)
 				return true;
-		}
 		return false;
 	}
 
@@ -158,10 +158,8 @@ namespace mtk
 	NODISCARD bool Contains(const Sequence<T>& sequence, const Predicate<const T&>& predicate)
 	{
 		for (const T& elem : sequence)
-		{
 			if (predicate(elem))
 				return true;
-		}
 		return false;
 	}
 
@@ -171,10 +169,8 @@ namespace mtk
 		const T* data = sequence.Data();
 		const size_t capacity = sequence.Capacity();
 		for (size_t i = 0; i < capacity; i++)
-		{
 			if (predicate(data[i]))
 				return true;
-		}
 
 		return false;
 	}

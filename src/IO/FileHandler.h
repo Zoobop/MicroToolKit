@@ -5,7 +5,7 @@
 #include "Common/StringBuffer.h"
 #include "Common/StringBuilder.h"
 
-namespace mtk
+namespace Micro
 {
 	enum struct FileAccess : uint8_t
 	{

@@ -2,7 +2,7 @@
 #include <random>
 #include "Utility/Timer.h"
 
-namespace mtk {
+namespace Micro {
 
 	class Random
 	{

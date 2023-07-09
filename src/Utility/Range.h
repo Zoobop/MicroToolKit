@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mtk
+namespace Micro
 {
 	struct Range final
 	{

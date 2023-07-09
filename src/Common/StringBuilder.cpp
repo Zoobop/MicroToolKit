@@ -2,7 +2,7 @@
 
 #include "String.h"
 
-namespace mtk
+namespace Micro
 {
 	// Constants
 	constexpr size_t DefaultCapacity = 16;
@@ -102,12 +102,12 @@ namespace mtk
 
 	StringBuilder& StringBuilder::Append(int32_t integer)
 	{
-		return Append(mtk::ToString(integer));
+		return Append(Micro::ToString(integer));
 	}
 
 	StringBuilder& StringBuilder::Append(int64_t integer)
 	{
-		return Append(mtk::ToString(integer));
+		return Append(Micro::ToString(integer));
 	}
 
 	void StringBuilder::Allocate(size_t capacity)

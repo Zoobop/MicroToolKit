@@ -4,7 +4,7 @@
 #include "Collections/Queue.h"
 #include "Collections/Stack.h"
 
-namespace mtk {
+namespace Micro {
 
 	template<typename _Type>
 	class IConvert

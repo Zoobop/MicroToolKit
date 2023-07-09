@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Collections/Container.hpp"
+#include "Collections/Base/Container.hpp"
 #include "Utility/Result.hpp"
 
-namespace mtk
+namespace Micro
 {
 	template <typename T>
 	class Queue final : public ContiguousContainer<T, Allocator<T>>

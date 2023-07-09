@@ -30,7 +30,7 @@
     <ClInclude Include="src\Collections\Queue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Collections\Set.h">
+    <ClInclude Include="src\Collections\Set.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Collections\Stack.hpp">
@@ -60,28 +60,16 @@
     <ClInclude Include="src\mtkpch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\DoubleNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Utility\HashNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Utility\MultiNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Utility\Random.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Utility\Range.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\SingleNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Utility\Sort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\Tuple.h">
+    <ClInclude Include="src\Utility\Tuple.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Interfaces\IParsable.h">
@@ -90,7 +78,7 @@
     <ClInclude Include="src\IO\FileHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\IO\IOHandler.h">
+    <ClInclude Include="src\IO\IOHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\IO\Log.h">
@@ -102,7 +90,7 @@
     <ClInclude Include="src\Utility\ContainerUtils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Collections\Container.hpp">
+    <ClInclude Include="src\Collections\Base\Container.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Utility\Result.hpp">
@@ -111,10 +99,10 @@
     <ClInclude Include="src\Utility\Expected.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Common\Iterator.hpp">
+    <ClInclude Include="src\Collections\Base\Iterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Common\Sequence.hpp">
+    <ClInclude Include="src\Collections\Base\Sequence.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Common\String.h">
@@ -150,11 +138,23 @@
     <ClInclude Include="src\Core\Typedef.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Utility\Node.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Collections\Base\NodeChain.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Collections\Base\HashTable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Experimental\Enumerator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Experimental\Enumerable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\internal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Common\String.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

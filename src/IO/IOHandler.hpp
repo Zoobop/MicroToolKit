@@ -4,7 +4,7 @@
 
 #include "Common/String.h"
 
-namespace mtk
+namespace Micro
 {
 	template <typename T>
 	concept Streamable = requires(std::ostream& os, const T& value)
@@ -17,36 +17,34 @@ namespace mtk
 	public:
 		IOHandler() = delete;
 
-		static String ReadLine()
+		NODISCARD static String ReadLine()
 		{
 			std::string dummy;
 			std::getline(std::cin, dummy);
 			return std::move(dummy);
 		}
 
-		static int8_t ReadKey()
+		NODISCARD static int8_t ReadKey()
 		{
 			int8_t key;
 			std::cin >> key;
 			return key;
 		}
 
-		static void WriteLine()
+		static void WriteLine() noexcept
 		{
 			std::cout << '\n';
 		}
 
-		template <Streamable T>
-		static void WriteLine(const T& object)
+		static void WriteLine(const bool boolean) noexcept
 		{
-			try
-			{
-				std::cout << object << "\n";
-			}
-			catch (const Exception&)
-			{
-				std::cout << typeid(T).name() << ": " << &object << "\n";
-			}
+			std::cout << (boolean ? "true" : "false") << '\n';
+		}
+
+		template <Streamable T>
+		static void WriteLine(const T& object) noexcept
+		{
+			std::cout << object << "\n";
 		}
 
 		template <Streamable... Args>
@@ -56,8 +54,13 @@ namespace mtk
 				"\n";
 		}
 
+		static void Write(const bool boolean) noexcept
+		{
+			std::cout << (boolean ? "true" : "false");
+		}
+
 		template <Streamable T>
-		static void Write(const T& object)
+		static void Write(const T& object) noexcept
 		{
 			std::cout << object;
 		}

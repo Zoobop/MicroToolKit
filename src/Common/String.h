@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
 
-#include "Sequence.hpp"
+#include "Collections/Base/Sequence.hpp"
 
-namespace mtk
+namespace Micro
 {
 	class StringBuffer;
 
@@ -131,6 +131,18 @@ namespace mtk
 	};
 
 
+	// Hash Function
+	template <>
+	NODISCARD inline size_t Hash(const String& object) noexcept
+	{
+		const size_t size = object.Length();
+		size_t hash = 0;
+		for (size_t i = 0; i < size; i++)
+			hash += object[i];
+
+		return typeid(String).hash_code() + size + hash;
+	}
+
 	template <typename TElem, typename T>
 	NODISCARD String IntToString(T integral)
 	{
@@ -146,9 +158,7 @@ namespace mtk
 			*--next = '-';
 		}
 		else
-		{
 			next = std::_UIntegral_to_buff(next, uValue);
-		}
 
 		return String(next, end);
 	}

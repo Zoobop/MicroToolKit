@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 
-namespace mtk
+namespace Micro
 {
 	struct Nanosecond
 	{
@@ -104,10 +104,10 @@ namespace mtk
 	using HourTimer = TimeHandle<std::chrono::hours, Hour>;
 }
 
-#define PROFILER()			::mtk::MicrosecondTimer timer(__FUNCTION__)
-#define BENCHMARK()			::mtk::MillisecondTimer timer(__FUNCTION__)
-#define EASYTIMER()			::mtk::SecondTimer timer(__FUNCTION__)
+#define PROFILER()			::Micro::MicrosecondTimer timer(__FUNCTION__)
+#define BENCHMARK()			::Micro::MillisecondTimer timer(__FUNCTION__)
+#define EASYTIMER()			::Micro::SecondTimer timer(__FUNCTION__)
 
-#define TEST_PROFILER(name)				::mtk::MicrosecondTimer timer(name)
-#define TEST_BENCHMARK(name)			::mtk::MillisecondTimer timer(name)
-#define TEST_EASYTIMER(name)			::mtk::SecondTimer timer(name)
+#define TEST_PROFILER(name)				::Micro::MicrosecondTimer timer(name)
+#define TEST_BENCHMARK(name)			::Micro::MillisecondTimer timer(name)
+#define TEST_EASYTIMER(name)			::Micro::SecondTimer timer(name)

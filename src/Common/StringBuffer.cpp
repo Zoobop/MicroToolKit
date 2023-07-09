@@ -2,7 +2,7 @@
 
 #include "Common/String.h"
 
-namespace mtk
+namespace Micro
 {
 	const StringBuffer StringBuffer::Empty = {};
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "Core/Memory/Memory.hpp"
 
-namespace mtk
+namespace Micro
 {
 	class String;
 

@@ -25,7 +25,8 @@
 #error "Unknown compiler"
 #endif
 
-#define NODISCARD  [[nodiscard]]
+#define NODISCARD	[[nodiscard]]
+#define NORETURN	[[noreturn]]
 
 #define I8_MIN    (-128)
 #define I8_MAX    127

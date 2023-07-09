@@ -1,7 +1,7 @@
 #pragma once
 #include "Common/String.h"
 
-namespace mtk
+namespace Micro
 {
 	template <typename T>
 	class IParsable

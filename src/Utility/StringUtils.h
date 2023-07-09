@@ -4,7 +4,7 @@
 #include "Common/String.h"
 #include "Collections/List.h"
 
-namespace mtk
+namespace Micro
 {
 	template <typename _Type>
 	_Type Parse(const String& _string)

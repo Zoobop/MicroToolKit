@@ -1,7 +1,7 @@
 #pragma once
 #include "Core/Core.hpp"
 
-namespace mtk
+namespace Micro
 {
 	template <typename TResult, typename TFallback>
 	NODISCARD struct Expected

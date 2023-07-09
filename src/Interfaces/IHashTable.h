@@ -3,7 +3,7 @@
 #include "mtkpch.h"
 #include "Utility/HashNode.h"
 
-namespace mtk
+namespace Micro
 {
 	template <typename _Type, typename _KeyType = newhash_t>
 	class IHashTable
