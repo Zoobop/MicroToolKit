@@ -6,7 +6,7 @@ things may be changed, added, or further optimized through future updates.
 Below lists the current features:
 
 **Common**
-- Array       -> ```mtk::Array<TType, TSize>```
+- Array       -> ```mtk::Array<T, TSize>```
 - List        -> ```mtk::List<T>```
 - Set         -> ```mtk::Set<T>```
 - Map         -> ```mtk::Map<TKey, TValue>```
