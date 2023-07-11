@@ -2,16 +2,11 @@
 #include <format>
 #include <iostream>
 
-#include "Common/String.h"
+#include "IO/IOHelpers.hpp"
+#include "Common/String.hpp"
 
 namespace Micro
 {
-	template <typename T>
-	concept Streamable = requires(std::ostream& os, const T& value)
-	{
-		{ os << value } -> std::convertible_to<std::ostream&>;
-	};
-
 	class IOHandler final
 	{
 	public:
@@ -21,7 +16,7 @@ namespace Micro
 		{
 			std::string dummy;
 			std::getline(std::cin, dummy);
-			return std::move(dummy);
+			return {std::move(dummy).data()};
 		}
 
 		NODISCARD static int8_t ReadKey()

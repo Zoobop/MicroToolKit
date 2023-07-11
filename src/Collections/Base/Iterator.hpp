@@ -245,12 +245,12 @@ namespace Micro
 
 		constexpr ValueType* operator->() noexcept
 		{
-			return &m_Node->Ptr->GetValue();
+			return &m_Node->BucketReference->GetValue();
 		}
 
 		constexpr ValueType& operator*() noexcept
 		{
-			return m_Node->Ptr->GetValue();
+			return m_Node->BucketReference->GetValue();
 		}
 
 		NODISCARD constexpr bool operator==(const HashIterator& other) const noexcept

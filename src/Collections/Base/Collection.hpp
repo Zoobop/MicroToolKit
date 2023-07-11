@@ -8,23 +8,23 @@
 namespace Micro
 {
 	template <typename T>
-	class Container
+	class Collection
 	{
 	public:
-		constexpr Container() noexcept = default;
-		constexpr Container(const Container&) noexcept = default;
-		constexpr Container(Container&&) noexcept = default;
-		constexpr virtual ~Container() noexcept = default;
+		constexpr Collection() noexcept = default;
+		constexpr Collection(const Collection&) noexcept = default;
+		constexpr Collection(Collection&&) noexcept = default;
+		constexpr virtual ~Collection() noexcept = default;
 
 		NODISCARD constexpr virtual const T* Data() const noexcept = 0;
 		NODISCARD constexpr virtual size_t Capacity() const noexcept = 0;
 
-		constexpr Container& operator=(const Container&) noexcept = default;
-		constexpr Container& operator=(Container&&) noexcept = default;
+		constexpr Collection& operator=(const Collection&) noexcept = default;
+		constexpr Collection& operator=(Collection&&) noexcept = default;
 	};
 
 	template <typename T, typename TAllocator>
-	class ContiguousContainer : public Container<T>
+	class ContiguousCollection : public Collection<T>
 	{
 	public:
 		using Iterator = ContiguousIterator<T>;
@@ -35,9 +35,9 @@ namespace Micro
 
 		friend Sequence;
 
-		constexpr ContiguousContainer() noexcept = default;
+		constexpr ContiguousCollection() noexcept = default;
 
-		ContiguousContainer(const ContiguousContainer& other)
+		ContiguousCollection(const ContiguousCollection& other)
 		{
 			if (other.m_Data == nullptr)
 				return;
@@ -49,7 +49,7 @@ namespace Micro
 				throw BadCopyException();
 		}
 
-		ContiguousContainer(ContiguousContainer&& other) noexcept
+		ContiguousCollection(ContiguousCollection&& other) noexcept
 			: m_Data(other.m_Data), m_Size(other.m_Size), m_Capacity(other.m_Capacity)
 		{
 			other.m_Data = nullptr;
@@ -57,7 +57,7 @@ namespace Micro
 			other.m_Capacity = 0;
 		}
 
-		ContiguousContainer(const Sequence& other)
+		ContiguousCollection(const Sequence& other)
 		{
 			if (other.m_Data == nullptr)
 				return;
@@ -69,7 +69,7 @@ namespace Micro
 				throw BadCopyException();
 		}
 
-		ContiguousContainer(Sequence&& other) noexcept
+		ContiguousCollection(Sequence&& other) noexcept
 			: m_Data(other.m_Data), m_Size(other.m_Capacity), m_Capacity(other.m_Capacity)
 		{
 			other.m_Data = nullptr;
@@ -77,7 +77,7 @@ namespace Micro
 			other.m_Capacity = 0;
 		}
 
-		ContiguousContainer(std::initializer_list<T>&& initializerList) noexcept
+		ContiguousCollection(std::initializer_list<T>&& initializerList) noexcept
 		{
 			const size_t length = initializerList.size();
 			if (length == 0)
@@ -89,7 +89,7 @@ namespace Micro
 				m_Data[m_Size++] = std::move(const_cast<T&>(elem));
 		}
 
-		explicit ContiguousContainer(std::convertible_to<T> auto... elements) noexcept
+		explicit ContiguousCollection(std::convertible_to<T> auto... elements) noexcept
 		{
 			// Get number of elements (arg count)
 			const size_t length = sizeof ...(elements);
@@ -101,7 +101,7 @@ namespace Micro
 				new(&m_Data[m_Size++]) T(std::move(elem));
 		}
 
-		~ContiguousContainer() override
+		~ContiguousCollection() override
 		{
 			// Invalidate memory, then free
 			AllocatorProxy::ClearMemory(m_Data, m_Size);
@@ -138,7 +138,7 @@ namespace Micro
 
 		NODISCARD explicit constexpr operator Sequence() const noexcept { return AsSequence(); }
 
-		ContiguousContainer& operator=(const ContiguousContainer& other)
+		ContiguousCollection& operator=(const ContiguousCollection& other)
 		{
 			// Validation
 			if (this == &other)
@@ -161,7 +161,7 @@ namespace Micro
 			return *this;
 		}
 
-		ContiguousContainer& operator=(ContiguousContainer&& other) noexcept
+		ContiguousCollection& operator=(ContiguousCollection&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
@@ -177,7 +177,7 @@ namespace Micro
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const ContiguousContainer& current)
+		friend std::ostream& operator<<(std::ostream& stream, const ContiguousCollection& current)
 		{
 			stream << "[";
 			for (size_t i = 0; i < current.m_Size; i++)
@@ -209,7 +209,7 @@ namespace Micro
 	};
 
 	template <typename T, size_t TSize>
-	class FixedContainer : public Container<T>
+	class FixedCollection : public Collection<T>
 	{
 	public:
 		// Aliases
@@ -219,21 +219,21 @@ namespace Micro
 		using Sequence = Sequence<T>;
 
 		// Constructors/Destructor
-		constexpr FixedContainer() noexcept = default;
+		constexpr FixedCollection() noexcept = default;
 
-		FixedContainer(const FixedContainer& other)
+		FixedCollection(const FixedCollection& other)
 		{
 			for (size_t i = 0; i < TSize; i++)
 				new(&m_Data[i]) T(other.m_Data[i]);
 		}
 
-		FixedContainer(FixedContainer&& other) noexcept
+		FixedCollection(FixedCollection&& other) noexcept
 		{
 			for (size_t i = 0; i < TSize; i++)
 				new(&m_Data[i]) T(std::move(other.m_Data[i]));
 		}
 
-		FixedContainer(std::initializer_list<T>&& initializerList) noexcept
+		FixedCollection(std::initializer_list<T>&& initializerList) noexcept
 		{
 			if (initializerList.size() == 0)
 				return;
@@ -248,7 +248,7 @@ namespace Micro
 			}
 		}
 
-		explicit FixedContainer(std::convertible_to<T> auto... elements) noexcept
+		explicit FixedCollection(std::convertible_to<T> auto... elements) noexcept
 		{
 			// Move values in data block
 			size_t index = 0;
@@ -261,7 +261,7 @@ namespace Micro
 			}
 		}
 
-		constexpr ~FixedContainer() noexcept override = default;
+		constexpr ~FixedCollection() noexcept override = default;
 
 		// Accessors
 		NODISCARD constexpr const T* Data() const noexcept override { return static_cast<const T*>(&m_Data); }
@@ -277,7 +277,7 @@ namespace Micro
 		// Operator Overloads
 		NODISCARD explicit constexpr operator Sequence() const noexcept { return AsSequence(); }
 
-		FixedContainer& operator=(const FixedContainer& other)
+		FixedCollection& operator=(const FixedCollection& other)
 		{
 			// Validation
 			if (this == &other)
@@ -288,7 +288,7 @@ namespace Micro
 			return *this;
 		}
 
-		FixedContainer& operator=(FixedContainer&& other) noexcept
+		FixedCollection& operator=(FixedCollection&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
@@ -298,7 +298,7 @@ namespace Micro
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const FixedContainer& current)
+		friend std::ostream& operator<<(std::ostream& stream, const FixedCollection& current)
 		{
 			stream << "[";
 			for (size_t i = 0; i < TSize; i++)
@@ -313,13 +313,13 @@ namespace Micro
 		}
 
 	protected:
-		void CopyFrom(const FixedContainer& other) noexcept
+		void CopyFrom(const FixedCollection& other) noexcept
 		{
 			for (size_t i = 0; i < TSize; i++)
 				m_Data[i] = other.m_Data[i];
 		}
 
-		void MoveFrom(FixedContainer&& other) noexcept
+		void MoveFrom(FixedCollection&& other) noexcept
 		{
 			for (size_t i = 0; i < TSize; i++)
 				m_Data[i] = std::move(other.m_Data[i]);

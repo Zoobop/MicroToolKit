@@ -90,8 +90,8 @@ namespace Micro
 	{
 	public:
 		// Aliases
-		using Base = HashTable<SetNode<T>>;
 		using Node = SetNode<T>;
+		using Base = HashTable<Node>;
 
 		// Constructors/Destructor
 		constexpr Set() noexcept : Base()
@@ -114,7 +114,7 @@ namespace Micro
 		{
 		}
 
-		Set(std::initializer_list<T>&& initializerList) noexcept : Base(std::move(initializerList))
+		constexpr Set(std::initializer_list<T>&& initializerList) noexcept : Base(std::move(initializerList))
 		{
 		}
 
@@ -137,79 +137,61 @@ namespace Micro
 
 		bool Remove(const T& value)
 		{
-			// Get hash value
-			const size_t hash = Hash(value) % Base::m_Capacity;
-			++Base::m_Size;
-
-			// Check if bucket is valid
-			auto bucket = &Base::m_Data[hash];
-			if (bucket->IsValid())
-			{
-				// Search for node with existing value
-				auto node = bucket;
-				while (node->Next != nullptr)
-				{
-					auto next = node->Next;
-					if (next->Value == value)
-					{
-						// Move next pointer
-						node->Next = next->Next;
-
-						// Remove node
-						next->Invalidate();
-
-						delete next;
-
-						--Base::m_Size;
-						return true;
-					}
-
-					node = next;
-				}
-			}
-
-			return false;
+			return Base::Erase(value);
 		}
 
 		NODISCARD bool Overlaps(const Set& other) const
 		{
-			auto node = other.m_MetaData;
-			while (node != nullptr)
-			{
-				if (Contains(node->Ptr->GetValue()))
-					return true;
+			if (Base::IsEmpty())
+				return false;
 
-				node = node->Next;
+			auto metaData = other.m_MetaData;
+			while (metaData != nullptr)
+			{
+				auto bucket = metaData->BucketReference;
+				while (bucket != nullptr && bucket->IsValid())
+				{
+					if (Contains(bucket->Value))
+						return true;
+
+					bucket = bucket->Next;
+				}
+
+				metaData = metaData->Next;
 			}
-			return false;
+			return true;
 		}
 
-		NODISCARD void IntersectWith(const Set& other)
+		NODISCARD bool SetEquals(const Set& other) const
 		{
-			auto node = other.m_MetaData;
-			while (node != nullptr)
-			{
-				if (!Contains(node->Ptr->GetValue()))
-					continue;
+			if (Base::m_Size != other.m_Size)
+				return false;
 
-				Remove(node->Ptr->GetValue());
-				node = node->Next;
-			}
-		}
-
-		NODISCARD void UnionWith(const Set& other)
-		{
-			auto node = other.m_MetaData;
-			while (node != nullptr)
+			auto metaData = other.m_MetaData;
+			while (metaData != nullptr)
 			{
-				Add(node->Ptr->GetValue());
-				node = node->Next;
+				auto bucket = metaData->BucketReference;
+				while (bucket != nullptr && bucket->IsValid())
+				{
+					if (!Contains(bucket->Value))
+						return false;
+
+					bucket = bucket->Next;
+				}
+
+				metaData = metaData->Next;
 			}
+			return true;
 		}
 
 		NODISCARD bool Contains(const T& value) const noexcept
 		{
+			// Get hash of bucket
 			auto bucket = &Base::m_Data[Hash(value) % Base::m_Capacity];
+			if (!bucket->IsValid())
+				return false;
+
+			// Loop through bucket for matching value
 			while (bucket != nullptr)
 			{
 				if (bucket->Value == value)
@@ -219,6 +201,43 @@ namespace Micro
 			}
 
 			return false;
+		}
+
+		NODISCARD void IntersectWith(const Set& other)
+		{
+			auto metaData = Base::m_MetaData;
+			while (metaData != nullptr)
+			{
+				const auto next = metaData->Next;
+				auto bucket = metaData->BucketReference;
+				while (bucket != nullptr && bucket->IsValid())
+				{
+					const auto nextNode = bucket->Next;
+					const auto& value = bucket->Value;
+					if (!other.Contains(value))
+						Remove(value);
+
+					bucket = nextNode;
+				}
+
+				metaData = next;
+			}
+		}
+
+		NODISCARD void UnionWith(const Set& other)
+		{
+			auto metaData = other.m_MetaData;
+			while (metaData != nullptr)
+			{
+				auto bucket = metaData->BucketReference;
+				while (bucket != nullptr && bucket->IsValid())
+				{
+					Add(bucket->Value);
+					bucket = bucket->Next;
+				}
+
+				metaData = metaData->Next;
+			}
 		}
 
 		// Operator Overloads

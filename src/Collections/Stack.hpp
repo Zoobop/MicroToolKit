@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Collections/Base/Container.hpp"
+#include "Collections/Base/Collection.hpp"
 #include "Utility/Result.hpp"
 
 namespace Micro
 {
 	template <typename T>
-	class Stack final : public ContiguousContainer<T, Allocator<T>>
+	class Stack final : public ContiguousCollection<T, Allocator<T>>
 	{
 	public:
 		// Aliases
-		using Base = ContiguousContainer<T, Allocator<T>>;
+		using Base = ContiguousCollection<T, Allocator<T>>;
 		using Sequence = Sequence<T>;
 
 		friend Base;
@@ -93,7 +93,7 @@ namespace Micro
 			return Base::m_Data[Base::m_Size++];
 		}
 
-		void PushRange(const Container<T>& container)
+		void PushRange(const Collection<T>& container)
 		{
 			for (const auto& item : container)
 				Push(item);

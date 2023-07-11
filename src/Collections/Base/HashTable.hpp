@@ -1,6 +1,6 @@
 #pragma once
 #include "Core/Hash.hpp"
-#include "Core/Memory/Allocator.hpp"
+#include "Core/Memory/Memory.hpp"
 #include "Collections/Base/Iterator.hpp"
 #include "Utility/Tuple.hpp"
 
@@ -34,20 +34,20 @@ namespace Micro
 
 		// Fields
 		TableMetaData* Next = nullptr;
-		Node* Ptr = nullptr;
+		Node* BucketReference = nullptr;
 		size_t Index = 0;
 		MemStatus Status = MemStatus::Invalid;
 
 		constexpr TableMetaData(Node* ptr, const size_t index) noexcept
-			: Next(nullptr), Ptr(ptr), Index(index), Status(MemStatus::Valid)
+			: Next(nullptr), BucketReference(ptr), Index(index), Status(MemStatus::Valid)
 		{
 		}
 
 		constexpr void Invalidate() noexcept
 		{
 			Next = nullptr;
-			Ptr->Invalidate();
-			Ptr = nullptr;
+			BucketReference->Invalidate();
+			BucketReference = nullptr;
 			Index = 0;
 			Status = MemStatus::Invalid;
 		}
@@ -56,12 +56,12 @@ namespace Micro
 	};
 
 
-	template <HashNode TNode>
+	template <HashNode TNode, template <HashNode> typename TMetaData>
 	class HashTableAllocator final
 	{
 	public:
 		using Node = TNode;
-		using MetaData = TableMetaData<Node>;
+		using MetaData = TMetaData<Node>;
 		using Memory = Memory<Node>;
 
 		constexpr HashTableAllocator() noexcept = default;
@@ -97,7 +97,7 @@ namespace Micro
 			auto metaNode = metaData;
 			while (metaNode != nullptr)
 			{
-				auto valueNode = metaNode->Ptr;
+				auto valueNode = metaNode->BucketReference;
 				while (valueNode != nullptr)
 				{
 					// Get new hash of value
@@ -114,20 +114,20 @@ namespace Micro
 
 						// Create new node
 						auto newNode = Alloc<Node>(1);
-						new(newNode) Node(std::move(valueNode->GetValue()));
+						new(newNode) Node(std::move(valueNode->Value));
 
 						node->Next = newNode;
 
 						// Update meta data with new pointer reference
-						UpdateMetaData(newMetaData, newNode, hash);
+						AddMetaData(newMetaData, newNode, hash);
 					}
 					else
 					{
 						// Move value into new block
-						new(&newBlock[hash]) Node(std::move(valueNode->GetValue()));
+						new(&newBlock[hash]) Node(std::move(valueNode->Value));
 
 						// Update meta data with new pointer reference
-						UpdateMetaData(newMetaData, &newBlock[hash], hash);
+						AddMetaData(newMetaData, &newBlock[hash], hash);
 					}
 
 					valueNode = valueNode->Next;
@@ -150,21 +150,21 @@ namespace Micro
 		static void ClearMemory(MetaData* metaData)
 		{
 			// Clear meta data
-			if (metaData != nullptr)
+			if (metaData == nullptr)
+				return;
+
+			auto metaDataIter = metaData;
+			while (metaDataIter != nullptr)
 			{
-				auto metaDataIter = metaData;
-				while (metaDataIter != nullptr)
-				{
-					// Delete children nodes
-					DeleteNodeChildren(metaDataIter->Ptr);
+				// Delete children nodes
+				DeleteNodeChildren(metaDataIter->BucketReference);
 
-					// Free bucket head
-					auto next = metaDataIter->Next;
-					metaDataIter->Ptr->Dispose();
-					metaDataIter->Invalidate();
+				// Free bucket head
+				auto next = metaDataIter->Next;
+				metaDataIter->BucketReference->Dispose();
+				metaDataIter->Invalidate();
 
-					metaDataIter = next;
-				}
+				metaDataIter = next;
 			}
 		}
 
@@ -173,7 +173,7 @@ namespace Micro
 			Delete(data.Data, capacity);
 		}
 
-		static void UpdateMetaData(MetaData*& metaData, Node* node, const size_t hash)
+		static void AddMetaData(MetaData*& metaData, Node* node, const size_t hash) noexcept
 		{
 			// Initial node
 			if (metaData == nullptr)
@@ -192,6 +192,24 @@ namespace Micro
 			new(newNode) MetaData(node, hash);
 
 			metaDataNode->Next = newNode;
+		}
+
+		static void RemoveMetaData(MetaData*& metaData, Node* node) noexcept
+		{
+			// Initial node
+			if (metaData == nullptr)
+				return;
+
+			// Search for existing node
+			if (metaData->BucketReference != node)
+				return;
+
+			// Remove bucket
+			auto head = metaData;
+			metaData = metaData->Next;
+
+			head->Invalidate();
+			delete head;
 		}
 
 	private:
@@ -225,7 +243,7 @@ namespace Micro
 		using KeyValuePair = Tuple<KeyType, ValueType>;
 
 		using Memory = Memory<Node>;
-		using Allocator = HashTableAllocator<Node>;
+		using Allocator = HashTableAllocator<Node, TableMetaData>;
 		using MetaData = TableMetaData<Node>;
 		using Iterator = HashIterator<MetaData>;
 		using ConstIterator = const Iterator;
@@ -268,6 +286,18 @@ namespace Micro
 				Insert(std::move(const_cast<KeyType&>(e)));
 		}
 
+		explicit HashTable(std::initializer_list<KeyValuePair>&& initializerList) noexcept
+		{
+			const size_t length = initializerList.size();
+			if (length == 0)
+				return;
+
+			Allocate(MAX(length, DefaultCapacity));
+
+			for (auto& e : initializerList)
+				Insert(std::move(const_cast<KeyValuePair&>(e)));
+		}
+
 		explicit HashTable(const size_t capacity) noexcept
 		{
 			Reallocate(capacity);
@@ -285,6 +315,8 @@ namespace Micro
 		}
 
 		// Utility
+		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0; }
+
 		void Reserve(const size_t capacity)
 		{
 			Reallocate(capacity);
@@ -293,6 +325,7 @@ namespace Micro
 		void Clear()
 		{
 			Allocator::ClearMemory(m_MetaData);
+			m_MetaData = nullptr;
 			m_Size = 0;
 		}
 
@@ -351,7 +384,7 @@ namespace Micro
 			auto metaDataNode = hashTable.m_MetaData;
 			while (metaDataNode != nullptr)
 			{
-				auto node = metaDataNode->Ptr;
+				auto node = metaDataNode->BucketReference;
 				while (node != nullptr)
 				{
 					stream << node->Value;
@@ -385,7 +418,7 @@ namespace Micro
 			auto metaData = other.m_MetaData;
 			while (metaData != nullptr)
 			{
-				auto node = metaData->Ptr;
+				auto node = metaData->BucketReference;
 				while (node != nullptr)
 				{
 					Insert(node->Value);
@@ -425,13 +458,12 @@ namespace Micro
 				new(newNode) Node(key);
 
 				node->Next = newNode;
-				UpdateMetaData(newNode, hash);
 				return true;
 			}
 
 			// Emplace value
 			new(&m_Data[hash]) Node(key);
-			UpdateMetaData(&m_Data[hash], hash);
+			AddMetaData(&m_Data[hash], hash);
 			return true;
 		}
 
@@ -464,13 +496,12 @@ namespace Micro
 				new(newNode) Node(std::move(key));
 
 				node->Next = newNode;
-				UpdateMetaData(newNode, hash);
 				return true;
 			}
 
 			// Emplace value
 			new(&m_Data[hash]) Node(std::move(key));
-			UpdateMetaData(&m_Data[hash], hash);
+			AddMetaData(&m_Data[hash], hash);
 			return true;
 		}
 
@@ -503,13 +534,12 @@ namespace Micro
 				new(newNode) Node(tuple);
 
 				node->Next = newNode;
-				UpdateMetaData(newNode, hash);
 				return true;
 			}
 
 			// Emplace value
 			new(&m_Data[hash]) Node(tuple);
-			UpdateMetaData(&m_Data[hash], hash);
+			AddMetaData(&m_Data[hash], hash);
 			return true;
 		}
 
@@ -542,14 +572,139 @@ namespace Micro
 				new(newNode) Node(std::move(tuple));
 
 				node->Next = newNode;
-				UpdateMetaData(newNode, hash);
 				return true;
 			}
 
 			// Emplace value
 			new(&m_Data[hash]) Node(std::move(tuple));
-			UpdateMetaData(&m_Data[hash], hash);
+			AddMetaData(&m_Data[hash], hash);
 			return true;
+		}
+
+		bool Erase(const KeyType& key)
+		{
+			// Get hash value
+			const size_t hash = Hash(key) % m_Capacity;
+
+			// Check if bucket is valid
+			auto bucket = &m_Data[hash];
+			if (bucket->IsValid())
+			{
+				// Search for node with existing value
+				if (bucket->GetKey() == key)
+				{
+					// Dispose and shift nodes down (if applicable)
+					bucket->Dispose();
+
+					if (bucket->Next != nullptr)
+					{
+						auto prev = bucket;
+						auto node = prev->Next;
+						while (node->Next != nullptr)
+						{
+							prev->Value = std::move(node->Value);
+
+							prev = node;
+							node = node->Next;
+						}
+
+						// Clean up tail references
+						prev->Next = nullptr;
+						delete node;
+					}
+
+					RemoveMetaData(bucket);
+
+					--m_Size;
+					return true;
+				}
+
+				auto node = bucket;
+				while (node->Next != nullptr)
+				{
+					auto next = node->Next;
+					if (next->GetKey() == key)
+					{
+						// Move next pointer
+						node->Next = next->Next;
+
+						// Remove node
+						next->Invalidate();
+
+						delete next;
+
+						--m_Size;
+						return true;
+					}
+
+					node = next;
+				}
+			}
+
+			return false;
+		}
+
+		bool Erase(const KeyValuePair& tuple)
+		{
+			// Get hash value
+			const size_t hash = Hash(tuple.Component1) % m_Capacity;
+
+			// Check if bucket is valid
+			auto bucket = &m_Data[hash];
+			if (bucket->IsValid())
+			{
+				// Search for node with existing value
+				if (bucket->GetKey() == tuple.Component1)
+				{
+					// Dispose and shift nodes down (if applicable)
+					bucket->Dispose();
+
+					if (bucket->Next != nullptr)
+					{
+						auto prev = bucket;
+						auto node = prev->Next;
+						while (node->Next != nullptr)
+						{
+							prev->Value = std::move(node->Value);
+
+							prev = node;
+							node = node->Next;
+						}
+
+						// Clean up tail references
+						prev->Next = nullptr;
+						delete node;
+					}
+
+					RemoveMetaData(bucket);
+
+					--m_Size;
+					return true;
+				}
+
+				auto node = bucket;
+				while (node->Next != nullptr)
+				{
+					auto next = node->Next;
+					if (next->GetKey() == tuple.Component1)
+					{
+						// Move next pointer
+						node->Next = next->Next;
+
+						// Remove node
+						next->Invalidate();
+
+						delete next;
+
+						--m_Size;
+						return true;
+					}
+
+					node = next;
+				}
+			}
+
+			return false;
 		}
 
 		NODISCARD constexpr bool IsWithinThreshold() const
@@ -557,9 +712,14 @@ namespace Micro
 			return (static_cast<double_t>(m_Size) / static_cast<double_t>(m_Capacity)) < m_LoadFactor;
 		}
 
-		void UpdateMetaData(Node* node, const size_t hash)
+		void AddMetaData(Node* node, const size_t hash)
 		{
-			Allocator::UpdateMetaData(m_MetaData, node, hash);
+			Allocator::AddMetaData(m_MetaData, node, hash);
+		}
+
+		void RemoveMetaData(Node* node)
+		{
+			Allocator::RemoveMetaData(m_MetaData, node);
 		}
 
 	protected:

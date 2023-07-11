@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Common/String.h"
-#include "Common/StringBuilder.h"
+#include "Common/String.hpp"
+#include "Common/StringBuilder.hpp"
 #include "Collections/Array.hpp"
 
 namespace Micro

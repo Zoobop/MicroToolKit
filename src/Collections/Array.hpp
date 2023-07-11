@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Collections/Base/Container.hpp"
+#include "Collections/Base/Collection.hpp"
 
 namespace Micro
 {
 	template <typename T, size_t TSize>
-	class Array final : public FixedContainer<T, TSize>
+	class Array final : public FixedCollection<T, TSize>
 	{
 	public:
 		// Aliases
-		using Base = FixedContainer<T, TSize>;
+		using Base = FixedCollection<T, TSize>;
 
 		// Constructors/Destructors
 		constexpr Array() noexcept = default;

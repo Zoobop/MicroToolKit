@@ -24,7 +24,7 @@
     <ClInclude Include="src\Collections\List.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Collections\Map.h">
+    <ClInclude Include="src\Collections\Map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Collections\Queue.hpp">
@@ -36,61 +36,34 @@
     <ClInclude Include="src\Collections\Stack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Interfaces\IList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Interfaces\IConvert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Interfaces\IDataHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Interfaces\IExtendable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Interfaces\IHashTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Interfaces\IStruct.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\MicroToolKit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\mtkpch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\Random.h">
+    <ClInclude Include="src\Utility\Random.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\Range.h">
+    <ClInclude Include="src\Utility\Range.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\Sort.h">
+    <ClInclude Include="src\Utility\Sort.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Utility\Tuple.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Interfaces\IParsable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\IO\FileHandler.h">
+    <ClInclude Include="src\IO\FileHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\IO\IOHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\IO\Log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Utility\StringUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Utility\ContainerUtils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Collections\Base\Container.hpp">
+    <ClInclude Include="src\Collections\Base\Collection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Utility\Result.hpp">
@@ -105,13 +78,13 @@
     <ClInclude Include="src\Collections\Base\Sequence.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Common\String.h">
+    <ClInclude Include="src\Common\String.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Common\StringBuffer.h">
+    <ClInclude Include="src\Common\StringBuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Common\StringBuilder.h">
+    <ClInclude Include="src\Common\StringBuilder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Exceptions\Exception.hpp">
@@ -153,16 +126,11 @@
     <ClInclude Include="src\Experimental\Enumerable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\Common\String.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Common\StringBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Common\StringBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="src\IO\IOHelpers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Parse.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

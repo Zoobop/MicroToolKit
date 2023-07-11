@@ -15,10 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Tests\LinkedListTestRunner.cpp">
+    <ClCompile Include="Tests\Collections\LinkedListTestRunner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tests\SetTestRunner.cpp">
+    <ClCompile Include="Tests\Collections\SetTestRunner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Common\StringTestRunner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

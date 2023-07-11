@@ -87,4 +87,34 @@ namespace Micro
 		{
 		}
 	};
+
+	class KeyNotFoundException final : public Exception
+	{
+	public:
+		KeyNotFoundException() : Exception("The passed argument was invalid.")
+		{
+		}
+
+		explicit KeyNotFoundException(const char* message, const char* args) : Exception(message, args)
+		{
+		}
+
+		explicit KeyNotFoundException(const char* parameterName) : Exception(
+			"The passed argument was invalid. {}", parameterName)
+		{
+		}
+	};
+
+	class IOException final : public Exception
+	{
+	public:
+		IOException() : Exception("An I/O error occurred while opening the file.")
+		{
+		}
+
+		explicit IOException(const char* path) : Exception("An I/O error occurred while opening the file. Path: '{}'",
+		                                                   path)
+		{
+		}
+	};
 }

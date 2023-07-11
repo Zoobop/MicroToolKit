@@ -116,20 +116,20 @@
     <ClInclude Include="src\Experimental\Enumerable.hpp" />
     <ClInclude Include="src\Experimental\Enumerator.hpp" />
     <ClInclude Include="src\Collections\Array.hpp" />
-    <ClInclude Include="src\Collections\Base\Container.hpp" />
+    <ClInclude Include="src\Collections\Base\Collection.hpp" />
     <ClInclude Include="src\Collections\Base\HashTable.hpp" />
     <ClInclude Include="src\Collections\Base\NodeChain.hpp" />
     <ClInclude Include="src\Collections\LinkedList.hpp" />
     <ClInclude Include="src\Collections\List.hpp" />
-    <ClInclude Include="src\Collections\Map.h" />
+    <ClInclude Include="src\Collections\Map.hpp" />
     <ClInclude Include="src\Collections\Queue.hpp" />
     <ClInclude Include="src\Collections\Set.hpp" />
     <ClInclude Include="src\Collections\Stack.hpp" />
     <ClInclude Include="src\Collections\Base\Iterator.hpp" />
     <ClInclude Include="src\Collections\Base\Sequence.hpp" />
-    <ClInclude Include="src\Common\String.h" />
-    <ClInclude Include="src\Common\StringBuffer.h" />
-    <ClInclude Include="src\Common\StringBuilder.h" />
+    <ClInclude Include="src\Common\String.hpp" />
+    <ClInclude Include="src\Common\StringBuffer.hpp" />
+    <ClInclude Include="src\Common\StringBuilder.hpp" />
     <ClInclude Include="src\Core\Core.hpp" />
     <ClInclude Include="src\Core\Exceptions\Exception.hpp" />
     <ClInclude Include="src\Core\Function.hpp" />
@@ -138,34 +138,20 @@
     <ClInclude Include="src\Core\Memory\Memory.hpp" />
     <ClInclude Include="src\Core\Timer.hpp" />
     <ClInclude Include="src\Core\Typedef.hpp" />
-    <ClInclude Include="src\Interfaces\IList.h" />
-    <ClInclude Include="src\Interfaces\IConvert.h" />
-    <ClInclude Include="src\Interfaces\IDataHandler.h" />
-    <ClInclude Include="src\Interfaces\IExtendable.h" />
-    <ClInclude Include="src\Interfaces\IHashTable.h" />
-    <ClInclude Include="src\Interfaces\IStruct.h" />
-    <ClInclude Include="src\IO\FileHandler.h" />
+    <ClInclude Include="src\IO\FileHandler.hpp" />
     <ClInclude Include="src\IO\IOHandler.hpp" />
-    <ClInclude Include="src\IO\Log.h" />
+    <ClInclude Include="src\IO\IOHelpers.hpp" />
     <ClInclude Include="src\MicroToolKit.h" />
     <ClInclude Include="src\mtkpch.h" />
     <ClInclude Include="src\Utility\ContainerUtils.hpp" />
     <ClInclude Include="src\Utility\Expected.hpp" />
     <ClInclude Include="src\Utility\Node.hpp" />
+    <ClInclude Include="src\Utility\Parse.hpp" />
     <ClInclude Include="src\Utility\Result.hpp" />
-    <ClInclude Include="src\Utility\Random.h" />
-    <ClInclude Include="src\Utility\Range.h" />
-    <ClInclude Include="src\Utility\Sort.h" />
-    <ClInclude Include="src\Utility\StringUtils.h" />
+    <ClInclude Include="src\Utility\Random.hpp" />
+    <ClInclude Include="src\Utility\Range.hpp" />
+    <ClInclude Include="src\Utility\Sort.hpp" />
     <ClInclude Include="src\Utility\Tuple.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Interfaces\IParsable.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\Common\String.cpp" />
-    <ClCompile Include="src\Common\StringBuffer.cpp" />
-    <ClCompile Include="src\Common\StringBuilder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

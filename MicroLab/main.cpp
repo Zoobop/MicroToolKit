@@ -1,30 +1,31 @@
 #include "Collections/Array.hpp"
 #include "Collections/LinkedList.hpp"
 #include "Collections/List.hpp"
+#include "Collections/Map.hpp"
 #include "Collections/Queue.hpp"
 #include "Collections/Stack.hpp"
 #include "Collections/Set.hpp"
-#include "Experimental/Enumerable.hpp"
 #include "IO/IOHandler.hpp"
-#include "Common/String.h"
-#include "Utility/ContainerUtils.hpp"
-#include "Utility/Tuple.hpp"
+#include "Common/String.hpp"
+#include "Common/StringBuffer.hpp"
+#include "Common/StringBuilder.hpp"
 
 using namespace Micro;
 
 
 int main()
 {
-	// TODO: Overhaul Set implementation
+	// TODO: Overhaul String/StringBuffer/StringBuilder classes
+	// TODO: Create Unit Tests for remaining Collections: Array, List, Map, Queue, Stack
 
-	Set<String> set1 = {"Zoobop", "is", "a", "god"};
-	Set<String> set2 = {"not", "okay", "and", "Boobop"};
+	String fullName = "Brandon ";
+	std::string lastName = "Cunningham";
 
-	IO::WriteLine(set1);
-	IO::WriteLine(set2);
+	IO::WriteLine(fullName);
+	IO::WriteLine(lastName);
 
-	set1.UnionWith(set2);
+	fullName.Append(lastName);
 
-	IO::WriteLine(set1);
+	IO::WriteLine(fullName);
 	return 0;
 }

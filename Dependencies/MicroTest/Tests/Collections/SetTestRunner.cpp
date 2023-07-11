@@ -101,6 +101,96 @@ namespace Micro::Tests
 			Assert::IsTrue(result);
 		}
 
+		TEST_METHOD(Test_Overlaps_No_Elements)
+		{
+			Set set;
+
+			const auto result = set.Overlaps(TestSet);
+			Assert::IsTrue(!result);
+		}
+
+		TEST_METHOD(Test_Overlaps_Valid_Element)
+		{
+			Set set = {0};
+
+			const auto result = set.Overlaps(TestSet);
+			Assert::IsTrue(result);
+		}
+
+		TEST_METHOD(Test_SetEquals_No_Elements)
+		{
+			Set set;
+
+			const auto result = set.SetEquals(TestSet);
+			Assert::IsTrue(!result);
+		}
+
+		TEST_METHOD(Test_SetEquals_Exact_Match)
+		{
+			Set set = {0, 1, 2, 3, 4};
+
+			const auto result = set.SetEquals(TestSet);
+			Assert::IsTrue(result);
+		}
+
+		TEST_METHOD(Test_Contains_On_Empty_Set)
+		{
+			Set set;
+
+			const auto result = set.Contains(0);
+			Assert::IsTrue(!result);
+		}
+
+		TEST_METHOD(Test_Contains_On_Allocated_Set)
+		{
+			Set set = {0, 1, 2, 3};
+
+			const auto result = set.Contains(2);
+			Assert::IsTrue(result);
+		}
+
+		TEST_METHOD(Test_IntersectWith_Empty_Set)
+		{
+			Set set;
+
+			set.IntersectWith(TestSet);
+			Assert::IsTrue(set.IsEmpty());
+		}
+
+		TEST_METHOD(Test_IntersectWith_Invalid_Set)
+		{
+			Set set = {5, 6, 7};
+
+			set.IntersectWith(TestSet);
+			Assert::IsTrue(set.IsEmpty());
+		}
+
+		TEST_METHOD(Test_IntersectWith_Valid_Set)
+		{
+			Set set = {0, 1, 5, 6, 7};
+
+			set.IntersectWith(TestSet);
+			Assert::IsTrue(set.SetEquals({0, 1}));
+			Assert::IsTrue(set.Size() == 2);
+		}
+
+		TEST_METHOD(Test_UnionWith_Empty_Set)
+		{
+			Set set;
+
+			set.UnionWith(TestSet);
+			Assert::IsTrue(set.SetEquals({0, 1, 2, 3, 4}));
+		}
+
+		TEST_METHOD(Test_UnionWith_Valid_Set)
+		{
+			Set set = {5, 6, 7};
+
+			set.UnionWith(TestSet);
+			Assert::IsTrue(set.SetEquals({0, 1, 2, 3, 4, 5, 6, 7}));
+			Assert::IsTrue(set.Size() == 8);
+		}
+
 		TEST_METHOD(Test_Clear_Empty_Set)
 		{
 			Set set;

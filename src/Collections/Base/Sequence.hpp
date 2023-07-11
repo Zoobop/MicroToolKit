@@ -49,6 +49,7 @@ namespace Micro
 		// Accessors
 		NODISCARD constexpr size_t Capacity() const noexcept { return m_Capacity; }
 		NODISCARD constexpr const T* Data() const noexcept { return m_Data; }
+		NODISCARD constexpr T* Data() noexcept { return m_Data; }
 
 		// Iterators
 		NODISCARD constexpr Iterator begin() { return {m_Data.Data}; }

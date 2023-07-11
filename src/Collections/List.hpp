@@ -1,16 +1,16 @@
 #pragma once
-#include "Collections/Base/Container.hpp"
-#include "Utility/Range.h"
+#include "Collections/Base/Collection.hpp"
+#include "Utility/Range.hpp"
 #include "Utility/Result.hpp"
 
 namespace Micro
 {
 	template <typename T>
-	class List final : public ContiguousContainer<T, Allocator<T>>
+	class List final : public ContiguousCollection<T, Allocator<T>>
 	{
 	public:
 		// Aliases
-		using Base = ContiguousContainer<T, Allocator<T>>;
+		using Base = ContiguousCollection<T, Allocator<T>>;
 		using Sequence = Sequence<T>;
 
 		friend Base;

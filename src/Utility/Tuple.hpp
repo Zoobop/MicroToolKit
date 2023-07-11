@@ -12,7 +12,7 @@ namespace Micro
 	{
 		T Component;
 
-		explicit constexpr Tuple(T component) noexcept
+		constexpr Tuple(T component) noexcept
 			: Component(std::move(component))
 		{
 		}
@@ -30,7 +30,7 @@ namespace Micro
 		T1 Component1;
 		T2 Component2;
 
-		explicit constexpr Tuple(T1 component1, T2 component2) noexcept
+		constexpr Tuple(T1 component1, T2 component2) noexcept
 			: Component1(std::move(component1)), Component2(std::move(component2))
 		{
 		}
@@ -49,7 +49,7 @@ namespace Micro
 		T2 Component2;
 		T3 Component3;
 
-		explicit constexpr Tuple(T1 component1, T2 component2, T3 component3) noexcept
+		constexpr Tuple(T1 component1, T2 component2, T3 component3) noexcept
 			: Component1(std::move(component1)), Component2(std::move(component2)), Component3(std::move(component3))
 		{
 		}
@@ -69,7 +69,7 @@ namespace Micro
 		T3 Component3;
 		T4 Component4;
 
-		explicit constexpr Tuple(T1 component1, T2 component2, T3 component3, T4 component4) noexcept
+		constexpr Tuple(T1 component1, T2 component2, T3 component3, T4 component4) noexcept
 			: Component1(std::move(component1)), Component2(std::move(component2)), Component3(std::move(component3)),
 			  Component4(std::move(component4))
 		{
@@ -92,7 +92,7 @@ namespace Micro
 		T4 Component4;
 		T5 Component5;
 
-		explicit constexpr Tuple(T1 component1, T2 component2, T3 component3, T4 component4, T5 component5) noexcept
+		constexpr Tuple(T1 component1, T2 component2, T3 component3, T4 component4, T5 component5) noexcept
 			: Component1(std::move(component1)), Component2(std::move(component2)), Component3(std::move(component3)),
 			  Component4(std::move(component4)), Component5(std::move(component5))
 		{
@@ -111,7 +111,4 @@ namespace Micro
 	{
 		return Tuple<T...>{std::forward<T>(std::move(values))...};
 	}
-
-	template <typename T>
-	using Pair = Tuple<T, T>;
 }
