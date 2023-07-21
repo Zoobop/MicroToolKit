@@ -32,8 +32,6 @@ namespace Micro
 		NODISCARD String ToString() const noexcept { return {m_Data, m_Data + m_Size}; }
 
 		// Utility
-		void SyncSize() { m_Size = strlen(m_Data); }
-
 		StringBuilder& Append(const CharSequence auto& string) noexcept
 		{
 			const size_t length = string.Length();
@@ -118,9 +116,22 @@ namespace Micro
 			return Append(Micro::ToString(integer));
 		}
 
+		StringBuilder& Remove(const size_t start, const size_t length = 1) noexcept
+		{
+			const size_t size = start + length;
+			for (size_t i = start; i < size; i++)
+				m_Data[i] = -1;
+
+			// Shift items down
+			ShiftLeft(m_Data, m_Size, start + 1, length);
+
+			m_Size -= length;
+			return *this;
+		}
+
 		constexpr void Clear() noexcept
 		{
-			delete[] m_Data;
+			//delete[] m_Data;
 			m_Size = 0;
 		}
 

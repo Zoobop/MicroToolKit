@@ -36,16 +36,16 @@ namespace Micro
 			std::cout << (boolean ? "true" : "false") << '\n';
 		}
 
-		template <Streamable T>
-		static void WriteLine(const T& object) noexcept
+		static void WriteLine(const Streamable auto& object) noexcept
 		{
 			std::cout << object << "\n";
 		}
 
-		template <Streamable... Args>
-		static void WriteLine(const char* content, Args... args)
+		template <Streamable... T>
+		static void WriteLine(const char* content, T ... args)
 		{
-			std::cout << std::vformat(content, std::make_format_args(std::forward<Args>(std::move(args))...)) <<
+			std::cout << std::vformat(
+					content, std::make_format_args(std::forward<T>(std::move(args))...)) <<
 				"\n";
 		}
 

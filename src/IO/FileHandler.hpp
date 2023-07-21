@@ -3,8 +3,8 @@
 
 #include "IO/IOHelpers.hpp"
 #include "Common/String.hpp"
-#include "Common/StringBuffer.h"
-#include "Common/StringBuilder.h"
+#include "Common/StringBuffer.hpp"
+#include "Common/StringBuilder.hpp"
 #include "Collections/List.hpp"
 
 namespace Micro
@@ -27,11 +27,12 @@ namespace Micro
 		FileInfo(const String& path, String&& data) noexcept
 			: contents(std::move(data)), path(path)
 		{
-			const int32_t index = path.IndexOf('.');
-			if (index == -1) return;
+			const auto& result = path.IndexOf('.');
+			if (!result.IsValid()) 
+				return;
 
 			const StringBuffer bufferView = path;
-			extension = bufferView.Slice(index);
+			extension = bufferView.Slice(result);
 		}
 	};
 
@@ -67,11 +68,11 @@ namespace Micro
 			if (std::ifstream in(path, static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
 			{
 				in.seekg(0, std::ios::end);
-				String contents{static_cast<size_t>(in.tellg())};
+				const StringBuilder contents{static_cast<size_t>(in.tellg())};
 				in.seekg(0, std::ios::beg);
-				in.read(contents.Data(), static_cast<int64_t>(contents.Length()));
+				in.read(contents.ToCharArray(), static_cast<int64_t>(contents.Length()));
 				in.close();
-				FileInfo fileInfo{path, std::move(contents)};
+				FileInfo fileInfo{path, contents.ToString()};
 				return fileInfo;
 			}
 			throw IOException(path);
@@ -82,12 +83,12 @@ namespace Micro
 			if (std::ifstream in(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
 			{
 				in.seekg(0, std::ios::end);
-				StringBuilder contents((in.tellg()));
+				StringBuilder contents(static_cast<size_t>(in.tellg()));
 				in.seekg(0, std::ios::beg);
 				in.read(contents.ToCharArray(), contents.Capacity());
 				in.close();
 
-				contents.SyncSize();
+				//contents.SyncSize();
 				return {path, contents.ToString()};
 			}
 			throw IOException(path.Data());
@@ -95,30 +96,42 @@ namespace Micro
 
 		NODISCARD static String ReadAllText(const char* path)
 		{
-			if (std::ifstream in(path, static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
+			if (std::ifstream in(path, std::ios::in); in)
 			{
 				in.seekg(0, std::ios::end);
-				String contents{static_cast<size_t>(in.tellg())};
+				StringBuilder builder(in.tellg());
 				in.seekg(0, std::ios::beg);
-				in.read(contents.Data(), static_cast<int64_t>(contents.Length()));
+
+				while (!in.eof())
+				{
+					const char character = in.get();
+					builder.Append(character);
+				}
+
 				in.close();
-				return contents;
+				builder.Remove(builder.Length() - 1);
+				return builder.ToString();
 			}
 			throw IOException(path);
 		}
 
 		NODISCARD static String ReadAllText(const String& path)
 		{
-			if (std::ifstream in(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
+			if (std::ifstream in(path.Data(), std::ios::in); in)
 			{
 				in.seekg(0, std::ios::end);
-				StringBuilder contents((in.tellg()));
+				StringBuilder builder(in.tellg());
 				in.seekg(0, std::ios::beg);
-				in.read(contents.ToCharArray(), contents.Capacity());
-				in.close();
 
-				contents.SyncSize();
-				return contents.ToString();
+				while (!in.eof())
+				{
+					const char character = in.get();
+					builder.Append(character);
+				}
+
+				in.close();
+				builder.Remove(builder.Length() - 1);
+				return builder.ToString();
 			}
 			throw IOException(path.Data());
 		}
@@ -129,13 +142,28 @@ namespace Micro
 			if (std::ifstream in(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
 			{
 				in.seekg(0, std::ios::end);
-				StringBuilder contents((in.tellg()));
+				StringBuilder builder(in.tellg());
 				in.seekg(0, std::ios::beg);
-				in.read(contents.ToCharArray(), contents.Capacity());
-				in.close();
-				contents.SyncSize();
 
-				return {};
+				List<String> fileLines(builder.Capacity());
+				while (!in.eof())
+				{
+					const char character = in.get();
+					if (character == '\n')
+					{
+						fileLines.Emplace(builder.ToString());
+
+						builder.Clear();
+						continue;
+					}
+
+					builder.Append(character);
+				}
+
+				in.close();
+				builder.Remove(builder.Length() - 1);
+				fileLines.Emplace(builder.ToString());
+				return fileLines;
 			}
 			throw IOException(path.Data());
 		}
@@ -146,13 +174,28 @@ namespace Micro
 			if (std::ifstream in(path, static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
 			{
 				in.seekg(0, std::ios::end);
-				StringBuilder contents((in.tellg()));
+				StringBuilder builder(in.tellg());
 				in.seekg(0, std::ios::beg);
-				in.read(contents.ToCharArray(), contents.Capacity());
-				in.close();
-				contents.SyncSize();
 
-				return {};
+				List<String> fileLines(builder.Capacity());
+				while (!in.eof())
+				{
+					const char character = in.get();
+					if (character == '\n')
+					{
+						fileLines.Emplace(builder.ToString());
+
+						builder.Clear();
+						continue;
+					}
+
+					builder.Append(character);
+				}
+
+				in.close();
+				builder.Remove(builder.Length() - 1);
+				fileLines.Emplace(builder.ToString());
+				return fileLines;
 			}
 			throw IOException(path);
 		}

@@ -5,9 +5,9 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MicroToolKit", "MicroToolKit.vcxproj", "{178D11F0-133A-4B67-A65E-892E3E66260B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MicroLab", "MicroLab\MicroLab.vcxproj", "{48EE00F4-D3CE-45D3-A2CD-C65F67666890}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MicroLab", "..\MicroLab\MicroLab.vcxproj", "{48EE00F4-D3CE-45D3-A2CD-C65F67666890}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MicroTest", "Dependencies\MicroTest\MicroTest.vcxproj", "{A6E99C15-0908-45C0-9550-2EF610DEE85F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MicroTest", "..\MicroTest\MicroTest.vcxproj", "{A6E99C15-0908-45C0-9550-2EF610DEE85F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,12 +35,10 @@ Global
 		{48EE00F4-D3CE-45D3-A2CD-C65F67666890}.Release|x86.Build.0 = Release|x64
 		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Debug|x64.ActiveCfg = Debug|x64
 		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Debug|x64.Build.0 = Debug|x64
-		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Debug|x86.ActiveCfg = Debug|Win32
-		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Debug|x86.Build.0 = Debug|Win32
+		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Debug|x86.ActiveCfg = Debug|x64
 		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Release|x64.ActiveCfg = Release|x64
 		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Release|x64.Build.0 = Release|x64
-		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Release|x86.ActiveCfg = Release|Win32
-		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Release|x86.Build.0 = Release|Win32
+		{A6E99C15-0908-45C0-9550-2EF610DEE85F}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

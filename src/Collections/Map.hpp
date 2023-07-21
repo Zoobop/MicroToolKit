@@ -12,7 +12,8 @@ namespace Micro
 		// Aliases
 		using KeyType = TKey;
 		using ValueType = TValue;
-		using KeyValuePair = Tuple<TKey, TValue>;
+		using IteratorType = Tuple<TKey, TValue>;
+		using KeyValuePair = IteratorType;
 
 		// Fields
 		KeyValuePair Value;
@@ -59,6 +60,7 @@ namespace Micro
 
 		NODISCARD constexpr TKey& GetKey() noexcept { return Value.Component1; }
 		NODISCARD constexpr TValue& GetValue() noexcept { return Value.Component2; }
+		NODISCARD constexpr IteratorType& GetIteratorValue() noexcept { return Value; }
 		NODISCARD constexpr bool IsValid() const noexcept { return Status == MemStatus::Valid; }
 
 		// Operator Overloads
@@ -130,12 +132,12 @@ namespace Micro
 		// Utility
 		bool Add(const TKey& key, const TValue& value) noexcept
 		{
-			return Base::Insert(key, value);
+			return Base::Insert({ key, value });
 		}
 
 		bool Add(TKey&& key, TValue&& value) noexcept
 		{
-			return Base::Insert(std::move(key), std::move(value));
+			return Base::Insert({std::move(key), std::move(value)});
 		}
 
 		bool Add(const KeyValuePair& pair) noexcept
@@ -189,6 +191,25 @@ namespace Micro
 
 			// Throw exception if key is not found (key hashes to valid index but is not present)
 			throw KeyNotFoundException("Key could not be found in the Map.", NAMEOF(key));
+		}
+
+		NODISCARD Result<KeyValuePair> Find(const Predicate<const TKey&> predicate) const noexcept
+		{
+			auto metaData = Base::m_MetaData;
+			while (metaData != nullptr)
+			{
+				// Search bucket for matching key
+				auto bucket = metaData->BucketReference;
+				while (bucket != nullptr && bucket->IsValid())
+				{
+					if (predicate(bucket->Value.Component1))
+						return Result(bucket->Value);
+
+					bucket = bucket->Next;
+				}
+			}
+
+			return Result<KeyValuePair>::Empty();
 		}
 
 		NODISCARD bool ContainsKey(const TKey& key) const noexcept

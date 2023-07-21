@@ -16,7 +16,8 @@ namespace Micro
 		}
 
 		// Accessors
-		NODISCARD constexpr T& Value() const { return *m_Value; }
+		NODISCARD constexpr T& Value() { return *m_Value; }
+		NODISCARD constexpr const T& Value() const { return *m_Value; }
 		NODISCARD constexpr bool IsValid() const noexcept { return m_Value != nullptr; }
 
 		// Static

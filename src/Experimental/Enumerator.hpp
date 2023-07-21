@@ -11,26 +11,26 @@ namespace Micro
 	{
 		using Handle = std::coroutine_handle<PromiseType>;
 
-		T Current;
-		std::exception_ptr Exception;
+		mutable T Current;
+		mutable std::exception_ptr Exception;
 
-		NODISCARD constexpr auto yield_value(const std::convertible_to<T> auto& value) noexcept
+		NODISCARD constexpr auto yield_value(const std::convertible_to<T> auto& value) const noexcept
 		{
 			Current = value;
 			return std::suspend_always();
 		}
 
-		NODISCARD constexpr auto yield_value(std::convertible_to<T> auto&& value) noexcept
+		NODISCARD constexpr auto yield_value(std::convertible_to<T> auto&& value) const noexcept
 		{
 			Current = std::forward<T>(value);
 			return std::suspend_always();
 		}
 
-		constexpr void return_void() noexcept
+		constexpr void return_void() const noexcept
 		{
 		}
 
-		constexpr void unhandled_exception() noexcept
+		constexpr void unhandled_exception() const noexcept
 		{
 			Exception = std::current_exception();
 		}
@@ -41,8 +41,8 @@ namespace Micro
 			return static_cast<TEnumerator>(Handle::from_promise(*this));
 		}
 
-		NODISCARD constexpr auto initial_suspend() noexcept { return std::suspend_always(); }
-		NODISCARD constexpr auto final_suspend() noexcept { return std::suspend_always(); }
+		NODISCARD constexpr auto initial_suspend() const noexcept { return std::suspend_always(); }
+		NODISCARD constexpr auto final_suspend() const noexcept { return std::suspend_always(); }
 	};
 
 	template <typename T>
@@ -127,8 +127,6 @@ namespace Micro
 	public:
 		using Enumerator = Enumerator<T>;
 
-		friend Enumerator;
-
 		constexpr Iterator() noexcept = default;
 
 		constexpr explicit Iterator(Enumerator&& enumerator) noexcept
@@ -151,7 +149,7 @@ namespace Micro
 		{
 			Iterator iterator = *this;
 			++*this;
-			return *this;
+			return iterator;
 		}
 
 		constexpr Iterator& operator++() const noexcept
@@ -164,7 +162,7 @@ namespace Micro
 		{
 			Iterator iterator = *this;
 			++*this;
-			return *this;
+			return iterator;
 		}
 
 		constexpr T* operator->() noexcept
@@ -172,7 +170,17 @@ namespace Micro
 			return &m_Enumerator.Current();
 		}
 
+		constexpr T* operator->() const noexcept
+		{
+			return &m_Enumerator.Current();
+		}
+
 		constexpr T& operator*() noexcept
+		{
+			return m_Enumerator.Current();
+		}
+
+		constexpr T& operator*() const noexcept
 		{
 			return m_Enumerator.Current();
 		}

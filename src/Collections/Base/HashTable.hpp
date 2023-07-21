@@ -31,6 +31,7 @@ namespace Micro
 		using Node = TNode;
 		using ValueType = typename Node::ValueType;
 		using KeyType = typename Node::KeyType;
+		using IteratorType = typename Node::IteratorType;
 
 		// Fields
 		TableMetaData* Next = nullptr;

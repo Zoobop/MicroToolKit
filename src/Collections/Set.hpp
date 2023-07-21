@@ -11,6 +11,7 @@ namespace Micro
 		// Aliases
 		using KeyType = T;
 		using ValueType = T;
+		using IteratorType = T;
 
 		// Fields
 		T Value;
@@ -57,6 +58,7 @@ namespace Micro
 
 		NODISCARD constexpr T& GetKey() noexcept { return Value; }
 		NODISCARD constexpr T& GetValue() noexcept { return Value; }
+		NODISCARD constexpr IteratorType& GetIteratorValue() noexcept { return Value; }
 		NODISCARD constexpr bool IsValid() const noexcept { return Status == MemStatus::Valid; }
 
 		// Operator Overloads

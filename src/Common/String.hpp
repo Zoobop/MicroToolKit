@@ -1,7 +1,12 @@
 #pragma once
+#include <ostream>
 
 #include "Collections/Base/Sequence.hpp"
+#include "Core/Core.hpp"
+#include "Core/Typedef.hpp"
+#include "Core/Exceptions/Exception.hpp"
 #include "Utility/Result.hpp"
+#include "Core/Hash.hpp"
 
 namespace Micro
 {
@@ -47,7 +52,8 @@ namespace Micro
 			other.m_Data = nullptr;
 			other.m_Size = 0;
 
-			m_Data[m_Size] = 0;
+			if (m_Size > 0)
+				m_Data[m_Size] = 0;
 		}
 
 		String(const CharSequence auto& string)
@@ -82,22 +88,22 @@ namespace Micro
 
 		String(const char* begin, const size_t count)
 		{
-			if (count == 0) return;
+			if (count == 0) 
+				return;
 
 			Allocate(count);
-			StringCopy(begin);
+			StringCopy(begin, count);
 		}
 
 		String(const char* begin, const char* end)
 		{
-			const size_t size = strlen(begin) - strlen(end) + 1;
+			const size_t size = strlen(begin) - strlen(end);
 			if (size == 0)
 				return;
 
-			m_Data = new char[size];
-			for (auto iter = const_cast<char*>(begin); iter != end; ++iter)
-				m_Data[m_Size++] = *iter;
-			m_Data[m_Size] = 0;
+			Allocate(size);
+			for (size_t i = 0; i < size; i++)
+				m_Data[i] = begin[i];
 		}
 
 		String(const char* ptr)
@@ -272,12 +278,13 @@ namespace Micro
 			return *this;
 		}
 
-		void Insert(const char character, const size_t index)
+		String& Insert(const char character, const size_t index)
 		{
 			if (index >= m_Size)
 				throw ArgumentOutOfRangeException(NAMEOF(index), index);
 
 			m_Data[index] = character;
+			return *this;
 		}
 
 		NODISCARD Result<size_t> IndexOf(const char character) const noexcept
@@ -317,13 +324,14 @@ namespace Micro
 		NODISCARD Result<size_t> LastIndexOf(const char character) const noexcept
 		{
 			for (size_t i = m_Size; i > 0; i--)
-				if (m_Data[i-1] == character)
-					return Result(i-1);
+				if (m_Data[i - 1] == character)
+					return Result(i - 1);
 
 			return Result<size_t>::Empty();
 		}
 
-		NODISCARD Result<size_t> LastIndexOf(const CharSequence auto& string, const size_t startIndex, const size_t length) const noexcept
+		NODISCARD Result<size_t> LastIndexOf(const CharSequence auto& string, const size_t startIndex,
+		                                     const size_t length) const noexcept
 		{
 			if (string.IsEmpty() || string.Length() > m_Size)
 				return Result<size_t>::Empty();
@@ -349,7 +357,7 @@ namespace Micro
 
 		NODISCARD String Replace(const char oldChar, const char newChar) const noexcept
 		{
-			if (IsEmpty()) 
+			if (IsEmpty())
 				return *this;
 
 			const auto string = new char[m_Size + 1];
@@ -369,9 +377,8 @@ namespace Micro
 		NODISCARD String Replace(const CharSequence auto& oldString, char newChar) const
 		{
 			const size_t length = oldString.Length();
-			if (IsEmpty() || length > m_Size) 
+			if (IsEmpty() || length > m_Size)
 				return *this;
-
 
 
 			return *this;
@@ -390,7 +397,7 @@ namespace Micro
 		NODISCARD String Substring(const size_t start) const noexcept
 		{
 			const size_t size = m_Size - start;
-			if (size == 0 || size > m_Size) 
+			if (size == 0 || size > m_Size)
 				return {};
 
 			const auto string = new char[size + 1];
@@ -506,7 +513,7 @@ namespace Micro
 		NODISCARD bool Contains(const char character) const noexcept
 		{
 			for (size_t i = 0; i < m_Size; ++i)
-				if (m_Data[i] == character) 
+				if (m_Data[i] == character)
 					return true;
 
 			return false;
@@ -562,7 +569,7 @@ namespace Micro
 
 		NODISCARD bool StartsWith(const char character) const noexcept
 		{
-			if (m_Size == 0) 
+			if (m_Size == 0)
 				return false;
 
 			return m_Data[0] == character;
@@ -666,13 +673,13 @@ namespace Micro
 			return Substring(begin, m_Size - begin - end);
 		}
 
-		NODISCARD String Trim(std::convertible_to<char> auto ... characters) const noexcept
+		NODISCARD String Trim(std::convertible_to<char> auto... characters) const noexcept
 		{
 			const size_t length = sizeof ...(characters);
-			if (length == 0) 
+			if (length == 0)
 				return *this;
 
-			const auto values = { characters ... };
+			const auto values = {characters...};
 			const Sequence<char> set(values, length);
 
 			size_t begin = 0;
@@ -718,12 +725,12 @@ namespace Micro
 			return *this;
 		}
 
-		NODISCARD String TrimStart(std::convertible_to<char> auto ... characters) const noexcept
+		NODISCARD String TrimStart(std::convertible_to<char> auto... characters) const noexcept
 		{
 			const size_t length = characters.size();
 			if (length == 0) return *this;
 
-			const auto values = { characters ... };
+			const auto values = {characters...};
 			const Sequence<char> set(values, length);
 
 			size_t begin = 0;
@@ -756,12 +763,12 @@ namespace Micro
 			return *this;
 		}
 
-		NODISCARD String TrimEnd(std::convertible_to<char> auto ... characters) const noexcept
+		NODISCARD String TrimEnd(std::convertible_to<char> auto... characters) const noexcept
 		{
 			const size_t length = characters.size();
 			if (length == 0) return *this;
 
-			const auto values = { characters ... };
+			const auto values = {characters...};
 			const Sequence<char> set(values, length);
 
 			size_t end = 0;
@@ -1025,9 +1032,13 @@ namespace Micro
 			m_Data[m_Size] = 0;
 		}
 
-		void StringCopy(const char* ptr) const noexcept
+		void StringCopy(const char* ptr, const size_t size = 0) const noexcept
 		{
-			memcpy_s(m_Data, m_Size + 1, ptr, strlen(ptr));
+			if (size != 0)
+				memcpy_s(m_Data, m_Size + 1, ptr, size);
+			else
+				memcpy_s(m_Data, m_Size + 1, ptr, strlen(ptr));
+				
 			m_Data[m_Size] = 0;
 		}
 
@@ -1088,6 +1099,7 @@ namespace Micro
 	NODISCARD inline String ToString(unsigned long integral) { return UIntToString<char>(integral); }
 	NODISCARD inline String ToString(long long integral) { return IntToString<char>(integral); }
 	NODISCARD inline String ToString(unsigned long long integral) { return UIntToString<char>(integral); }
+
 	NODISCARD inline String ToString(double integral)
 	{
 		const auto size = static_cast<size_t>(_scprintf("%f", integral));

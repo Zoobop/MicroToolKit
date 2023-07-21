@@ -1,6 +1,7 @@
 #pragma once
 #include <ostream>
 
+#include "Experimental/Enumerable.hpp"
 #include "Core/Memory/Allocator.hpp"
 #include "Collections/Base/Iterator.hpp"
 #include "Collections/Base/Sequence.hpp"
@@ -8,13 +9,22 @@
 namespace Micro
 {
 	template <typename T>
+#ifdef EXPERIMENTAL
+	class Collection : public Enumerable<T>
+#else
 	class Collection
+#endif
 	{
 	public:
 		constexpr Collection() noexcept = default;
 		constexpr Collection(const Collection&) noexcept = default;
 		constexpr Collection(Collection&&) noexcept = default;
+#ifdef EXPERIMENTAL
+		constexpr ~Collection() noexcept override = default;
+#else
 		constexpr virtual ~Collection() noexcept = default;
+#endif
+		
 
 		NODISCARD constexpr virtual const T* Data() const noexcept = 0;
 		NODISCARD constexpr virtual size_t Capacity() const noexcept = 0;
@@ -27,14 +37,14 @@ namespace Micro
 	class ContiguousCollection : public Collection<T>
 	{
 	public:
+		// Aliases
 		using Iterator = ContiguousIterator<T>;
 		using ConstIterator = const Iterator;
 		using Memory = Memory<T>;
 		using AllocatorProxy = AllocatorProxy<T, TAllocator>;
 		using Sequence = Sequence<T>;
 
-		friend Sequence;
-
+		// Constructors/Destructor
 		constexpr ContiguousCollection() noexcept = default;
 
 		ContiguousCollection(const ContiguousCollection& other)
@@ -108,6 +118,7 @@ namespace Micro
 			AllocatorProxy::Dispose(m_Data, m_Capacity);
 		}
 
+		// Utility
 		virtual void Clear()
 		{
 			// Invalidate data
@@ -124,18 +135,41 @@ namespace Micro
 			return false;
 		}
 
+		// Accessors
 		NODISCARD constexpr bool IsEmpty() const { return m_Size == 0; }
 		NODISCARD constexpr const T* Data() const noexcept override { return m_Data; }
 		NODISCARD constexpr size_t Size() const { return m_Size; }
 		NODISCARD constexpr size_t Capacity() const noexcept override { return m_Capacity; }
 		NODISCARD constexpr Sequence AsSequence() const noexcept { return {m_Data, m_Size}; }
 
-		// Iterators
-		NODISCARD constexpr Iterator begin() { return {m_Data.Data}; }
-		NODISCARD constexpr Iterator end() { return {m_Data.Data + m_Size}; }
-		NODISCARD constexpr ConstIterator begin() const { return {m_Data.Data}; }
-		NODISCARD constexpr ConstIterator end() const { return {m_Data.Data + m_Size}; }
+#ifdef EXPERIMENTAL
+		// Enumerators
+		NODISCARD Enumerator<T> GetEnumerator() override
+		{
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
 
+		NODISCARD Enumerator<T> GetEnumerator() const override
+		{
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				const auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
+#else		
+		// Iterators
+		NODISCARD constexpr Iterator begin() const noexcept { return Iterator(m_Data); }
+		NODISCARD constexpr Iterator end() const noexcept { return Iterator(m_Data + m_Size); }
+		NODISCARD constexpr ConstIterator cbegin() const noexcept { return Iterator(m_Data); }
+		NODISCARD constexpr ConstIterator cend() const noexcept { return Iterator(m_Data + m_Size); }
+#endif
+
+		// Operator Overloads
 		NODISCARD explicit constexpr operator Sequence() const noexcept { return AsSequence(); }
 
 		ContiguousCollection& operator=(const ContiguousCollection& other)
@@ -268,11 +302,32 @@ namespace Micro
 		NODISCARD constexpr size_t Capacity() const noexcept override { return TSize; }
 		NODISCARD constexpr Sequence AsSequence() const noexcept { return {&m_Data[0], TSize}; }
 
+#ifdef EXPERIMENTAL
+		// Enumerators
+		NODISCARD Enumerator<T> GetEnumerator() override
+		{
+			for (size_t i = 0; i < TSize; i++)
+			{
+				auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
+
+		NODISCARD Enumerator<T> GetEnumerator() const override
+		{
+			for (size_t i = 0; i < TSize; i++)
+			{
+				const auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
+#else		
 		// Iterators
-		NODISCARD constexpr virtual Iterator begin() { return {&m_Data[0]}; }
-		NODISCARD constexpr virtual Iterator end() { return {&m_Data[0] + TSize}; }
-		NODISCARD constexpr virtual ConstIterator begin() const { return {&m_Data[0]}; }
-		NODISCARD constexpr virtual ConstIterator end() const { return {&m_Data[0] + TSize}; }
+		NODISCARD constexpr Iterator begin() const noexcept { return Iterator(m_Data); }
+		NODISCARD constexpr Iterator end() const noexcept { return Iterator(m_Data + TSize); }
+		NODISCARD constexpr ConstIterator cbegin() const noexcept { return Iterator(m_Data); }
+		NODISCARD constexpr ConstIterator cend() const noexcept { return Iterator(m_Data + TSize); }
+#endif
 
 		// Operator Overloads
 		NODISCARD explicit constexpr operator Sequence() const noexcept { return AsSequence(); }

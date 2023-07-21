@@ -48,18 +48,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Output\bin\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)Output\intermediate\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(PorjectDir)Output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)Output\intermediate\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
     <TargetName>$(ProjectName)</TargetName>
     <IncludePath>
     </IncludePath>
-    <SourcePath>$(SolutionDir)Dependencies\MicroCore\src\</SourcePath>
-    <PublicIncludeDirectories>$(SolutionDir)Dependencies\MicroCore\src\</PublicIncludeDirectories>
+    <SourcePath>$(ProjectDir)src\</SourcePath>
+    <PublicIncludeDirectories>$(ProjectDir)src\</PublicIncludeDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(SolutionDir)Output\intermediate\$(Configuration)-$(Platform)\</IntDir>
-    <OutDir>$(SolutionDir)Output\bin\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)Output\intermediate\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(PorjectDir)Output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
     <TargetName>$(ProjectName)</TargetName>
     <IncludePath>
     </IncludePath>
@@ -77,7 +77,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\;$(SolutionDir)Dependencies\MicroCore\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,7 +100,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\;$(SolutionDir)Dependencies\MicroCore\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,7 +142,6 @@
     <ClInclude Include="src\IO\IOHandler.hpp" />
     <ClInclude Include="src\IO\IOHelpers.hpp" />
     <ClInclude Include="src\MicroToolKit.h" />
-    <ClInclude Include="src\mtkpch.h" />
     <ClInclude Include="src\Utility\ContainerUtils.hpp" />
     <ClInclude Include="src\Utility\Expected.hpp" />
     <ClInclude Include="src\Utility\Node.hpp" />
@@ -151,7 +150,11 @@
     <ClInclude Include="src\Utility\Random.hpp" />
     <ClInclude Include="src\Utility\Range.hpp" />
     <ClInclude Include="src\Utility\Sort.hpp" />
+    <ClInclude Include="src\Utility\StringUtils.hpp" />
     <ClInclude Include="src\Utility\Tuple.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\internal.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

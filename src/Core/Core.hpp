@@ -49,3 +49,5 @@
 
 #define F64_MAX	   DBL_MAX
 #define F64_MIN	   DBL_MIN
+
+//#define EXPERIMENTAL

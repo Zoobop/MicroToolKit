@@ -210,7 +210,7 @@ namespace Micro
 	public:
 		// Aliases
 		using MetaData = TMetaData;
-		using ValueType = typename MetaData::ValueType;
+		using IteratorType = typename MetaData::IteratorType;
 
 		explicit constexpr HashIterator(MetaData* ptr) noexcept
 			: m_Node(ptr)
@@ -243,14 +243,14 @@ namespace Micro
 			return *this;
 		}
 
-		constexpr ValueType* operator->() noexcept
+		constexpr IteratorType* operator->() noexcept
 		{
-			return &m_Node->BucketReference->GetValue();
+			return &m_Node->BucketReference->GetIteratorValue();
 		}
 
-		constexpr ValueType& operator*() noexcept
+		constexpr IteratorType& operator*() noexcept
 		{
-			return m_Node->BucketReference->GetValue();
+			return m_Node->BucketReference->GetIteratorValue();
 		}
 
 		NODISCARD constexpr bool operator==(const HashIterator& other) const noexcept
