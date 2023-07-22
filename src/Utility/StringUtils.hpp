@@ -1,6 +1,7 @@
 #pragma once
 #include "Collections/List.hpp"
 #include "Common/StringBuffer.hpp"
+#include "Common/StringBuilder.hpp"
 
 namespace Micro
 {
@@ -19,6 +20,32 @@ namespace Micro
 		return true;
 	}
 
+	template <StringConvertible T>
+	NODISCARD constexpr String Join(const char character, const Sequence<T>& sequence) noexcept
+	{
+		constexpr size_t defaultSize = 64;
+
+		StringBuilder builder(defaultSize);
+
+		for (const auto& e : sequence)
+			builder.Append(e.ToString()).Append(character);
+
+		return builder.ToString();
+	}
+
+	template <StringConvertible T>
+	NODISCARD constexpr String Join(const CharSequence auto& string, const Sequence<T>& sequence) noexcept
+	{
+		constexpr size_t defaultSize = 64;
+
+		StringBuilder builder(defaultSize);
+
+		for (const auto& e : sequence)
+			builder.Append(e.ToString()).Append(string);
+
+		return builder.ToString();
+	}
+
 	NODISCARD bool Contains(const CharSequence auto& string, const char character) noexcept
 	{
 		for (size_t i = 0; i < string.Length(); ++i)
@@ -31,7 +58,7 @@ namespace Micro
 	NODISCARD bool Contains(const CharSequence auto& string, const CharSequence auto& value) noexcept
 	{
 		const size_t length = value.Length();
-		if (length == 0) 
+		if (length == 0)
 			return false;
 
 		for (size_t i = 0, charIndex = 0; i < string.Length(); ++i)

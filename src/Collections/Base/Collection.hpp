@@ -33,7 +33,7 @@ namespace Micro
 		constexpr Collection& operator=(Collection&&) noexcept = default;
 	};
 
-	template <typename T, typename TAllocator>
+	template <typename T, typename TAllocator = Allocator<T>>
 	class ContiguousCollection : public Collection<T>
 	{
 	public:

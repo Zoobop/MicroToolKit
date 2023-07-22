@@ -6,21 +6,19 @@
 namespace Micro
 {
 	template <typename T>
-	class List final : public ContiguousCollection<T, Allocator<T>>
+	class List final : public ContiguousCollection<T>
 	{
 	public:
 		// Aliases
-		using Base = ContiguousCollection<T, Allocator<T>>;
+		using Base = ContiguousCollection<T>;
 		using Sequence = Sequence<T>;
-
-		friend Base;
 
 		// Constructors/Destructors
 		constexpr List() noexcept : Base()
 		{
 		}
 
-		constexpr List(const List& other) : Base(other)
+		constexpr List(const List& other) noexcept : Base(other)
 		{
 		}
 
@@ -28,7 +26,7 @@ namespace Micro
 		{
 		}
 
-		constexpr List(const Base& other) : Base(other)
+		constexpr List(const Base& other) noexcept : Base(other)
 		{
 		}
 
@@ -36,7 +34,7 @@ namespace Micro
 		{
 		}
 
-		constexpr List(const Sequence& other) : Base(other)
+		constexpr List(const Sequence& other) noexcept : Base(other)
 		{
 		}
 
@@ -53,7 +51,7 @@ namespace Micro
 		{
 		}
 
-		explicit List(const size_t capacity) : Base()
+		explicit List(const size_t capacity) noexcept : Base()
 		{
 			Reserve(capacity);
 		}
@@ -61,20 +59,20 @@ namespace Micro
 		constexpr ~List() noexcept override = default;
 
 		// Utility
-		void Add(const T& value)
+		void Add(const T& value) noexcept
 		{
 			if (!Base::m_Data.IsValidMemory())
-				Base::Allocate(c_DefaultCapacity);
+				Base::Allocate(DefaultCapacity);
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
 			Base::m_Data[Base::m_Size++] = value;
 		}
 
-		void Add(T&& value)
+		void Add(T&& value) noexcept
 		{
 			if (!Base::m_Data.IsValidMemory())
-				Base::Allocate(c_DefaultCapacity);
+				Base::Allocate(DefaultCapacity);
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
@@ -85,7 +83,7 @@ namespace Micro
 		T& Emplace(Args&&... args) noexcept
 		{
 			if (!Base::m_Data.IsValidMemory())
-				Base::Allocate(c_DefaultCapacity);
+				Base::Allocate(DefaultCapacity);
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
@@ -93,7 +91,7 @@ namespace Micro
 			return Base::m_Data[Base::m_Size++];
 		}
 
-		void AddRange(const Base& container)
+		void AddRange(const Base& container) noexcept
 		{
 			if (container.IsEmpty())
 				return;
@@ -104,7 +102,7 @@ namespace Micro
 				Add(data[i]);
 		}
 
-		void AddRange(Base&& container)
+		void AddRange(Base&& container) noexcept
 		{
 			if (container.IsEmpty())
 				return;
@@ -115,7 +113,7 @@ namespace Micro
 				Add(std::move(data[i]));
 		}
 
-		void AddRange(T firstElem, std::convertible_to<T> auto... elements)
+		void AddRange(T firstElem, std::convertible_to<T> auto... elements) noexcept
 		{
 			for (auto values = {firstElem, static_cast<T>(std::move(elements))...}; auto&& item : values)
 				Add(std::move(item));
@@ -149,10 +147,11 @@ namespace Micro
 			++Base::m_Size;
 		}
 
-		void InsertRange(size_t startIndex, const Base& container)
+		void InsertRange(const size_t startIndex, const Base& container)
 		{
 			// Check for valid sequence
-			if (container.IsEmpty()) return;
+			if (container.IsEmpty()) 
+				return;
 
 			// Index validation
 			if (Base::m_Size <= startIndex)
@@ -175,7 +174,7 @@ namespace Micro
 			Base::m_Size += length;
 		}
 
-		void InsertRange(size_t startIndex, Base&& container)
+		void InsertRange(const size_t startIndex, Base&& container)
 		{
 			// Check for valid sequence
 			if (container.IsEmpty()) return;
@@ -286,7 +285,7 @@ namespace Micro
 			return count;
 		}
 
-		NODISCARD Result<T> Find(const Predicate<const T&>& predicate) const
+		NODISCARD Result<T> Find(const Predicate<T>& predicate) const
 		{
 			for (size_t i = 0; i < Base::m_Size; i++)
 			{
@@ -298,7 +297,7 @@ namespace Micro
 			return Result<T>::Empty();
 		}
 
-		NODISCARD Result<size_t> FindIndex(const Predicate<const T&>& predicate) const
+		NODISCARD Result<size_t> FindIndex(const Predicate<T>& predicate) const
 		{
 			for (size_t i = 0; i < Base::m_Size; i++)
 				if (predicate(Base::m_Data[i]))
@@ -306,7 +305,7 @@ namespace Micro
 			return Result<T>::Empty();
 		}
 
-		NODISCARD Result<T> FindLast(const Predicate<const T&>& predicate) const
+		NODISCARD Result<T> FindLast(const Predicate<T>& predicate) const
 		{
 			for (size_t i = Base::m_Size; i > 0; --i)
 			{
@@ -318,7 +317,7 @@ namespace Micro
 			return Result<T>::Empty();
 		}
 
-		NODISCARD Result<size_t> FindLastIndex(const Predicate<const T&>& predicate) const
+		NODISCARD Result<size_t> FindLastIndex(const Predicate<T>& predicate) const
 		{
 			for (size_t i = Base::m_Size; i > 0; --i)
 			{
@@ -329,7 +328,7 @@ namespace Micro
 			return Result<T>::Empty();
 		}
 
-		NODISCARD List FindAll(const Predicate<const T&>& predicate) const
+		NODISCARD List FindAll(const Predicate<T>& predicate) const
 		{
 			List list(Base::m_Size);
 
@@ -413,6 +412,6 @@ namespace Micro
 		}
 
 	private:
-		static constexpr size_t c_DefaultCapacity = 4;
+		static constexpr size_t DefaultCapacity = 4;
 	};
 }

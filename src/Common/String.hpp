@@ -1,15 +1,17 @@
 #pragma once
 #include <ostream>
 
-#include "Collections/Base/Sequence.hpp"
 #include "Core/Core.hpp"
 #include "Core/Typedef.hpp"
 #include "Core/Exceptions/Exception.hpp"
-#include "Utility/Result.hpp"
 #include "Core/Hash.hpp"
+#include "Collections/Base/Sequence.hpp"
+#include "Utility/Result.hpp"
 
 namespace Micro
 {
+	class String;
+
 	template <typename T>
 	concept CharSequence = requires(T string)
 	{
@@ -29,6 +31,12 @@ namespace Micro
 		{ string.clear() } -> std::convertible_to<void>;
 	};
 
+	template <typename T>
+	concept StringConvertible = requires(T value)
+	{
+		{ value.ToString() } -> std::convertible_to<String>;
+	};
+
 	class String final
 	{
 	public:
@@ -39,44 +47,41 @@ namespace Micro
 		{
 		}
 
-		String(const String& other)
+		constexpr String(const String& other) noexcept
 		{
 			Allocate(other.m_Size);
 
-			StringCopy(other);
+			InternalCopy(other.m_Data, other.m_Size);
 		}
 
-		String(String&& other) noexcept
+		constexpr String(String&& other) noexcept
 			: m_Data(other.m_Data), m_Size(other.m_Size)
 		{
 			other.m_Data = nullptr;
 			other.m_Size = 0;
-
-			if (m_Size > 0)
-				m_Data[m_Size] = 0;
 		}
 
-		String(const CharSequence auto& string)
+		constexpr String(const CharSequence auto& string) noexcept
 		{
 			const size_t length = string.Length();
 			if (length == 0)
 				return;
 
 			Allocate(length);
-			StringCopy(string);
+			InternalCopy(string);
 		}
 
-		String(const StdCharSequence auto& string)
+		constexpr String(const StdCharSequence auto& string) noexcept
 		{
 			const size_t length = string.size();
 			if (length == 0)
 				return;
 
 			Allocate(length);
-			StringCopy(string);
+			InternalCopy(string);
 		}
 
-		String(const char character, const size_t count)
+		constexpr String(const char character, const size_t count) noexcept
 		{
 			Allocate(count);
 
@@ -86,50 +91,49 @@ namespace Micro
 			m_Data[m_Size] = 0;
 		}
 
-		String(const char* begin, const size_t count)
+		constexpr String(const char* begin, const size_t length) noexcept
 		{
-			if (count == 0) 
+			if (length == 0) 
 				return;
 
-			Allocate(count);
-			StringCopy(begin, count);
+			Allocate(length);
+			InternalCopy(begin, length);
 		}
 
-		String(const char* begin, const char* end)
+		template <size_t TSize>
+		constexpr explicit String(const char (&ptr)[TSize]) noexcept
+		{
+			if (TSize == 0)
+				return;
+
+			Allocate(TSize);
+			InternalCopy(&ptr, TSize);
+		}
+
+		constexpr explicit String(const char character) noexcept
+		{
+			Allocate(1);
+			m_Data[0] = character;
+		}
+
+		String(const char* begin, const char* end) noexcept
 		{
 			const size_t size = strlen(begin) - strlen(end);
 			if (size == 0)
 				return;
 
 			Allocate(size);
-			for (size_t i = 0; i < size; i++)
-				m_Data[i] = begin[i];
+			InternalCopy(begin, size);
 		}
 
-		String(const char* ptr)
+		String(const char* string) noexcept
 		{
-			const size_t length = strlen(ptr);
-			if (length == 0)
+			const size_t size = strlen(string);
+			if (size == 0)
 				return;
 
-			Allocate(length);
-			StringCopy(ptr);
-		}
-
-		String(char* ptr)
-		{
-			const size_t length = strlen(ptr);
-			if (length == 0)
-				return;
-
-			Allocate(length);
-			StringCopy(ptr);
-		}
-
-		explicit String(const char character)
-		{
-			Allocate(1);
-			m_Data[0] = character;
+			Allocate(size);
+			InternalCopy(string, size);
 		}
 
 		constexpr ~String() noexcept
@@ -140,35 +144,41 @@ namespace Micro
 			m_Size = 0;
 		}
 
+
 		// Accessors
 		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0; }
 		NODISCARD constexpr size_t Length() const noexcept { return m_Size; }
 		NODISCARD constexpr const char* Data() const noexcept { return m_Data; }
 		NODISCARD constexpr char* Data() noexcept { return m_Data; }
+		NODISCARD constexpr String ToString() const noexcept { return *this; }
+
 
 		// Utility
-		String& Append(const String& string)
+		constexpr String& Concat(const String& string) noexcept
 		{
 			const size_t length = string.m_Size;
-			if (length == 0) return *this;
+			if (length == 0) 
+				return *this;
 
 			if (m_Data == nullptr)
 			{
 				Allocate(length);
-				memcpy_s(m_Data, length + 1, string.m_Data, string.m_Size);
+				InternalCopy(string.Data(), length);
 			}
 			else
 			{
+				const size_t startIndex = m_Size;
 				Reallocate(m_Size + length);
-				strcat_s(m_Data, m_Size + 1, string.m_Data);
+				InternalConcat(startIndex, string.Data(), length);
 			}
 
 			return *this;
 		}
 
-		String& Append(String&& string) noexcept
+		constexpr String& Concat(String&& string) noexcept
 		{
-			if (string.m_Size == 0) return *this;
+			if (string.m_Size == 0)
+				return *this;
 
 			if (m_Data == nullptr)
 			{
@@ -177,8 +187,9 @@ namespace Micro
 			}
 			else
 			{
+				const size_t startIndex = m_Size;
 				Reallocate(m_Size + string.m_Size);
-				strcat_s(m_Data, m_Size + 1, string.m_Data);
+				InternalConcat(startIndex, string.Data(), string.Length());
 			}
 
 			string.m_Data = nullptr;
@@ -186,83 +197,90 @@ namespace Micro
 			return *this;
 		}
 
-		String& Append(const CharSequence auto& string)
+		constexpr String& Concat(const CharSequence auto& string) noexcept
 		{
-			const size_t length = string.Length();
-			if (length == 0) return *this;
+			const size_t length = string.Size();
+			if (length == 0)
+				return *this;
 
 			if (m_Data == nullptr)
 			{
 				Allocate(length);
-				StringCopy(string);
+				InternalCopy(string.Data(), length);
 			}
 			else
 			{
+				const size_t startIndex = m_Size;
 				Reallocate(m_Size + length);
-				strcat_s(m_Data, m_Size + 1, string.Data());
+				InternalConcat(startIndex, string.Data(), string.Length());
 			}
 
 			return *this;
 		}
 
-		String& Append(const StdCharSequence auto& string)
+		constexpr String& Concat(const StdCharSequence auto& string) noexcept
 		{
 			const size_t length = string.size();
-			if (length == 0) return *this;
+			if (length == 0)
+				return *this;
 
 			if (m_Data == nullptr)
 			{
 				Allocate(length);
-				StringCopy(string);
+				InternalCopy(string.data(), length);
 			}
 			else
 			{
+				const size_t startIndex = m_Size;
 				Reallocate(m_Size + length);
-				strcat_s(m_Data, m_Size + 1, string.data());
+				InternalConcat(startIndex, string.data(), string.size());
 			}
 
 			return *this;
 		}
 
-		String& Append(char* string)
+		template <size_t TSize>
+		constexpr String& Concat(const char (&string)[TSize]) noexcept
 		{
-			const size_t length = strlen(string);
-			if (length == 0) return *this;
+			if (TSize == 0)
+				return *this;
 
 			if (m_Data == nullptr)
 			{
-				Allocate(length);
-				StringCopy(string);
+				Allocate(TSize);
+				InternalCopy(string, TSize);
 			}
 			else
 			{
-				Reallocate(m_Size + length);
-				strcat_s(m_Data, m_Size + 1, string);
+				const size_t startIndex = m_Size;
+				Reallocate(m_Size + TSize);
+				InternalConcat(startIndex, string, TSize);
 			}
 
 			return *this;
 		}
 
-		String& Append(const char* string)
+		constexpr String& Concat(const char* string, const size_t length) noexcept
 		{
-			const size_t length = strlen(string);
-			if (length == 0) return *this;
+			if (length == 0) 
+				return *this;
 
 			if (m_Data == nullptr)
 			{
 				Allocate(length);
-				StringCopy(string);
+				InternalCopy(string, length);
 			}
 			else
 			{
+				const size_t startIndex = m_Size;
 				Reallocate(m_Size + length);
-				strcat_s(m_Data, m_Size + 1, string);
+				InternalConcat(startIndex, string, length);
 			}
 
 			return *this;
 		}
 
-		String& Append(const char character)
+		constexpr String& Concat(const char character) noexcept
 		{
 			if (m_Data == nullptr)
 			{
@@ -278,7 +296,7 @@ namespace Micro
 			return *this;
 		}
 
-		String& Insert(const char character, const size_t index)
+		constexpr String& Insert(const char character, const size_t index)
 		{
 			if (index >= m_Size)
 				throw ArgumentOutOfRangeException(NAMEOF(index), index);
@@ -417,32 +435,55 @@ namespace Micro
 			return string;
 		}
 
-		NODISCARD bool Equals(const String& other) const noexcept
+		NODISCARD constexpr bool Equals(const CharSequence auto& other) const noexcept
 		{
-			return strcmp(m_Data, other.m_Data) == 0;
+			if (m_Size != other.Length())
+				return false;
+
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				if (m_Data[i] != other[i])
+					return false;
+			}
+
+			return true;
 		}
 
-		NODISCARD bool Equals(const CharSequence auto& other) const noexcept
+		NODISCARD constexpr bool Equals(const StdCharSequence auto& other) const noexcept
 		{
-			return strcmp(m_Data, other.Data()) == 0;
+			if (m_Size != other.size())
+				return false;
+
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				if (m_Data[i] != other[i])
+					return false;
+			}
+
+			return true;
 		}
 
-		NODISCARD bool Equals(const StdCharSequence auto& other) const noexcept
-		{
-			return strcmp(m_Data, other.data()) == 0;
-		}
-
-		NODISCARD bool Equals(const char* other) const noexcept
-		{
-			return strcmp(m_Data, other) == 0;
-		}
-
-		NODISCARD bool Equals(const char other) const noexcept
+		NODISCARD constexpr bool Equals(const char other) const noexcept
 		{
 			return m_Data[0] == other;
 		}
 
-		NODISCARD bool Contains(const String& string) const noexcept
+		NODISCARD bool Equals(const char* other) const noexcept
+		{
+			const size_t length = strlen(other);
+			if (m_Size != length)
+				return false;
+
+			for (size_t i = 0; i < length; i++)
+			{
+				if (m_Data[i] != other[i])
+					return false;
+			}
+
+			return true;
+		}
+
+		NODISCARD constexpr bool Contains(const CharSequence auto& string) const
 		{
 			const size_t length = string.Length();
 			if (length == 0) return false;
@@ -453,30 +494,14 @@ namespace Micro
 					++i;
 					++charIndex;
 
-					if (charIndex == length) return true;
+					if (charIndex == length) 
+						return true;
 				}
 
 			return false;
 		}
 
-		NODISCARD bool Contains(const CharSequence auto& string) const
-		{
-			const size_t length = string.Length();
-			if (length == 0) return false;
-
-			for (size_t i = 0, charIndex = 0; i < m_Size; ++i)
-				while (m_Data[i] == string[charIndex])
-				{
-					++i;
-					++charIndex;
-
-					if (charIndex == length) return true;
-				}
-
-			return false;
-		}
-
-		NODISCARD bool Contains(const StdCharSequence auto& string) const
+		NODISCARD constexpr bool Contains(const StdCharSequence auto& string) const
 		{
 			const size_t length = string.size();
 			if (length == 0) return false;
@@ -489,6 +514,15 @@ namespace Micro
 
 					if (charIndex == length) return true;
 				}
+
+			return false;
+		}
+
+		NODISCARD constexpr bool Contains(const char character) const noexcept
+		{
+			for (size_t i = 0; i < m_Size; ++i)
+				if (m_Data[i] == character)
+					return true;
 
 			return false;
 		}
@@ -510,16 +544,7 @@ namespace Micro
 			return false;
 		}
 
-		NODISCARD bool Contains(const char character) const noexcept
-		{
-			for (size_t i = 0; i < m_Size; ++i)
-				if (m_Data[i] == character)
-					return true;
-
-			return false;
-		}
-
-		NODISCARD bool StartsWith(const String& string) const noexcept
+		NODISCARD constexpr bool StartsWith(const CharSequence auto& string) const noexcept
 		{
 			const size_t length = string.Length();
 			if (IsEmpty() || m_Size < length) return false;
@@ -531,19 +556,7 @@ namespace Micro
 			return true;
 		}
 
-		NODISCARD bool StartsWith(const CharSequence auto& string) const noexcept
-		{
-			const size_t length = string.Length();
-			if (IsEmpty() || m_Size < length) return false;
-
-			for (size_t i = 0; i < length; ++i)
-				if (m_Data[i] != string[i])
-					return false;
-
-			return true;
-		}
-
-		NODISCARD bool StartsWith(const StdCharSequence auto& string) const noexcept
+		NODISCARD constexpr bool StartsWith(const StdCharSequence auto& string) const noexcept
 		{
 			const size_t length = string.size();
 			if (m_Size == 0 || m_Size < length) return false;
@@ -553,6 +566,14 @@ namespace Micro
 					return false;
 
 			return true;
+		}
+
+		NODISCARD constexpr bool StartsWith(const char character) const noexcept
+		{
+			if (m_Size == 0)
+				return false;
+
+			return m_Data[0] == character;
 		}
 
 		NODISCARD bool StartsWith(const char* string) const noexcept
@@ -567,15 +588,7 @@ namespace Micro
 			return true;
 		}
 
-		NODISCARD bool StartsWith(const char character) const noexcept
-		{
-			if (m_Size == 0)
-				return false;
-
-			return m_Data[0] == character;
-		}
-
-		NODISCARD bool EndsWith(const String& string) const noexcept
+		NODISCARD constexpr bool EndsWith(const CharSequence auto& string) const noexcept
 		{
 			const size_t length = string.Length();
 			if (m_Size == 0 || m_Size < length) return false;
@@ -590,22 +603,7 @@ namespace Micro
 			return true;
 		}
 
-		NODISCARD bool EndsWith(const CharSequence auto& string) const noexcept
-		{
-			const size_t length = string.Length();
-			if (m_Size == 0 || m_Size < length) return false;
-
-			for (size_t i = 0; i < length; ++i)
-			{
-				const size_t index = m_Size - i - 1;
-				if (m_Data[index] != string[index])
-					return false;
-			}
-
-			return true;
-		}
-
-		NODISCARD bool EndsWith(const StdCharSequence auto& string) const noexcept
+		NODISCARD constexpr bool EndsWith(const StdCharSequence auto& string) const noexcept
 		{
 			const size_t length = string.size();
 			if (m_Size == 0 || m_Size < length) return false;
@@ -618,6 +616,14 @@ namespace Micro
 			}
 
 			return true;
+		}
+
+		NODISCARD constexpr bool EndsWith(const char character) const noexcept
+		{
+			if (m_Size == 0)
+				return false;
+
+			return m_Data[m_Size - 1] == character;
 		}
 
 		NODISCARD bool EndsWith(const char* string) const noexcept
@@ -633,14 +639,6 @@ namespace Micro
 			}
 
 			return true;
-		}
-
-		NODISCARD bool EndsWith(const char character) const noexcept
-		{
-			if (m_Size == 0)
-				return false;
-
-			return m_Data[m_Size - 1] == character;
 		}
 
 		NODISCARD String Trim(const char character) const noexcept
@@ -792,6 +790,7 @@ namespace Micro
 			m_Size = 0;
 		}
 
+
 		// Operator Overloads
 		constexpr operator const char*() const noexcept { return m_Data; }
 
@@ -799,7 +798,7 @@ namespace Micro
 
 		constexpr operator Sequence<char>() const noexcept { return {m_Data, m_Size}; }
 
-		NODISCARD char operator[](const size_t index)
+		NODISCARD constexpr char operator[](const size_t index)
 		{
 			if (index >= m_Size)
 				throw IndexOutOfRangeException(index);
@@ -807,7 +806,7 @@ namespace Micro
 			return m_Data[index];
 		}
 
-		NODISCARD char operator[](const size_t index) const
+		NODISCARD constexpr char operator[](const size_t index) const
 		{
 			if (index >= m_Size)
 				throw IndexOutOfRangeException(index);
@@ -815,7 +814,7 @@ namespace Micro
 			return m_Data[index];
 		}
 
-		String& operator=(const String& other) noexcept
+		constexpr String& operator=(const String& other) noexcept
 		{
 			if (this == &other)
 				return *this;
@@ -824,21 +823,24 @@ namespace Micro
 			if (!m_Data)
 			{
 				Allocate(length);
-				StringCopy(other);
 			}
 			else
 			{
 				if (length != m_Size)
 					Reallocate(length);
-
-				StringCopy(other);
 			}
 
+			InternalCopy(other.m_Data, length);
 			return *this;
 		}
 
-		String& operator=(String&& other) noexcept
+		constexpr String& operator=(String&& other) noexcept
 		{
+			if (this == &other)
+				return *this;
+
+			Clear();
+
 			m_Data = other.m_Data;
 			m_Size = other.m_Size;
 
@@ -848,77 +850,113 @@ namespace Micro
 			return *this;
 		}
 
-		String& operator=(const CharSequence auto& other)
+		constexpr String& operator=(const CharSequence auto& other) noexcept
 		{
-			const size_t size = other.Length();
-			if (size == 0) return *this;
+			if (this == &other)
+				return *this;
 
-			if (m_Data != nullptr)
-				Reallocate(size);
+			const size_t length = other.Size();
+			if (!m_Data)
+			{
+				Allocate(length);
+			}
 			else
-				Allocate(size);
+			{
+				if (length != m_Size)
+					Reallocate(length);
+			}
 
-			StringCopy(other);
+			InternalCopy(other.Data(), length);
 			return *this;
 		}
 
-		String& operator=(const StdCharSequence auto& other)
+		constexpr String& operator=(const StdCharSequence auto& other) noexcept
 		{
-			const size_t size = other.size();
-			if (size == 0) return *this;
-
-			if (m_Data != nullptr)
-				Reallocate(size);
+			const size_t length = other.size();
+			if (!m_Data)
+			{
+				Allocate(length);
+			}
 			else
-				Allocate(size);
+			{
+				if (length != m_Size)
+					Reallocate(length);
+			}
 
-			StringCopy(other);
+			InternalCopy(other.data(), length);
 			return *this;
 		}
 
-		String& operator=(const char* other)
+		template <size_t TSize>
+		constexpr String& operator=(const char(&other)[TSize]) noexcept
 		{
-			const size_t size = strlen(other);
-			if (size == 0) return *this;
+			if (TSize == 0)
+				return *this;
 
-			if (m_Data != nullptr)
-				Reallocate(size);
+			if (!m_Data)
+			{
+				Allocate(TSize);
+			}
 			else
-				Allocate(size);
+			{
+				if (TSize != m_Size)
+					Reallocate(TSize);
+			}
 
-			StringCopy(other);
+			InternalCopy(other, TSize);
 			return *this;
 		}
 
-		String& operator=(char* other)
+		constexpr String& operator=(const char character) noexcept
 		{
-			const size_t size = strlen(other);
-			if (size == 0) return *this;
-
-			if (m_Data != nullptr)
-				Reallocate(size);
+			if (!m_Data)
+			{
+				Allocate(1);
+			}
 			else
-				Allocate(size);
+			{
+				if (1 != m_Size)
+					Reallocate(1);
+			}
 
-			StringCopy(other);
+			m_Data[0] = character;
+			m_Data[m_Size] = 0;
 			return *this;
 		}
 
-		String& operator+=(const String& other) { return Append(other); }
+		String& operator=(const char* other) noexcept
+		{
+			const size_t length = strlen(other);
+			if (!m_Data)
+			{
+				Allocate(length);
+			}
+			else
+			{
+				if (length != m_Size)
+					Reallocate(length);
+			}
 
-		String& operator+=(String&& other) noexcept { return Append(std::move(other)); }
+			InternalCopy(other, length);
+			return *this;
+		}
 
-		String& operator+=(const CharSequence auto& other) { return Append(other); }
+		constexpr String& operator+=(const String& other) noexcept { return Concat(other); }
 
-		String& operator+=(const StdCharSequence auto& other) { return Append(other); }
+		constexpr String& operator+=(String&& other) noexcept { return Concat(std::move(other)); }
 
-		String& operator+=(const char* other) { return Append(other); }
+		constexpr String& operator+=(const CharSequence auto& other) noexcept { return Concat(other); }
 
-		String& operator+=(char* other) { return Append(other); }
+		constexpr String& operator+=(const StdCharSequence auto& other) noexcept { return Concat(other); }
 
-		String& operator+=(const char other) { return Append(other); }
+		template <size_t TSize>
+		constexpr String& operator+=(const char (&other)[TSize]) noexcept { return Concat(other, TSize); }
 
-		friend String operator+(const String& left, const String& right)
+		constexpr String& operator+=(const char other) noexcept { return Concat(other); }
+
+		String& operator+=(const char* other) noexcept { return Concat(other, strlen(other)); }
+
+		constexpr friend String operator+(const String& left, const String& right) noexcept
 		{
 			const size_t leftSize = left.m_Size;
 			const size_t rightSize = right.m_Size;
@@ -927,12 +965,16 @@ namespace Micro
 			if (leftSize == 0) return right;
 			if (rightSize == 0) return left;
 
-			const size_t size = leftSize + rightSize + 1;
-			const auto concat = new char[size];
-			memcpy_s(concat, size, left.m_Data, leftSize + 1);
-			strcat_s(concat, size, right.m_Data);
-			concat[size] = 0;
-			return concat;
+			const size_t size = leftSize + rightSize;
+			const auto data = new char[size + 1];
+
+			String newString;
+			newString.m_Data = data;
+			newString.m_Size = size;
+
+			newString.InternalCopy(left.m_Data, leftSize);
+			newString.InternalConcat(leftSize, right.m_Data, rightSize);
+			return newString;
 		}
 
 		friend String operator+(const String& left, const char* right)
@@ -941,15 +983,18 @@ namespace Micro
 			const size_t rightSize = strlen(right);
 
 			if (leftSize + rightSize == 0) return {};
-			if (leftSize == 0) return right;
+			if (leftSize == 0) return {right, rightSize};
 			if (rightSize == 0) return left;
 
-			const size_t size = leftSize + rightSize + 1;
-			const auto concat = new char[size];
-			memcpy_s(concat, size, left.m_Data, leftSize + 1);
-			strcat_s(concat, size, right);
-			concat[size] = 0;
-			return concat;
+			const size_t size = leftSize + rightSize;
+			const auto data = new char[size + 1];
+			String newString;
+			newString.m_Data = data;
+			newString.m_Size = size;
+
+			newString.InternalCopy(left.m_Data, left.m_Size);
+			newString.InternalConcat(leftSize, right, rightSize);
+			return newString;
 		}
 
 		friend String operator+(const char* left, const String& right)
@@ -959,34 +1004,35 @@ namespace Micro
 
 			if (leftSize + rightSize == 0) return {};
 			if (leftSize == 0) return right;
-			if (rightSize == 0) return left;
+			if (rightSize == 0) return { left, leftSize };
 
-			const size_t size = leftSize + rightSize + 1;
-			const auto concat = new char[size];
-			memcpy_s(concat, size, left, leftSize + 1);
-			strcat_s(concat, size, right.m_Data);
-			concat[size] = 0;
-			return concat;
+			const size_t size = leftSize + rightSize;
+			const auto data = new char[size + 1];
+			String newString;
+			newString.m_Data = data;
+			newString.m_Size = size;
+
+			newString.InternalCopy(left, leftSize);
+			newString.InternalConcat(leftSize, right.m_Data, rightSize);
+			return newString;
 		}
 
-		friend bool operator==(const String& left, const String& right) noexcept
+		constexpr friend bool operator==(const String& left, const String& right) noexcept
 		{
 			return left.Equals(right);
 		}
 
-		friend bool operator!=(const String& left, const String& right) noexcept { return !(left == right); }
+		constexpr friend bool operator!=(const String& left, const String& right) noexcept { return !(left == right); }
 
-		friend std::ostream& operator<<(std::ostream& stream, const String& current)
+		constexpr friend std::ostream& operator<<(std::ostream& stream, const String& current) noexcept
 		{
 			if (current.m_Size > 0)
 				stream << current.m_Data;
-			else
-				stream << "";
 			return stream;
 		}
 
 	protected:
-		void Allocate(const size_t capacity)
+		constexpr void Allocate(const size_t capacity) noexcept
 		{
 			if (capacity == 0) return;
 
@@ -996,7 +1042,7 @@ namespace Micro
 			m_Data[capacity] = 0;
 		}
 
-		void Reallocate(const size_t capacity)
+		constexpr void Reallocate(const size_t capacity) noexcept
 		{
 			if (capacity == 0) return;
 			const size_t length = capacity + 1;
@@ -1014,32 +1060,18 @@ namespace Micro
 			Allocate(capacity);
 		}
 
-		void StringCopy(const String& other) const noexcept
+		constexpr void InternalCopy(const char* ptr, const size_t size) const noexcept
 		{
-			memcpy_s(m_Data, m_Size + 1, other.m_Data, other.m_Size);
-			m_Data[m_Size] = 0;
-		}
-
-		void StringCopy(const CharSequence auto& other) const noexcept
-		{
-			memcpy_s(m_Data, m_Size + 1, other.Data(), other.Length());
-			m_Data[m_Size] = 0;
-		}
-
-		void StringCopy(const StdCharSequence auto& other) const noexcept
-		{
-			memcpy_s(m_Data, m_Size + 1, other.data(), other.size());
-			m_Data[m_Size] = 0;
-		}
-
-		void StringCopy(const char* ptr, const size_t size = 0) const noexcept
-		{
-			if (size != 0)
-				memcpy_s(m_Data, m_Size + 1, ptr, size);
-			else
-				memcpy_s(m_Data, m_Size + 1, ptr, strlen(ptr));
+			for (size_t i = 0; i < size; i++)
+				new(&m_Data[i]) char(ptr[i]);
 				
 			m_Data[m_Size] = 0;
+		}
+
+		constexpr void InternalConcat(const size_t startIndex, const char* ptr, const size_t length) const noexcept
+		{
+			for (size_t i = 0; i < length; i++)
+				new(&m_Data[i + startIndex]) char(ptr[i]);
 		}
 
 	private:
@@ -1091,16 +1123,16 @@ namespace Micro
 		return String(next, end);
 	}
 
-	NODISCARD inline String ToString(bool boolean) { return {boolean ? "true" : "false"}; }
-	NODISCARD inline String ToString(char character) { return String(character); }
-	NODISCARD inline String ToString(int integral) { return IntToString<char>(integral); }
-	NODISCARD inline String ToString(unsigned int integral) { return UIntToString<char>(integral); }
-	NODISCARD inline String ToString(long integral) { return IntToString<char>(integral); }
-	NODISCARD inline String ToString(unsigned long integral) { return UIntToString<char>(integral); }
-	NODISCARD inline String ToString(long long integral) { return IntToString<char>(integral); }
-	NODISCARD inline String ToString(unsigned long long integral) { return UIntToString<char>(integral); }
+	NODISCARD inline String ToString(const bool boolean) { return {boolean ? "true" : "false"}; }
+	NODISCARD inline String ToString(const char character) { return String(character); }
+	NODISCARD inline String ToString(const int integral) { return IntToString<char>(integral); }
+	NODISCARD inline String ToString(const unsigned int integral) { return UIntToString<char>(integral); }
+	NODISCARD inline String ToString(const long integral) { return IntToString<char>(integral); }
+	NODISCARD inline String ToString(const unsigned long integral) { return UIntToString<char>(integral); }
+	NODISCARD inline String ToString(const long long integral) { return IntToString<char>(integral); }
+	NODISCARD inline String ToString(const unsigned long long integral) { return UIntToString<char>(integral); }
 
-	NODISCARD inline String ToString(double integral)
+	NODISCARD inline String ToString(const double integral)
 	{
 		const auto size = static_cast<size_t>(_scprintf("%f", integral));
 		String string('\0', size);
@@ -1108,5 +1140,5 @@ namespace Micro
 		return string;
 	}
 
-	NODISCARD inline String ToString(float integral) { return ToString(static_cast<double>(integral)); }
+	NODISCARD inline String ToString(const float integral) { return ToString(static_cast<double>(integral)); }
 }

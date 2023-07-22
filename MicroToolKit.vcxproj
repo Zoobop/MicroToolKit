@@ -48,8 +48,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(PorjectDir)Output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(ProjectDir)Output\intermediate\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(PorjectDir)output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)output\intermediate\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
     <TargetName>$(ProjectName)</TargetName>
     <IncludePath>
     </IncludePath>
@@ -58,8 +58,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(ProjectDir)Output\intermediate\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
-    <OutDir>$(PorjectDir)Output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)output\intermediate\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>$(PorjectDir)output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
     <TargetName>$(ProjectName)</TargetName>
     <IncludePath>
     </IncludePath>
@@ -152,9 +152,6 @@
     <ClInclude Include="src\Utility\Sort.hpp" />
     <ClInclude Include="src\Utility\StringUtils.hpp" />
     <ClInclude Include="src\Utility\Tuple.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\internal.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
