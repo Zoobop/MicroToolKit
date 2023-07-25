@@ -22,13 +22,13 @@
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -48,21 +48,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(PorjectDir)output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
+    <OutDir>$(ProjectDir)output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(ProjectDir)output\intermediate\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
     <TargetName>$(ProjectName)</TargetName>
-    <IncludePath>
-    </IncludePath>
+    <IncludePath>$(ProjectDir)src\</IncludePath>
     <SourcePath>$(ProjectDir)src\</SourcePath>
     <PublicIncludeDirectories>$(ProjectDir)src\</PublicIncludeDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(ProjectDir)output\intermediate\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
-    <OutDir>$(PorjectDir)output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
+    <OutDir>$(ProjectDir)output\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
     <TargetName>$(ProjectName)</TargetName>
-    <IncludePath>
-    </IncludePath>
+    <IncludePath>$(ProjectDir)src\</IncludePath>
     <SourcePath>$(SolutionDir)Dependencies\MicroCore\src\</SourcePath>
     <PublicIncludeDirectories>$(SolutionDir)Dependencies\MicroCore\src\</PublicIncludeDirectories>
   </PropertyGroup>
@@ -77,7 +75,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,7 +99,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,6 +113,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Common\Guid.hpp" />
     <ClInclude Include="src\Experimental\Enumerable.hpp" />
     <ClInclude Include="src\Experimental\Enumerator.hpp" />
     <ClInclude Include="src\Collections\Array.hpp" />
@@ -143,12 +144,10 @@
     <ClInclude Include="src\IO\IOHelpers.hpp" />
     <ClInclude Include="src\MicroToolKit.h" />
     <ClInclude Include="src\Utility\ContainerUtils.hpp" />
-    <ClInclude Include="src\Utility\Expected.hpp" />
     <ClInclude Include="src\Utility\Node.hpp" />
     <ClInclude Include="src\Utility\Parse.hpp" />
     <ClInclude Include="src\Utility\Result.hpp" />
     <ClInclude Include="src\Utility\Random.hpp" />
-    <ClInclude Include="src\Utility\Range.hpp" />
     <ClInclude Include="src\Utility\Sort.hpp" />
     <ClInclude Include="src\Utility\StringUtils.hpp" />
     <ClInclude Include="src\Utility\Tuple.hpp" />

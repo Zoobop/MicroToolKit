@@ -25,7 +25,7 @@ namespace Micro
 	}
 
 	template <typename T>
-	errno_t Copy(T* source, const size_t sourceSize, T* destination, const size_t destinationSize)
+	constexpr errno_t Copy(T* source, const size_t sourceSize, T* destination, const size_t destinationSize) noexcept
 	{
 		if (destinationSize < sourceSize)
 			return Error;
@@ -37,7 +37,7 @@ namespace Micro
 	}
 
 	template <typename T>
-	errno_t Move(T* source, const size_t sourceSize, T* destination, const size_t destinationSize)
+	constexpr errno_t Move(T* source, const size_t sourceSize, T* destination, const size_t destinationSize) noexcept
 	{
 		if (destinationSize < sourceSize)
 			return Error;
@@ -49,7 +49,7 @@ namespace Micro
 	}
 
 	template <typename T>
-	void ShiftRight(T* data, const size_t size, const size_t startIndex, const size_t amount = 1)
+	constexpr void ShiftRight(T* data, const size_t size, const size_t startIndex, const size_t amount = 1)
 	{
 		for (size_t i = size; i > startIndex; i--)
 		{
@@ -61,7 +61,7 @@ namespace Micro
 	}
 
 	template <typename T>
-	void ShiftLeft(T* data, const size_t size, const size_t startIndex, const size_t amount = 1)
+	constexpr void ShiftLeft(T* data, const size_t size, const size_t startIndex, const size_t amount = 1)
 	{
 		const size_t length = size - startIndex;
 		for (size_t i = 0; i < length; i++)
@@ -113,7 +113,7 @@ namespace Micro
 
 	enum struct MemStatus : uint8_t { Valid = 0, Invalid = 1 };
 
-	inline std::ostream& operator<<(std::ostream& stream, MemStatus memStatus)
+	inline std::ostream& operator<<(std::ostream& stream, const MemStatus memStatus)
 	{
 		stream << (memStatus == MemStatus::Valid ? "Valid" : "Invalid");
 		return stream;
@@ -137,6 +137,10 @@ namespace Micro
 		{
 		}
 
+		constexpr Memory(const T* data) noexcept : Data(const_cast<T*>(data)), Status(MemStatus::Valid)
+		{
+		}
+
 		constexpr ~Memory() noexcept = default;
 
 		constexpr void Invalidate() noexcept
@@ -150,7 +154,7 @@ namespace Micro
 			return !(Data == nullptr || Status != MemStatus::Valid);
 		}
 
-		Memory& operator=(const Memory& other)
+		constexpr Memory& operator=(const Memory& other) noexcept
 		{
 			if (this == &other)
 				return *this;
@@ -160,7 +164,7 @@ namespace Micro
 			return *this;
 		}
 
-		Memory& operator=(Memory&& other) noexcept
+		constexpr Memory& operator=(Memory&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
@@ -171,7 +175,7 @@ namespace Micro
 			return *this;
 		}
 
-		NODISCARD constexpr operator T*() const { return Data; }
+		NODISCARD constexpr operator T*() const noexcept { return Data; }
 		NODISCARD T& operator[](const size_t index) { return Data[index]; }
 		NODISCARD const T& operator[](const size_t index) const { return Data[index]; }
 

@@ -105,17 +105,17 @@ namespace Micro
 				Push(std::move(item));
 		}
 
-		NODISCARD Result<T> Pop()
+		NODISCARD RefResult<T> Pop()
 		{
 			if (!Base::IsEmpty())
 			{
 				auto& item = std::move(Base::m_Data[Base::m_Size - 1]);
 				Base::m_Data[Base::m_Size - 1].~T();
 				--Base::m_Size;
-				return Result(std::move(item));
+				return RefResult(std::move(item));
 			}
 
-			return Result<T>::Empty();
+			return RefResult<T>::Empty();
 		}
 
 		NODISCARD bool TryPop(T& out)
@@ -130,17 +130,17 @@ namespace Micro
 			return false;
 		}
 
-		NODISCARD Result<T> Peek() const
+		NODISCARD RefResult<T> Peek() const
 		{
 			if (!Base::IsEmpty())
-				return Result(Base::m_Data[Base::m_Size - 1]);
-			return Result<T>::Empty();
+				return RefResult(Base::m_Data[Base::m_Size - 1]);
+			return RefResult<T>::Empty();
 		}
 
-		NODISCARD Result<T> Front() const { return !Base::IsEmpty() ? Result(Base::m_Data[0]) : Result<T>::Empty(); }
-		NODISCARD Result<T> Back() const
+		NODISCARD RefResult<T> Front() const { return !Base::IsEmpty() ? RefResult(Base::m_Data[0]) : RefResult<T>::Empty(); }
+		NODISCARD RefResult<T> Back() const
 		{
-			return !Base::IsEmpty() ? Result(Base::m_Data[Base::m_Size - 1]) : Result<T>::Empty();
+			return !Base::IsEmpty() ? RefResult(Base::m_Data[Base::m_Size - 1]) : RefResult<T>::Empty();
 		}
 
 		// Accessors

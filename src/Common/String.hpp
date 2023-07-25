@@ -1,17 +1,21 @@
 #pragma once
-#include <ostream>
-
-#include "Core/Core.hpp"
-#include "Core/Typedef.hpp"
-#include "Core/Exceptions/Exception.hpp"
-#include "Core/Hash.hpp"
 #include "Collections/Base/Sequence.hpp"
 #include "Utility/Result.hpp"
 
 namespace Micro
 {
 	class String;
+	using string = String;
 
+	/*
+	 *  ============================================================
+	 *	|						  Concepts						   |
+	 *  ============================================================
+	 */
+
+	/// <summary>
+	/// Represents a string-like object within the MicroToolKit library.
+	/// </summary>
 	template <typename T>
 	concept CharSequence = requires(T string)
 	{
@@ -22,6 +26,9 @@ namespace Micro
 		{ string.operator[](0) } -> std::convertible_to<char>;
 	};
 
+	/// <summary>
+	/// Represents a string-like object within the standard library.
+	/// </summary>
 	template <typename T>
 	concept StdCharSequence = requires(T string)
 	{
@@ -31,36 +38,67 @@ namespace Micro
 		{ string.clear() } -> std::convertible_to<void>;
 	};
 
+	/// <summary>
+	/// Represents an object with a defined 'ToString' function.
+	/// </summary>
 	template <typename T>
 	concept StringConvertible = requires(T value)
 	{
 		{ value.ToString() } -> std::convertible_to<String>;
 	};
 
+
+	/**
+	 * \brief Standard class used to hold and represent text as a sequence of UTF-8 code units.
+	 */
 	class String final
 	{
 	public:
-		// Constructors/Destructors
+		/*
+		 *  ============================================================
+		 *	|				  Constructors/Destructors				   |
+		 *  ============================================================
+		 */
+
+
+		/**
+		 * \brief Initializes a new instance of the String class to have the underlying char pointer be null.
+		 */
 		constexpr String() noexcept = default;
 
+		/**
+		 * \brief Initializes a new instance of the String class to have the underlying char pointer be null. (Acts the same as default constructor)
+		 */
 		constexpr String(Null) noexcept
 		{
 		}
 
-		constexpr String(const String& other) noexcept
+		/**
+		 * \brief Initializes a new instance of the String class by copying the value of the String argument.
+		 * \param string String to copy
+		 */
+		constexpr String(const String& string) noexcept
 		{
-			Allocate(other.m_Size);
+			Allocate(string.m_Size);
 
-			InternalCopy(other.m_Data, other.m_Size);
+			InternalCopy(string.m_Data, string.m_Size);
 		}
 
-		constexpr String(String&& other) noexcept
-			: m_Data(other.m_Data), m_Size(other.m_Size)
+		/**
+		 * \brief Initializes a new instance of the String class by moving the value of the String argument.
+		 * \param string String to move
+		 */
+		constexpr String(String&& string) noexcept
+			: m_Data(string.m_Data), m_Size(string.m_Size)
 		{
-			other.m_Data = nullptr;
-			other.m_Size = 0;
+			string.m_Data = nullptr;
+			string.m_Size = 0;
 		}
 
+		/**
+		 * \brief Initializes a new instance of the String class by copying the value of the String-like argument that is based on the CharSequence concept specifications.
+		 * \param string String-like object to copy
+		 */
 		constexpr String(const CharSequence auto& string) noexcept
 		{
 			const size_t length = string.Length();
@@ -68,9 +106,13 @@ namespace Micro
 				return;
 
 			Allocate(length);
-			InternalCopy(string);
+			InternalCopy(string.Data(), string.Length());
 		}
 
+		/**
+		 * \brief Initializes a new instance of the String class by copying the value of the String-like argument that is based on the StdCharSequence concept specifications.
+		 * \param string String-like object to move
+		 */
 		constexpr String(const StdCharSequence auto& string) noexcept
 		{
 			const size_t length = string.size();
@@ -78,9 +120,14 @@ namespace Micro
 				return;
 
 			Allocate(length);
-			InternalCopy(string);
+			InternalCopy(string.data(), string.size());
 		}
 
+		/**
+		 * \brief Initializes a new instance of the String class by filling the underlying buffer with the character argument.
+		 * \param character Character used to fill character buffer
+		 * \param count Number of times to repeat character (also represents length of string)
+		 */
 		constexpr String(const char character, const size_t count) noexcept
 		{
 			Allocate(count);
@@ -91,34 +138,54 @@ namespace Micro
 			m_Data[m_Size] = 0;
 		}
 
-		constexpr String(const char* begin, const size_t length) noexcept
+		/**
+		 * \brief Initializes a new instance of the String class by copying the value of the char pointer.
+		 * \param string Char pointer used to copy from
+		 * \param length Length of the char pointer
+		 */
+		constexpr String(const char* string, const size_t length) noexcept
 		{
-			if (length == 0) 
+			if (length == 0 || !string) 
 				return;
 
 			Allocate(length);
-			InternalCopy(begin, length);
+			InternalCopy(string, length);
 		}
 
+		/**
+		 * \brief Initializes a new instance of the String class by copying the value of the char pointer (raw string literal).
+		 * \tparam TSize Represents the implicit capture of the raw string literal's size (including null termination)
+		 * \param string Raw string literal as a char pointer
+		 */
 		template <size_t TSize>
-		constexpr explicit String(const char (&ptr)[TSize]) noexcept
+		constexpr String(const char (&string)[TSize]) noexcept
 		{
-			if (TSize == 0)
+			constexpr size_t length = TSize - 1;
+			if (length == 0)
 				return;
 
-			Allocate(TSize);
-			InternalCopy(&ptr, TSize);
+			Allocate(length);
+			InternalCopy(string, length);
 		}
 
+		/**
+		 * \brief Initializes a new instance of the String class by copying the value of the char.
+		 * \param character Character to copy from
+		 */
 		constexpr explicit String(const char character) noexcept
 		{
 			Allocate(1);
 			m_Data[0] = character;
 		}
 
-		String(const char* begin, const char* end) noexcept
+		/**
+		 * \brief Initializes a new instance of the String class by copying the value of the first address of the char pointer and calculating the size using pointer arithmetic.
+		 * \param begin Beginning of the char pointer buffer
+		 * \param end End of the char pointer buffer
+		 */
+		constexpr String(const char* begin, const char* end) noexcept
 		{
-			const size_t size = strlen(begin) - strlen(end);
+			const size_t size = end - begin;
 			if (size == 0)
 				return;
 
@@ -126,16 +193,9 @@ namespace Micro
 			InternalCopy(begin, size);
 		}
 
-		String(const char* string) noexcept
-		{
-			const size_t size = strlen(string);
-			if (size == 0)
-				return;
-
-			Allocate(size);
-			InternalCopy(string, size);
-		}
-
+		/**
+		 * \brief Frees the memory of the underlying char buffer and sets it to null.
+		 */
 		constexpr ~String() noexcept
 		{
 			delete[] m_Data;
@@ -145,61 +205,54 @@ namespace Micro
 		}
 
 
-		// Accessors
+		/*
+		 *  ============================================================
+		 *	|						Accessors						   |
+		 *  ============================================================
+		 */
+
+
+		/// <summary>
+		/// Represents if the string is empty or not.
+		/// </summary>
+		/// <returns>True, if the string is empty.</returns>
 		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0; }
+
+		/// <summary>
+		/// Represents a 64-bit unsigned integer as the length of the string.
+		/// </summary>
+		/// <returns>Length of type 'size_t'</returns>
 		NODISCARD constexpr size_t Length() const noexcept { return m_Size; }
+
+		/// <summary>
+		/// Represents the underlying char buffer (const version).
+		/// </summary>
+		/// <returns>Character array of type 'const char*'.</returns>
 		NODISCARD constexpr const char* Data() const noexcept { return m_Data; }
+
+		/// <summary>
+		/// Represents the underlying char buffer (non-const version).
+		/// </summary>
+		/// <returns>Character array of type 'char*'.</returns>
 		NODISCARD constexpr char* Data() noexcept { return m_Data; }
-		NODISCARD constexpr String ToString() const noexcept { return *this; }
 
 
-		// Utility
-		constexpr String& Concat(const String& string) noexcept
+		/*
+		 *  ============================================================
+		 *	|						  Utility						   |
+		 *  ============================================================
+		 */
+
+
+		/// <summary>
+		/// Adds the String-like argument that is based on the CharSequence concept specifications to the end of the char buffer.
+		/// If argument is empty, it will return with no allocations. (Mutates instance)
+		/// </summary>
+		/// <param name="string">String-like object to append</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& Append(const CharSequence auto& string) noexcept
 		{
-			const size_t length = string.m_Size;
-			if (length == 0) 
-				return *this;
-
-			if (m_Data == nullptr)
-			{
-				Allocate(length);
-				InternalCopy(string.Data(), length);
-			}
-			else
-			{
-				const size_t startIndex = m_Size;
-				Reallocate(m_Size + length);
-				InternalConcat(startIndex, string.Data(), length);
-			}
-
-			return *this;
-		}
-
-		constexpr String& Concat(String&& string) noexcept
-		{
-			if (string.m_Size == 0)
-				return *this;
-
-			if (m_Data == nullptr)
-			{
-				m_Data = string.m_Data;
-				m_Size = string.m_Size;
-			}
-			else
-			{
-				const size_t startIndex = m_Size;
-				Reallocate(m_Size + string.m_Size);
-				InternalConcat(startIndex, string.Data(), string.Length());
-			}
-
-			string.m_Data = nullptr;
-			string.m_Size = 0;
-			return *this;
-		}
-
-		constexpr String& Concat(const CharSequence auto& string) noexcept
-		{
-			const size_t length = string.Size();
+			const size_t length = string.Length();
 			if (length == 0)
 				return *this;
 
@@ -217,8 +270,14 @@ namespace Micro
 
 			return *this;
 		}
-
-		constexpr String& Concat(const StdCharSequence auto& string) noexcept
+		
+		/// <summary>
+		/// Adds the String-like argument that is based on the StdCharSequence concept specifications to the end of the char buffer.
+		/// If argument is empty, it will return with no allocations. (Mutates instance)
+		/// </summary>
+		/// <param name="string">String-like object to append</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& Append(const StdCharSequence auto& string) noexcept
 		{
 			const size_t length = string.size();
 			if (length == 0)
@@ -239,30 +298,18 @@ namespace Micro
 			return *this;
 		}
 
+		/// <summary>
+		/// Adds the raw string literal argument to the end of the char buffer.
+		/// If argument is empty, it will return with no allocations. (Mutates instance)
+		/// </summary>
+		/// <typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">Raw string literal to append</param>
+		/// <returns>Reference of this instance</returns>
 		template <size_t TSize>
-		constexpr String& Concat(const char (&string)[TSize]) noexcept
+		constexpr String& Append(const char (&string)[TSize]) noexcept
 		{
-			if (TSize == 0)
-				return *this;
-
-			if (m_Data == nullptr)
-			{
-				Allocate(TSize);
-				InternalCopy(string, TSize);
-			}
-			else
-			{
-				const size_t startIndex = m_Size;
-				Reallocate(m_Size + TSize);
-				InternalConcat(startIndex, string, TSize);
-			}
-
-			return *this;
-		}
-
-		constexpr String& Concat(const char* string, const size_t length) noexcept
-		{
-			if (length == 0) 
+			constexpr size_t length = TSize - 1;
+			if (length == 0)
 				return *this;
 
 			if (m_Data == nullptr)
@@ -280,7 +327,39 @@ namespace Micro
 			return *this;
 		}
 
-		constexpr String& Concat(const char character) noexcept
+		/// <summary>
+		/// Adds the char pointer argument to the end of the char buffer.
+		/// If argument is null, it will return with no allocations. (Mutates instance)
+		/// </summary>
+		/// <param name="string">Char pointer to append</param>
+		/// <param name="length">Length of the char pointer</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& Append(const char* string, const size_t length) noexcept
+		{
+			if (length == 0 || !string) 
+				return *this;
+
+			if (m_Data == nullptr)
+			{
+				Allocate(length);
+				InternalCopy(string, length);
+			}
+			else
+			{
+				const size_t startIndex = m_Size;
+				Reallocate(m_Size + length);
+				InternalConcat(startIndex, string, length);
+			}
+
+			return *this;
+		}
+
+		/// <summary>
+		/// Adds the character argument to the end of the char buffer. (Mutates instance)
+		/// </summary>
+		/// <param name="character">Character to append</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& Append(const char character) noexcept
 		{
 			if (m_Data == nullptr)
 			{
@@ -296,84 +375,187 @@ namespace Micro
 			return *this;
 		}
 
-		constexpr String& Insert(const char character, const size_t index)
+		/// <summary>
+		/// Replaces all occurrences of the String-like object that is based on the CharSequence concept specifications with the replacement string.
+		/// </summary>
+		/// <param name="string">String to search for</param>
+		/// <param name="replacement">String used as the replacement</param>
+		/// <returns>New instance of a String with the appropriate characters replaced</returns>
+		NODISCARD constexpr String Replace(const CharSequence auto& string, const CharSequence auto& replacement) const noexcept
 		{
-			if (index >= m_Size)
-				throw ArgumentOutOfRangeException(NAMEOF(index), index);
+			const size_t rightLength = string.Length();
+			const size_t leftLength = replacement.Length();
+			if (IsEmpty() || rightLength > m_Size)
+				return *this;
 
-			m_Data[index] = character;
-			return *this;
-		}
-
-		NODISCARD Result<size_t> IndexOf(const char character) const noexcept
-		{
-			for (size_t i = 0; i < m_Size; ++i)
-				if (m_Data[i] == character)
-					return Result(i);
-
-			return Result<size_t>::Empty();
-		}
-
-		NODISCARD Result<size_t> IndexOf(const CharSequence auto& string, const size_t startIndex,
-		                                 const size_t length) const noexcept
-		{
-			if (string.IsEmpty() || string.Length() > m_Size)
-				return Result<size_t>::Empty();
-			if (startIndex >= m_Size || length > m_Size - startIndex)
-				return Result<size_t>::Empty();
-
-			for (size_t i = 0; i < length; ++i)
-				if (m_Data[i] == string[0])
-				{
-					if (i + string.Length() < m_Size)
-					{
-						if (memcmp(m_Data + i, string.Data(), string.Length()) == 0)
-							return Result(i);
-
-						continue;
-					}
-
+			// Get number of replacements
+			size_t occurrences = 0;
+			size_t index = 0;
+			while (true)
+			{
+				const auto result = IndexOf(string, index);
+				if (!result.IsValid())
 					break;
+
+				index = result.Value() + rightLength;
+				occurrences++;
+			}
+
+			if (occurrences == 0)
+				return *this;
+
+			const size_t removedSize = m_Size - (rightLength * occurrences);
+			const size_t replacedSize = removedSize + (leftLength * occurrences);
+			const auto data = new char[replacedSize + 1];
+
+			auto result = IndexOf(string);
+			size_t offsetIndex = 0;
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				const size_t startIndex = result.Value();
+				if (i == startIndex && result.IsValid())
+				{
+					for (size_t j = 0; j < leftLength; ++j)
+						new(&data[j + offsetIndex]) char(replacement[j]);
+
+					// Skip by previous length
+					i += rightLength - 1;
+					offsetIndex += leftLength;
+					result = IndexOf(string, i + 1);
+					continue;
 				}
 
-			return Result<size_t>::Empty();
+				new(&data[offsetIndex++]) char(m_Data[i]);
+			}
+
+			data[replacedSize] = 0;
+			return Create(data, replacedSize);
 		}
 
-		NODISCARD Result<size_t> LastIndexOf(const char character) const noexcept
+		/// <summary>
+		/// Replaces all occurrences of the String-like object that is based on the StdCharSequence concept specifications with the replacement string.
+		/// </summary>
+		/// <param name="string">String to search for</param>
+		/// <param name="replacement">String used as the replacement</param>
+		/// <returns>New instance of a String with the appropriate characters replaced</returns>
+		NODISCARD constexpr String Replace(const StdCharSequence auto& string, const StdCharSequence auto& replacement) const noexcept
 		{
-			for (size_t i = m_Size; i > 0; i--)
-				if (m_Data[i - 1] == character)
-					return Result(i - 1);
+			const size_t rightLength = string.size();
+			const size_t leftLength = replacement.size();
+			if (IsEmpty() || rightLength > m_Size)
+				return *this;
 
-			return Result<size_t>::Empty();
-		}
-
-		NODISCARD Result<size_t> LastIndexOf(const CharSequence auto& string, const size_t startIndex,
-		                                     const size_t length) const noexcept
-		{
-			if (string.IsEmpty() || string.Length() > m_Size)
-				return Result<size_t>::Empty();
-			if (startIndex >= m_Size || length > m_Size - startIndex)
-				return Result<size_t>::Empty();
-
-			for (size_t i = m_Size; i > 0; i--)
-				if (m_Data[i - 1] == string[0])
-				{
-					if (string.Length() - i < m_Size)
-					{
-						if (memcmp(m_Data + i, string.Data(), string.Length()) == 0)
-							return Result(i);
-
-						continue;
-					}
-
+			// Get number of replacements
+			size_t occurrences = 0;
+			size_t index = 0;
+			while (true)
+			{
+				const auto result = IndexOf(string, index);
+				if (!result.IsValid())
 					break;
+
+				index = result.Value() + rightLength;
+				occurrences++;
+			}
+
+			if (occurrences == 0)
+				return *this;
+
+			const size_t removedSize = m_Size - (rightLength * occurrences);
+			const size_t replacedSize = removedSize + (leftLength * occurrences);
+			const auto data = new char[replacedSize + 1];
+
+			auto result = IndexOf(string);
+			size_t offsetIndex = 0;
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				const size_t startIndex = result.Value();
+				if (i == startIndex && result.IsValid())
+				{
+					for (size_t j = 0; j < leftLength; ++j)
+						new(&data[j + offsetIndex]) char(replacement[j]);
+
+					// Skip by previous length
+					i += rightLength - 1;
+					offsetIndex += leftLength;
+					result = IndexOf(string, i + 1);
+					continue;
 				}
 
-			return Result<size_t>::Empty();
+				new(&data[offsetIndex++]) char(m_Data[i]);
+			}
+
+			data[replacedSize] = 0;
+			return Create(data, replacedSize);
 		}
 
-		NODISCARD String Replace(const char oldChar, const char newChar) const noexcept
+		/// <summary>
+		/// Replaces all occurrences of the raw string literal with the replacement string.
+		/// </summary>
+		///	<typeparam name="TRightSize">Represents the implicit capture of the left raw string literal's size (including null termination)</typeparam>
+		///	<typeparam name="TLeftSize">Represents the implicit capture of the right raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">String to search for</param>
+		/// <param name="replacement">String used as the replacement</param>
+		/// <returns>New instance of a String with the appropriate characters replaced</returns>
+		template <size_t TRightSize, size_t TLeftSize>
+		NODISCARD constexpr String Replace(const char(&string)[TRightSize], const char(&replacement)[TLeftSize]) const noexcept
+		{
+			constexpr size_t rightLength = TRightSize - 1;
+			constexpr size_t leftLength = TLeftSize - 1;
+			if (IsEmpty() || rightLength > m_Size)
+				return *this;
+
+			// Get number of replacements
+			size_t occurrences = 0;
+			size_t index = 0;
+			while (true)
+			{
+				const auto result = IndexOf(string, index);
+				if (!result.IsValid())
+					break;
+
+				index = result.Value() + rightLength;
+				occurrences++;
+			} 
+
+			if (occurrences == 0)
+				return *this;
+
+			const size_t removedSize = m_Size - (rightLength * occurrences);
+			const size_t replacedSize = removedSize + (leftLength * occurrences);
+			const auto data = new char[replacedSize + 1];
+
+			auto result = IndexOf(string);
+			size_t offsetIndex = 0;
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				const size_t startIndex = result.Value();
+				if (i == startIndex && result.IsValid())
+				{
+					for (size_t j = 0; j < leftLength; ++j)
+						new(&data[j + offsetIndex]) char(replacement[j]);
+
+					// Skip by previous length
+					i += rightLength - 1;
+					offsetIndex += leftLength;
+					result = IndexOf(string, i + 1);
+					continue;
+				}
+
+				new(&data[offsetIndex++]) char(m_Data[i]);
+			}
+
+			data[replacedSize] = 0;
+			return Create(data, replacedSize);
+		}
+
+		/// <summary>
+		/// Replaces all occurrences of the character with the replacement character.
+		/// </summary>
+		/// <param name="character">Character to search for</param>
+		/// <param name="replacement">Character used as the replacement</param>
+		/// <returns></returns>
+		NODISCARD constexpr String Replace(const char character, const char replacement) const noexcept
 		{
 			if (IsEmpty())
 				return *this;
@@ -381,143 +563,478 @@ namespace Micro
 			const auto string = new char[m_Size + 1];
 			for (size_t i = 0; i < m_Size; ++i)
 			{
-				char character = m_Data[i];
-				if (m_Data[i] == oldChar)
-					character = newChar;
-
-				string[i] = character;
+				const char current = m_Data[i];
+				string[i] = current == character ? replacement : current;
 			}
 
 			string[m_Size] = 0;
-			return string;
+			return Create(string, m_Size);
 		}
 
-		NODISCARD String Replace(const CharSequence auto& oldString, char newChar) const
+		/// <summary>
+		/// Gets the span of characters from the start index to the end of the string. Throws an 'IndexOutOfRangeException', if index is invalid.
+		/// </summary>
+		/// <param name="start">Index to start substring</param>
+		/// <returns>New instance of a String with characters starting at the start index</returns>
+		NODISCARD constexpr String Substring(const size_t start) const
 		{
-			const size_t length = oldString.Length();
-			if (IsEmpty() || length > m_Size)
+			const size_t length = m_Size - start;
+			if (IsEmpty() || length == 0 || start >= m_Size || length + start > m_Size)
+				throw IndexOutOfRangeException(length);
+
+			return { &m_Data[start], length };
+		}
+
+		/// <summary>
+		/// Gets the span of characters from the start index to 'length' characters passed. Throws an 'IndexOutOfRangeException', if index is invalid.
+		/// </summary>
+		/// <param name="start">Index to start substring</param>
+		/// <param name="length">Number of characters to grab passed the start index</param>
+		/// <returns>New instance of a String with characters starting at the start index through length</returns>
+		NODISCARD constexpr String Substring(const size_t start, const size_t length) const
+		{
+			if (IsEmpty() || start >= m_Size || length + start > m_Size) 
+				throw IndexOutOfRangeException(length);
+
+			return { &m_Data[start], length };
+		}
+
+		/// <summary>
+		/// Trims all whitespace characters from both ends of the string.
+		/// </summary>
+		/// <returns>New instance of the trimmed String</returns>
+		NODISCARD constexpr String Trim() const noexcept
+		{
+			constexpr char whitespace[6]{ '\n', '\t', '\r', '\b', ' ', '\0'};
+			const Sequence<char> set(whitespace);
+
+			size_t begin = 0;
+			size_t end = 0;
+			const size_t length = m_Size / 2;
+			for (size_t i = 0; i < length; ++i)
+			{
+				const size_t endIndex = m_Size - 1 - i;
+				const bool foundBegin = Micro::Contains(set, m_Data[i]);
+				const bool foundEnd = Micro::Contains(set, m_Data[endIndex]);
+
+				if (foundBegin) begin = i + 1;
+				if (foundEnd) end = endIndex;
+
+				if (!(foundBegin || foundEnd))
+					break;
+			}
+
+			return Substring(begin, end - begin);
+		}
+
+		/// <summary>
+		/// Trims each occurrence of the character from both ends of the string.
+		/// </summary>
+		/// <param name="character">Character to trim from string</param>
+		/// <returns>New instance of the trimmed String</returns>
+		NODISCARD constexpr String Trim(const char character) const noexcept
+		{
+			size_t begin = 0;
+			size_t end = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t endIndex = m_Size - 1 - i;
+				const bool foundBegin = m_Data[i] == character;
+				const bool foundEnd = m_Data[endIndex] == character;
+
+				if (foundBegin) begin = i + 1;
+				if (foundEnd) end = endIndex;
+
+				if (!(foundBegin || foundEnd))
+					break;
+			}
+
+			return Substring(begin, end - begin);
+		}
+
+		/// <summary>
+		/// Trims all characters from both ends of the string.
+		/// </summary>
+		/// <param name="characters">Characters to trim from the string</param>
+		/// <returns>New instance of the trimmed String</returns>
+		NODISCARD constexpr String Trim(std::convertible_to<char> auto... characters) const noexcept
+		{
+			constexpr size_t paramSize = sizeof ...(characters);
+			if constexpr (paramSize == 0)
 				return *this;
 
+			const char values[paramSize + 1] = {characters..., '\0'};
+			const Sequence<char> set(values);
 
-			return *this;
+			size_t begin = 0;
+			size_t end = 0;
+			const size_t length = m_Size / 2;
+			for (size_t i = 0; i < length; ++i)
+			{
+				const size_t endIndex = m_Size - 1 - i;
+				const bool foundBegin = Micro::Contains(set, m_Data[i]);
+				const bool foundEnd = Micro::Contains(set, m_Data[endIndex]);
+
+				if (foundBegin) begin = i + 1;
+				if (foundEnd) end = endIndex;
+
+				if (!(foundBegin || foundEnd))
+					break;
+			}
+
+			return Substring(begin, end - begin);
 		}
 
-		NODISCARD String Replace(const CharSequence auto& oldString, const CharSequence auto& newString) const
+		/// <summary>
+		/// Trims all whitespace characters from the left end of the string.
+		/// </summary>
+		/// <returns>New instance of the trimmed String</returns>
+		NODISCARD constexpr String TrimStart() const noexcept
 		{
-			return *this;
+			constexpr char whitespace[6]{ '\n', '\t', '\r', '\b', ' ', '\0' };
+			const Sequence<char> set(whitespace);
+
+			size_t begin = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				if (Micro::Contains(set, m_Data[i]))
+					begin = i + 1;
+				else
+					break;
+			}
+
+			return Substring(begin);
 		}
 
-		NODISCARD String Replace(const char oldChar, const CharSequence auto& newString) const
+		/// <summary>
+		/// Trims each occurrence of the character from the left end of the string.
+		/// </summary>
+		/// <param name="character">Character to trim from string</param>
+		/// <returns>New instance of the trimmed String</returns>
+		NODISCARD constexpr String TrimStart(const char character) const noexcept
 		{
-			return *this;
+			size_t begin = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				if (m_Data[i] == character)
+					begin = i + 1;
+				else
+					break;
+			}
+
+			return Substring(begin);
 		}
 
-		NODISCARD String Substring(const size_t start) const noexcept
+		/// <summary>
+		/// Trims all characters from the left end of the string.
+		/// </summary>
+		/// <param name="characters">Characters to trim from the string</param>
+		/// <returns>New instance of the trimmed String</returns>
+		NODISCARD constexpr String TrimStart(std::convertible_to<char> auto... characters) const noexcept
 		{
-			const size_t size = m_Size - start;
-			if (size == 0 || size > m_Size)
+			constexpr size_t length = sizeof ...(characters);
+			if constexpr (length == 0) 
+				return *this;
+
+			const char values[length + 1] = {characters..., '\0'};
+			const Sequence<char> set(values);
+
+			size_t begin = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				if (Micro::Contains(set, m_Data[i]))
+					begin = i + 1;
+				else
+					break;
+			}
+
+			return Substring(begin);
+		}
+
+		/// <summary>
+		/// Trims all whitespace characters from the right end of the string.
+		/// </summary>
+		/// <returns>New instance of the trimmed String</returns>
+		NODISCARD constexpr String TrimEnd() const noexcept
+		{
+			constexpr char whitespace[6]{ '\n', '\t', '\r', '\b', ' ', '\0' };
+			const Sequence<char> set(whitespace);
+
+			size_t end = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = m_Size - 1 - i;
+				if (Micro::Contains(set, m_Data[offset]))
+					end = offset;
+				else
+					break;
+			}
+
+			return Substring(0, end);
+		}
+
+		/// <summary>
+		/// Trims each occurrence of the character from the right end of the string.
+		/// </summary>
+		/// <param name="character">Character to trim from string</param>
+		/// <returns>New instance of the trimmed String</returns>
+		NODISCARD constexpr String TrimEnd(const char character) const noexcept
+		{
+			size_t end = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = m_Size - 1 - i;
+				if (m_Data[offset] == character)
+					end = offset;
+				else
+					break;
+			}
+
+			return Substring(0, end);
+		}
+
+		/// <summary>
+		/// Trims all characters from the right end of the string.
+		/// </summary>
+		/// <param name="characters">Characters to trim from the string</param>
+		/// <returns>New instance of the trimmed String</returns>
+		NODISCARD constexpr String TrimEnd(std::convertible_to<char> auto... characters) const noexcept
+		{
+			constexpr size_t length = sizeof ...(characters);
+			if constexpr (length == 0)
+				return *this;
+
+			const char values[length + 1] = { characters..., '\0' };
+			const Sequence<char> set(values);
+
+			size_t end = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = m_Size - 1 - i;
+				if (Micro::Contains(set, m_Data[offset]))
+					end = m_Size - i - 1;
+				else
+					break;
+			}
+
+			return Substring(0, end);
+		}
+
+		/// <summary>
+		/// Converts all valid characters to their uppercase forms.
+		/// </summary>
+		/// <returns>New instance of a String with all valid characters as uppercase.</returns>
+		NODISCARD constexpr String ToUpper() const noexcept
+		{
+			if (IsEmpty())
 				return {};
 
-			const auto string = new char[size + 1];
-			memcpy_s(string, size + 1, m_Data + start, size + 1);
-			string[size] = 0;
-			return string;
+			const auto data = new char[m_Size + 1];
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				char character = m_Data[i];
+				if (character >= 'a' && character <= 'z')
+					character -= 32;
+
+				data[i] = character;
+			}
+
+			return Create(data, m_Size);
 		}
 
-		NODISCARD String Substring(const size_t start, const size_t length) const noexcept
+		/// <summary>
+		/// Converts all valid characters to their lowercase forms.
+		/// </summary>
+		/// <returns>New instance of a String with all valid characters as lowercase.</returns>
+		NODISCARD constexpr String ToLower() const noexcept
 		{
-			const size_t size = length;
-			if (start >= m_Size || length > m_Size - start) return {};
+			if (IsEmpty())
+				return {};
 
-			const auto string = new char[size + 1];
-			memcpy_s(string, size + 1, m_Data + start, size + 1);
-			string[size] = 0;
-			return string;
+			const auto data = new char[m_Size + 1];
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				char character = m_Data[i];
+				if (character >= 'A' && character <= 'Z')
+					character += 32;
+
+				data[i] = character;
+			}
+
+			return Create(data, m_Size);
 		}
 
-		NODISCARD constexpr bool Equals(const CharSequence auto& other) const noexcept
+		/// <summary>
+		/// Copies and returns an instance of this String.
+		/// </summary>
+		/// <returns>Copy of this instance.</returns>
+		NODISCARD constexpr String ToString() const noexcept { return *this; }
+
+		/**
+		 * \brief Frees the memory of the underlying char buffer and sets it to null.
+		 */
+		constexpr void Clear() noexcept
 		{
-			if (m_Size != other.Length())
+			delete[] m_Data;
+			m_Data = nullptr;
+			m_Size = 0;
+		}
+
+		/// <summary>
+		/// Tests the equivalence between this instance and other String-like object that is based on the CharSequence concept specifications.
+		/// </summary>
+		/// <param name="string">String-like object to test against</param>
+		/// <returns>True, if equal</returns>
+		NODISCARD constexpr bool Equals(const CharSequence auto& string) const noexcept
+		{
+			if (m_Size != string.Length())
 				return false;
 
 			for (size_t i = 0; i < m_Size; i++)
 			{
-				if (m_Data[i] != other[i])
+				if (m_Data[i] != string[i])
 					return false;
 			}
 
 			return true;
 		}
 
-		NODISCARD constexpr bool Equals(const StdCharSequence auto& other) const noexcept
+		/// <summary>
+		/// Tests the equivalence between this instance and other String-like object that is based on the StdCharSequence concept specifications.
+		/// </summary>
+		/// <param name="string">String-like object to test against</param>
+		/// <returns>True, if equal</returns>
+		NODISCARD constexpr bool Equals(const StdCharSequence auto& string) const noexcept
 		{
-			if (m_Size != other.size())
+			if (m_Size != string.size())
 				return false;
 
 			for (size_t i = 0; i < m_Size; i++)
 			{
-				if (m_Data[i] != other[i])
+				if (m_Data[i] != string[i])
 					return false;
 			}
 
 			return true;
 		}
 
-		NODISCARD constexpr bool Equals(const char other) const noexcept
+		/// <summary>
+		/// Tests the equivalence between this instance and the raw string literal.
+		/// </summary>
+		///	<typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">Raw string literal to test against</param>
+		/// <returns>True, if equal</returns>
+		template <size_t TSize>
+		NODISCARD constexpr bool Equals(const char (&string)[TSize]) const noexcept
 		{
-			return m_Data[0] == other;
-		}
-
-		NODISCARD bool Equals(const char* other) const noexcept
-		{
-			const size_t length = strlen(other);
+			constexpr size_t length = TSize - 1;
 			if (m_Size != length)
 				return false;
 
 			for (size_t i = 0; i < length; i++)
 			{
-				if (m_Data[i] != other[i])
+				if (m_Data[i] != string[i])
 					return false;
 			}
 
 			return true;
 		}
 
-		NODISCARD constexpr bool Contains(const CharSequence auto& string) const
+		/// <summary>
+		/// Tests the equivalence between this instance and the char pointer.
+		/// </summary>
+		/// <param name="string">Char pointer</param>
+		/// <param name="length">Length of the pointer</param>
+		/// <returns>True, if equal</returns>
+		NODISCARD constexpr bool Equals(const char* string, const size_t length) const noexcept
 		{
-			const size_t length = string.Length();
-			if (length == 0) return false;
+			if (m_Size != length)
+				return false;
 
-			for (size_t i = 0, charIndex = 0; i < m_Size; ++i)
-				while (m_Data[i] == string[charIndex])
-				{
-					++i;
-					++charIndex;
+			for (size_t i = 0; i < length; i++)
+			{
+				if (m_Data[i] != string[i])
+					return false;
+			}
 
-					if (charIndex == length) 
-						return true;
-				}
-
-			return false;
+			return true;
 		}
 
+		/// <summary>
+		/// Tests the equivalence between this instance and the character.
+		/// </summary>
+		///	<temp
+		/// <param name="character">Character to test against</param>
+		/// <returns>True, if equal</returns>
+		NODISCARD constexpr bool Equals(const char character) const noexcept
+		{
+			return m_Data[0] == character;
+		}
+
+		/// <summary>
+		/// Tests whether the string contains the String-like object that is based on the CharSequence concept specifications. 
+		/// </summary>
+		/// <param name="string">String-like object to test against</param>
+		/// <returns>True, if is contained within the string</returns>
+		NODISCARD constexpr bool Contains(const CharSequence auto& string) const noexcept
+		{
+			const size_t length = string.Length();
+			if (length == 0) 
+				return false;
+
+			return IndexOf(string).IsValid();
+		}
+
+		/// <summary>
+		/// Tests whether the string contains the String-like object that is based on the StdCharSequence concept specifications.
+		/// </summary>
+		/// <param name="string">String-like object to test against</param>
+		/// <returns>True, if is contained within the string</returns>
 		NODISCARD constexpr bool Contains(const StdCharSequence auto& string) const
 		{
 			const size_t length = string.size();
-			if (length == 0) return false;
+			if (length == 0)
+				return false;
 
-			for (size_t i = 0, charIndex = 0; i < m_Size; ++i)
-				while (m_Data[i] == string[charIndex])
-				{
-					++i;
-					++charIndex;
-
-					if (charIndex == length) return true;
-				}
-
-			return false;
+			return IndexOf(string).IsValid();
 		}
 
+		/// <summary>
+		/// Tests whether the string contains the raw string literal.
+		/// </summary>
+		///	<typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">Raw string literal to test against</param>
+		/// <returns>True, if is contained within the string</returns>
+		template <size_t TSize>
+		NODISCARD constexpr bool Contains(const char(&string)[TSize]) const noexcept
+		{
+			const size_t length = TSize - 1;
+			if (length == 0)
+				return false;
+
+			return IndexOf(string).IsValid();
+		}
+
+		/// <summary>
+		/// Tests whether the string contains the raw string literal.
+		/// </summary>
+		/// <param name="string">Char pointer to test against</param>
+		/// <param name="length">Length of char pointer</param>
+		/// <returns>True, if is contained within the string</returns>
+		NODISCARD constexpr bool Contains(const char* string, const size_t length) const noexcept
+		{
+			if (length == 0)
+				return false;
+
+			const String wrapper = Create(string, length);
+			return IndexOf(wrapper).IsValid();
+		}
+
+		/// <summary>
+		/// Tests whether the string contains the character.
+		/// </summary>
+		/// <param name="character">Character to test</param>
+		/// <returns>True, if is contained within the string</returns>
 		NODISCARD constexpr bool Contains(const char character) const noexcept
 		{
 			for (size_t i = 0; i < m_Size; ++i)
@@ -527,23 +1044,510 @@ namespace Micro
 			return false;
 		}
 
-		NODISCARD bool Contains(const char* string) const noexcept
+		/// <summary>
+		/// Tries to find the index of the String-like object that is based on the CharSequence concept specifications.
+		/// </summary>
+		/// <param name="string">String-like object to find</param>
+		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> IndexOf(const CharSequence auto& string) const noexcept
 		{
-			const size_t length = strlen(string);
-			if (length == 0) return false;
+			const size_t length = string.Length();
+			if (IsEmpty() || length == 0 || length > m_Size)
+				return Result<size_t>::Empty();
 
-			for (size_t i = 0, charIndex = 0; i < m_Size; ++i)
-				while (m_Data[i] == string[charIndex])
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				if (m_Data[i] == string[0])
 				{
-					++i;
-					++charIndex;
+					size_t index = i;
+					size_t count = 0;
+					while (m_Data[index] == string[count])
+					{
+						index++;
+						count++;
 
-					if (charIndex == length) return true;
+						if (count == length)
+							return Result<size_t>(i);
+
+						if (index >= m_Size)
+							return Result<size_t>::Empty();
+					}
 				}
+			}
 
-			return false;
+			return Result<size_t>::Empty();
 		}
 
+		/// <summary>
+		/// Tries to find the index of the String-like object that is based on the StdCharSequence concept specifications.
+		/// </summary>
+		/// <param name="string">String-like object to find</param>
+		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> IndexOf(const StdCharSequence auto& string) const noexcept
+		{
+			const size_t length = string.size();
+			if (IsEmpty() || length == 0 || length > m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				if (m_Data[i] == string[0])
+				{
+					size_t index = i;
+					size_t count = 0;
+					while (m_Data[index] == string[count])
+					{
+						index++;
+						count++;
+
+						if (count == length)
+							return Result<size_t>(i);
+
+						if (index >= m_Size)
+							return Result<size_t>::Empty();
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the index of the raw string literal.
+		/// </summary>
+		/// <typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">Raw string literal to find</param>
+		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
+		template <size_t TSize>
+		NODISCARD constexpr Result<size_t> IndexOf(const char(&string)[TSize]) const noexcept
+		{
+			constexpr size_t length = TSize - 1;
+			if (IsEmpty() || length == 0 || length > m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				if (m_Data[i] == string[0])
+				{
+					size_t index = i;
+					size_t count = 0;
+					while (m_Data[index] == string[count])
+					{
+						index++;
+						count++;
+
+						if (count == length)
+							return Result<size_t>(i);
+
+						if (index >= m_Size)
+							return Result<size_t>::Empty();
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the index of the character.
+		/// </summary>
+		/// <param name="character">Character to find</param>
+		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> IndexOf(const char character) const noexcept
+		{
+			for (size_t i = 0; i < m_Size; ++i)
+				if (m_Data[i] == character)
+					return Result<size_t>(i);
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the index of the String-like object that is based on the CharSequence concept specifications from the given start index.
+		/// </summary>
+		/// <param name="string">String-like object to find</param>
+		/// <param name="startIndex">Index to start at</param>
+		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> IndexOf(const CharSequence auto& string, const size_t startIndex) const noexcept
+		{
+			const size_t length = string.Length();
+			if (IsEmpty() || length == 0 || length > m_Size || startIndex >= m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = startIndex; i < m_Size; ++i)
+			{
+				if (m_Data[i] == string[0])
+				{
+					size_t index = i;
+					size_t count = 0;
+					while (m_Data[index] == string[count])
+					{
+						index++;
+						count++;
+
+						if (count == length)
+							return Result<size_t>(i);
+
+						if (index >= m_Size)
+							return Result<size_t>::Empty();
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the index of the String-like object that is based on the StdCharSequence concept specifications from the given start index.
+		/// </summary>
+		/// <param name="string">String-like object to find</param>
+		/// <param name="startIndex">Index to start at</param>
+		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> IndexOf(const StdCharSequence auto& string, const size_t startIndex) const noexcept
+		{
+			const size_t length = string.size();
+			if (IsEmpty() || length == 0 || length > m_Size || startIndex >= m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = startIndex; i < m_Size; ++i)
+			{
+				if (m_Data[i] == string[0])
+				{
+					size_t index = i;
+					size_t count = 0;
+					while (m_Data[index] == string[count])
+					{
+						index++;
+						count++;
+
+						if (count == length)
+							return Result<size_t>(i);
+
+						if (index >= m_Size)
+							return Result<size_t>::Empty();
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the index of the raw string literal from the given start index.
+		/// </summary>
+		/// <typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">Raw string literal to find</param>
+		/// <param name="startIndex">Index to start at</param>
+		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
+		template <size_t TSize>
+		NODISCARD constexpr Result<size_t> IndexOf(const char(&string)[TSize], const size_t startIndex) const noexcept
+		{
+			constexpr size_t length = TSize - 1;
+			if (IsEmpty() || length == 0 || length > m_Size || startIndex >= m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = startIndex; i < m_Size; ++i)
+			{
+				if (m_Data[i] == string[0])
+				{
+					size_t index = i;
+					size_t count = 0;
+					while (m_Data[index] == string[count])
+					{
+						index++;
+						count++;
+
+						if (count == length)
+							return Result<size_t>(i);
+
+						if (index >= m_Size)
+							return Result<size_t>::Empty();
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the index of the character at the given start index.
+		/// </summary>
+		/// <param name="character">Character to find</param>
+		/// <param name="startIndex">Index to start at</param>
+		/// <returns>Index of the start of the character, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> IndexOf(const char character, const size_t startIndex) const noexcept
+		{
+			if (startIndex >= m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = startIndex; i < m_Size; ++i)
+				if (m_Data[i] == character)
+					return Result<size_t>(i);
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the last index of the String-like object that is based on the CharSequence concept specifications.
+		/// </summary>
+		/// <param name="string">String-like object to find</param>
+		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> LastIndexOf(const CharSequence auto& string) const noexcept
+		{
+			const size_t length = string.Length();
+			if (IsEmpty() || length == 0 || length > m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = m_Size - 1 - i;
+				if (m_Data[offset] == string[length - 1])
+				{
+					size_t index = offset;
+					size_t count = length - 1;
+					while (m_Data[index] == string[count])
+					{
+						if (count == 0)
+							return Result<size_t>(index);
+
+						if (index == 0)
+							return Result<size_t>::Empty();
+
+						--index;
+						--count;
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the last index of the String-like object that is based on the StdCharSequence concept specifications.
+		/// </summary>
+		/// <param name="string">String-like object to find</param>
+		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> LastIndexOf(const StdCharSequence auto& string) const noexcept
+		{
+			const size_t length = string.size();
+			if (IsEmpty() || length == 0 || length > m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = m_Size - 1 - i;
+				if (m_Data[offset] == string[length - 1])
+				{
+					size_t index = offset;
+					size_t count = length - 1;
+					while (m_Data[index] == string[count])
+					{
+						if (count == 0)
+							return Result<size_t>(index);
+
+						if (index == 0)
+							return Result<size_t>::Empty();
+
+						--index;
+						--count;
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the last index of the raw string literal.
+		/// </summary>
+		/// <typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">Raw string literal to find</param>
+		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
+		template <size_t TSize>
+		NODISCARD constexpr Result<size_t> LastIndexOf(const char(&string)[TSize]) const noexcept
+		{
+			constexpr size_t length = TSize - 1;
+			if (IsEmpty() || length == 0 || length > m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = m_Size - 1 - i;
+				if (m_Data[offset] == string[length - 1])
+				{
+					size_t index = offset;
+					size_t count = length - 1;
+					while (m_Data[index] == string[count])
+					{
+						if (count == 0)
+							return Result<size_t>(index);
+
+						if (index == 0)
+							return Result<size_t>::Empty();
+
+						--index;
+						--count;
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the last index of the character.
+		/// </summary>
+		/// <param name="character">Character to find</param>
+		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> LastIndexOf(const char character) const noexcept
+		{
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = m_Size - 1 - i;
+				if (m_Data[offset] == character)
+					return Result<size_t>(offset);
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the last index of the String-like object that is based on the CharSequence concept specifications to the given end index.
+		/// </summary>
+		/// <param name="string">String-like object to find</param>
+		/// <param name="endIndex">Index to end at</param>
+		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> LastIndexOf(const CharSequence auto& string, const size_t endIndex) const noexcept
+		{
+			const size_t length = string.Length();
+			if (IsEmpty() || length == 0 || length > m_Size || endIndex >= m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = endIndex - i;
+				if (m_Data[offset] == string[length - 1])
+				{
+					size_t index = offset;
+					size_t count = length - 1;
+					while (m_Data[index] == string[count])
+					{
+						if (count == 0)
+							return Result<size_t>(index);
+
+						if (index == 0)
+							return Result<size_t>::Empty();
+
+						--index;
+						--count;
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the last index of the String-like object that is based on the StdCharSequence concept specifications to the given end index.
+		/// </summary>
+		/// <param name="string">String-like object to find</param>
+		/// <param name="endIndex">Index to end at</param>
+		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> LastIndexOf(const StdCharSequence auto& string, const size_t endIndex) const noexcept
+		{
+			const size_t length = string.size();
+			if (IsEmpty() || length == 0 || length > m_Size || endIndex >= m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = endIndex - i;
+				if (m_Data[offset] == string[length - 1])
+				{
+					size_t index = offset;
+					size_t count = length - 1;
+					while (m_Data[index] == string[count])
+					{
+						if (count == 0)
+							return Result<size_t>(index);
+
+						if (index == 0)
+							return Result<size_t>::Empty();
+
+						--index;
+						--count;
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the last index of the raw string literal to the given end index.
+		/// </summary>
+		///	<typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">Raw string literal to find</param>
+		/// <param name="endIndex">Index to end at</param>
+		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
+		template <size_t TSize>
+		NODISCARD constexpr Result<size_t> LastIndexOf(const char(&string)[TSize], const size_t endIndex) const noexcept
+		{
+			constexpr size_t length = TSize - 1;
+			if (IsEmpty() || length == 0 || length > m_Size || endIndex >= m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = endIndex - i;
+				if (m_Data[offset] == string[length - 1])
+				{
+					size_t index = offset;
+					size_t count = length - 1;
+					while (m_Data[index] == string[count])
+					{
+						if (count == 0)
+							return Result<size_t>(index);
+
+						if (index == 0)
+							return Result<size_t>::Empty();
+
+						--index;
+						--count;
+					}
+				}
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tries to find the last index of the character to the given end index.
+		/// </summary>
+		/// <param name="character">Character to find</param>
+		/// <param name="endIndex">Index to end at</param>
+		/// <returns>Last index of the character, or an invalid result if not found</returns>
+		NODISCARD constexpr Result<size_t> LastIndexOf(const char character, const size_t endIndex) const noexcept
+		{
+			if (endIndex >= m_Size)
+				return Result<size_t>::Empty();
+
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = endIndex - i;
+				if (m_Data[offset] == character)
+					return Result<size_t>(offset);
+			}
+
+			return Result<size_t>::Empty();
+		}
+
+		/// <summary>
+		/// Tests if the complete span of the given String-like object that is based on the CharSequence concept
+		/// specifications is the start of the string.
+		/// </summary>
+		/// <param name="string">String to find</param>
+		/// <returns>True, if starts with string</returns>
 		NODISCARD constexpr bool StartsWith(const CharSequence auto& string) const noexcept
 		{
 			const size_t length = string.Length();
@@ -556,10 +1560,16 @@ namespace Micro
 			return true;
 		}
 
+		/// <summary>
+		/// Tests if the complete span of the given String-like object that is based on the StdCharSequence concept
+		/// specifications is the start of the string.
+		/// </summary>
+		/// <param name="string">String to find</param>
+		/// <returns>True, if starts with string</returns>
 		NODISCARD constexpr bool StartsWith(const StdCharSequence auto& string) const noexcept
 		{
 			const size_t length = string.size();
-			if (m_Size == 0 || m_Size < length) return false;
+			if (IsEmpty() || m_Size < length) return false;
 
 			for (size_t i = 0; i < length; ++i)
 				if (m_Data[i] != string[i])
@@ -568,6 +1578,47 @@ namespace Micro
 			return true;
 		}
 
+		/// <summary>
+		/// Tests if the complete span of the raw string literal is the start of the string.
+		/// </summary>
+		/// <typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">String to find</param>
+		/// <returns>True, if starts with string</returns>
+		template <size_t TSize>
+		NODISCARD constexpr bool StartsWith(const char(&string)[TSize]) const noexcept
+		{
+			constexpr size_t length = TSize - 1;
+			if (IsEmpty() || m_Size < length) return false;
+
+			for (size_t i = 0; i < length; ++i)
+				if (m_Data[i] != string[i])
+					return false;
+
+			return true;
+		}
+
+		/// <summary>
+		/// Tests if the complete span of the char pointer is the start of the string.
+		/// </summary>
+		/// <param name="string">Char pointer to find</param>
+		/// <param name="length">Length of the char pointer</param>
+		/// <returns>True, if starts with string</returns>
+		NODISCARD constexpr bool StartsWith(const char* string, const size_t length) const noexcept
+		{
+			if (IsEmpty() || m_Size < length) return false;
+
+			for (size_t i = 0; i < length; ++i)
+				if (m_Data[i] != string[i])
+					return false;
+
+			return true;
+		}
+
+		/// <summary>
+		/// Tests if the character is the first element of the string.
+		/// </summary>
+		/// <param name="character">Character to find</param>
+		/// <returns>True, if starts with string</returns>
 		NODISCARD constexpr bool StartsWith(const char character) const noexcept
 		{
 			if (m_Size == 0)
@@ -576,18 +1627,12 @@ namespace Micro
 			return m_Data[0] == character;
 		}
 
-		NODISCARD bool StartsWith(const char* string) const noexcept
-		{
-			const size_t length = strlen(string);
-			if (m_Size == 0 || m_Size < length) return false;
-
-			for (size_t i = 0; i < length; ++i)
-				if (m_Data[i] != string[i])
-					return false;
-
-			return true;
-		}
-
+		/// <summary>
+		/// Tests if the complete span of the given String-like object that is based on the CharSequence concept
+		/// specifications is the end of the string.
+		/// </summary>
+		/// <param name="string">String to find</param>
+		/// <returns>True, if ends with string</returns>
 		NODISCARD constexpr bool EndsWith(const CharSequence auto& string) const noexcept
 		{
 			const size_t length = string.Length();
@@ -596,13 +1641,19 @@ namespace Micro
 			for (size_t i = 0; i < length; ++i)
 			{
 				const size_t index = m_Size - i - 1;
-				if (m_Data[index] != string[index])
+				if (m_Data[index] != string[length - i - 1])
 					return false;
 			}
 
 			return true;
 		}
 
+		/// <summary>
+		/// Tests if the complete span of the given String-like object that is based on the StdCharSequence concept
+		/// specifications is the end of the string.
+		/// </summary>
+		/// <param name="string">String to find</param>
+		/// <returns>True, if ends with string</returns>
 		NODISCARD constexpr bool EndsWith(const StdCharSequence auto& string) const noexcept
 		{
 			const size_t length = string.size();
@@ -611,13 +1662,61 @@ namespace Micro
 			for (size_t i = 0; i < length; ++i)
 			{
 				const size_t index = m_Size - i - 1;
-				if (m_Data[index] != string[index])
+				if (m_Data[index] != string[length - i - 1])
+					return false;
+			}
+
+			return true;
+		}
+		
+		/// <summary>
+		/// Tests if the complete span of the raw string literal is the end of the string.
+		/// </summary>
+		/// <typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">String to find</param>
+		/// <returns>True, if ends with string</returns>
+		template <size_t TSize>
+		NODISCARD constexpr bool EndsWith(const char (&string)[TSize]) const noexcept
+		{
+			constexpr size_t length = TSize - 1;
+			if (m_Size == 0 || m_Size < length)
+				return false;
+
+			for (size_t i = 0; i < length; ++i)
+			{
+				const size_t index = m_Size - i - 1;
+				if (m_Data[index] != string[length - i - 1])
 					return false;
 			}
 
 			return true;
 		}
 
+		/// <summary>
+		/// Tests if the complete span of the char pointer is the end of the string.
+		/// </summary>
+		/// <param name="string">Char pointer to find</param>
+		/// <param name="length">Length of the char pointer</param>
+		/// <returns>True, if ends with string</returns>
+		NODISCARD constexpr bool EndsWith(const char* string, const size_t length) const noexcept
+		{
+			if (m_Size == 0 || m_Size < length) return false;
+
+			for (size_t i = 0; i < length; ++i)
+			{
+				const size_t index = m_Size - i - 1;
+				if (m_Data[index] != string[length - i - 1])
+					return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Tests if the character is the last element of the string.
+		/// </summary>
+		/// <param name="character">Character to find</param>
+		/// <returns>True, if ends with string</returns>
 		NODISCARD constexpr bool EndsWith(const char character) const noexcept
 		{
 			if (m_Size == 0)
@@ -626,178 +1725,34 @@ namespace Micro
 			return m_Data[m_Size - 1] == character;
 		}
 
-		NODISCARD bool EndsWith(const char* string) const noexcept
-		{
-			const size_t length = strlen(string);
-			if (m_Size == 0 || m_Size < length) return false;
 
-			for (size_t i = 0; i < length; ++i)
-			{
-				const size_t index = m_Size - i - 1;
-				if (m_Data[index] != string[index])
-					return false;
-			}
-
-			return true;
-		}
-
-		NODISCARD String Trim(const char character) const noexcept
-		{
-			size_t begin = 0;
-			size_t end = 0;
-
-			bool searchBegin = true;
-			bool searchEnd = true;
-
-			for (size_t i = 0; i < m_Size && searchBegin || searchEnd; ++i)
-			{
-				if (m_Data[i] != character && searchBegin)
-				{
-					searchBegin = false;
-					begin = i;
-				}
-
-				if (m_Data[m_Size - i - 1] != character && searchEnd)
-				{
-					searchEnd = false;
-					end = m_Size - i - 1;
-				}
-			}
-
-			if (begin == 0 && end == m_Size - 1) return *this;
-			if (searchBegin && searchEnd) return *this;
-			if (searchBegin) return Substring(begin);
-			if (searchEnd) return Substring(0, m_Size - end);
-			return Substring(begin, m_Size - begin - end);
-		}
-
-		NODISCARD String Trim(std::convertible_to<char> auto... characters) const noexcept
-		{
-			const size_t length = sizeof ...(characters);
-			if (length == 0)
-				return *this;
-
-			const auto values = {characters...};
-			const Sequence<char> set(values, length);
-
-			size_t begin = 0;
-			size_t end = 0;
-
-			bool searchBegin = true;
-			bool searchEnd = true;
-
-			for (size_t i = 0; i < m_Size && searchBegin || searchEnd; ++i)
-			{
-				if (Micro::Contains(set, m_Data[i]) && searchBegin)
-				{
-					searchBegin = false;
-					begin = i;
-				}
-
-				if (Micro::Contains(set, m_Data[m_Size - i - 1]) && searchEnd)
-				{
-					searchEnd = false;
-					end = m_Size - i - 1;
-				}
-			}
-
-			if (searchBegin && searchEnd) return *this;
-			if (searchBegin) return Substring(begin);
-			if (searchEnd) return Substring(0, ++end);
-			return Substring(begin, ++end);
-		}
-
-		NODISCARD String TrimStart(const char character) const noexcept
-		{
-			size_t begin = 0;
-			bool searchBegin = true;
-
-			for (size_t i = 0; i < m_Size || !searchBegin; ++i)
-				if (m_Data[i] != character && searchBegin)
-				{
-					searchBegin = false;
-					begin = i;
-				}
-
-			if (searchBegin) return Substring(begin);
-			return *this;
-		}
-
-		NODISCARD String TrimStart(std::convertible_to<char> auto... characters) const noexcept
-		{
-			const size_t length = characters.size();
-			if (length == 0) return *this;
-
-			const auto values = {characters...};
-			const Sequence<char> set(values, length);
-
-			size_t begin = 0;
-			bool searchBegin = true;
-
-			for (size_t i = 0; i < m_Size; ++i)
-				if (Micro::Contains(set, m_Data[i]) && searchBegin)
-				{
-					searchBegin = false;
-					begin = i;
-				}
-
-			if (searchBegin) return Substring(begin);
-			return *this;
-		}
-
-		NODISCARD String TrimEnd(const char character) const noexcept
-		{
-			size_t end = 0;
-			bool searchEnd = true;
-
-			for (size_t i = 0; i < m_Size || !searchEnd; ++i)
-				if (m_Data[m_Size - i - 1] != character && searchEnd)
-				{
-					searchEnd = false;
-					end = m_Size - i - 1;
-				}
-
-			if (searchEnd) return Substring(0, end);
-			return *this;
-		}
-
-		NODISCARD String TrimEnd(std::convertible_to<char> auto... characters) const noexcept
-		{
-			const size_t length = characters.size();
-			if (length == 0) return *this;
-
-			const auto values = {characters...};
-			const Sequence<char> set(values, length);
-
-			size_t end = 0;
-			bool searchEnd = true;
-
-			for (size_t i = 0; i < m_Size || !searchEnd; ++i)
-				if (Micro::Contains(set, m_Data[m_Size - i - 1]) && searchEnd)
-				{
-					searchEnd = false;
-					end = m_Size - i - 1;
-				}
-
-			if (searchEnd) return Substring(0, end);
-			return *this;
-		}
-
-		constexpr void Clear() noexcept
-		{
-			delete[] m_Data;
-			m_Data = nullptr;
-			m_Size = 0;
-		}
+		/*
+		 *  ============================================================
+		 *	|					Operator Overloads					   |
+		 *  ============================================================
+		 */
 
 
-		// Operator Overloads
+		/**
+		 * \brief Implicit conversion to const char*
+		 */
 		constexpr operator const char*() const noexcept { return m_Data; }
 
+		/**
+		 * \brief Implicit conversion to std::string
+		 */
 		constexpr operator std::string() const noexcept { return m_Data; }
 
+		/**
+		 * \brief Implicit conversion to Sequence<char>
+		 */
 		constexpr operator Sequence<char>() const noexcept { return {m_Data, m_Size}; }
 
+		/// <summary>
+		/// Gets the character at the given index. Throws an 'IndexOutOfRangeException', if index is invalid.
+		/// </summary>
+		/// <param name="index">Index of element</param>
+		/// <returns>Copy of character at index</returns>
 		NODISCARD constexpr char operator[](const size_t index)
 		{
 			if (index >= m_Size)
@@ -806,6 +1761,11 @@ namespace Micro
 			return m_Data[index];
 		}
 
+		/// <summary>
+		/// Gets the character at the given index. Throws an 'IndexOutOfRangeException', if index is invalid. (const version)
+		/// </summary>
+		/// <param name="index">Index of element</param>
+		/// <returns>Copy of character at index</returns>
 		NODISCARD constexpr char operator[](const size_t index) const
 		{
 			if (index >= m_Size)
@@ -814,12 +1774,17 @@ namespace Micro
 			return m_Data[index];
 		}
 
-		constexpr String& operator=(const String& other) noexcept
+		/// <summary>
+		/// Copies the data from the given string.
+		/// </summary>
+		/// <param name="string">String to copy</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& operator=(const String& string) noexcept
 		{
-			if (this == &other)
+			if (this == &string)
 				return *this;
 
-			const size_t length = other.m_Size;
+			const size_t length = string.m_Size;
 			if (!m_Data)
 			{
 				Allocate(length);
@@ -830,32 +1795,42 @@ namespace Micro
 					Reallocate(length);
 			}
 
-			InternalCopy(other.m_Data, length);
+			InternalCopy(string.m_Data, length);
 			return *this;
 		}
 
-		constexpr String& operator=(String&& other) noexcept
+		/// <summary>
+		/// Move the data from the given string.
+		/// </summary>
+		/// <param name="string">String to move</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& operator=(String&& string) noexcept
 		{
-			if (this == &other)
+			if (this == &string)
 				return *this;
 
 			Clear();
 
-			m_Data = other.m_Data;
-			m_Size = other.m_Size;
+			m_Data = string.m_Data;
+			m_Size = string.m_Size;
 
-			other.m_Data = nullptr;
-			other.m_Size = 0;
+			string.m_Data = nullptr;
+			string.m_Size = 0;
 
 			return *this;
 		}
 
-		constexpr String& operator=(const CharSequence auto& other) noexcept
+		/// <summary>
+		/// Copies the data from the given String-like object that is based on the CharSequence concept specifications.
+		/// </summary>
+		/// <param name="string">String-like object to copy</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& operator=(const CharSequence auto& string) noexcept
 		{
-			if (this == &other)
+			if (this == &string)
 				return *this;
 
-			const size_t length = other.Size();
+			const size_t length = string.Size();
 			if (!m_Data)
 			{
 				Allocate(length);
@@ -866,13 +1841,18 @@ namespace Micro
 					Reallocate(length);
 			}
 
-			InternalCopy(other.Data(), length);
+			InternalCopy(string.Data(), length);
 			return *this;
 		}
 
-		constexpr String& operator=(const StdCharSequence auto& other) noexcept
+		/// <summary>
+		/// Copies the data from the given String-like object that is based on the StdCharSequence concept specifications.
+		/// </summary>
+		/// <param name="string">String-like object to copy</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& operator=(const StdCharSequence auto& string) noexcept
 		{
-			const size_t length = other.size();
+			const size_t length = string.size();
 			if (!m_Data)
 			{
 				Allocate(length);
@@ -883,12 +1863,18 @@ namespace Micro
 					Reallocate(length);
 			}
 
-			InternalCopy(other.data(), length);
+			InternalCopy(string.data(), length);
 			return *this;
 		}
 
+		/// <summary>
+		/// Copies the data from the given raw string literal.
+		/// </summary>
+		/// <typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">Raw string literal to copy</param>
+		/// <returns>Reference of this instance</returns>
 		template <size_t TSize>
-		constexpr String& operator=(const char(&other)[TSize]) noexcept
+		constexpr String& operator=(const char(&string)[TSize]) noexcept
 		{
 			if (TSize == 0)
 				return *this;
@@ -903,10 +1889,15 @@ namespace Micro
 					Reallocate(TSize);
 			}
 
-			InternalCopy(other, TSize);
+			InternalCopy(string, TSize);
 			return *this;
 		}
 
+		/// <summary>
+		/// Copies the data from the given character.
+		/// </summary>
+		/// <param name="character">Character to copy</param>
+		/// <returns>Reference of this instance</returns>
 		constexpr String& operator=(const char character) noexcept
 		{
 			if (!m_Data)
@@ -924,38 +1915,49 @@ namespace Micro
 			return *this;
 		}
 
-		String& operator=(const char* other) noexcept
-		{
-			const size_t length = strlen(other);
-			if (!m_Data)
-			{
-				Allocate(length);
-			}
-			else
-			{
-				if (length != m_Size)
-					Reallocate(length);
-			}
+		/// <summary>
+		/// Appends the data from the given String to the end of the underlying buffer.
+		/// </summary>
+		/// <param name="string">String to append</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& operator+=(const String& string) noexcept { return Append(string); }
 
-			InternalCopy(other, length);
-			return *this;
-		}
+		/// <summary>
+		/// Appends the data from the given String-like object that is based on the CharSequence concept specifications to the end of the underlying buffer.
+		/// </summary>
+		/// <param name="string">String-like object to append</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& operator+=(const CharSequence auto& string) noexcept { return Append(string); }
 
-		constexpr String& operator+=(const String& other) noexcept { return Concat(other); }
+		/// <summary>
+		/// Appends the data from the given String-like object that is based on the StdCharSequence concept specifications to the end of the underlying buffer.
+		/// </summary>
+		/// <param name="string">String-like object to append</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& operator+=(const StdCharSequence auto& string) noexcept { return Append(string); }
 
-		constexpr String& operator+=(String&& other) noexcept { return Concat(std::move(other)); }
-
-		constexpr String& operator+=(const CharSequence auto& other) noexcept { return Concat(other); }
-
-		constexpr String& operator+=(const StdCharSequence auto& other) noexcept { return Concat(other); }
-
+		/// <summary>
+		/// Appends the data from the given raw string literal to the end of the underlying buffer.
+		/// </summary>
+		///	<typeparam name="TSize">Represents the implicit capture of the raw string literal's size (including null termination)</typeparam>
+		/// <param name="string">Raw string literal to append</param>
+		/// <returns>Reference of this instance</returns>
 		template <size_t TSize>
-		constexpr String& operator+=(const char (&other)[TSize]) noexcept { return Concat(other, TSize); }
+		constexpr String& operator+=(const char (&string)[TSize]) noexcept { return Append(string, TSize); }
 
-		constexpr String& operator+=(const char other) noexcept { return Concat(other); }
+		/// <summary>
+		/// Appends the given character to the end of the underlying buffer.
+		/// </summary>
+		/// <param name="character">Character to append</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr String& operator+=(const char character) noexcept { return Append(character); }
 
-		String& operator+=(const char* other) noexcept { return Concat(other, strlen(other)); }
-
+		/// <summary>
+		/// Creates a new String from the concatenation of the two strings.
+		/// </summary>
+		/// <param name="left">String to concatenate</param>
+		/// <param name="right">String to concatenate</param>
+		/// <returns>New instance of the concatenated String</returns>
 		constexpr friend String operator+(const String& left, const String& right) noexcept
 		{
 			const size_t leftSize = left.m_Size;
@@ -968,38 +1970,166 @@ namespace Micro
 			const size_t size = leftSize + rightSize;
 			const auto data = new char[size + 1];
 
-			String newString;
-			newString.m_Data = data;
-			newString.m_Size = size;
-
+			String newString = Create(data, size);
 			newString.InternalCopy(left.m_Data, leftSize);
 			newString.InternalConcat(leftSize, right.m_Data, rightSize);
 			return newString;
 		}
 
-		friend String operator+(const String& left, const char* right)
+		/// <summary>
+		/// Creates a new String from the concatenation of the two strings.
+		/// </summary>
+		/// <param name="left">String to concatenate</param>
+		/// <param name="right">String to concatenate</param>
+		/// <returns>New instance of the concatenated String</returns>
+		constexpr friend String operator+(const String& left, const CharSequence auto& right) noexcept
 		{
 			const size_t leftSize = left.m_Size;
-			const size_t rightSize = strlen(right);
+			const size_t rightSize = right.Length();
 
 			if (leftSize + rightSize == 0) return {};
-			if (leftSize == 0) return {right, rightSize};
+			if (leftSize == 0) return right;
 			if (rightSize == 0) return left;
 
 			const size_t size = leftSize + rightSize;
 			const auto data = new char[size + 1];
-			String newString;
-			newString.m_Data = data;
-			newString.m_Size = size;
 
-			newString.InternalCopy(left.m_Data, left.m_Size);
+			String newString = Create(data, size);
+			newString.InternalCopy(left.m_Data, leftSize);
+			newString.InternalConcat(leftSize, right.Data(), rightSize);
+			return newString;
+		}
+
+		/// <summary>
+		/// Creates a new String from the concatenation of the two strings.
+		/// </summary>
+		/// <param name="left">String to concatenate</param>
+		/// <param name="right">String to concatenate</param>
+		/// <returns>New instance of the concatenated String</returns>
+		constexpr friend String operator+(const String& left, const StdCharSequence auto& right) noexcept
+		{
+			const size_t leftSize = left.m_Size;
+			const size_t rightSize = right.size();
+
+			if (leftSize + rightSize == 0) return {};
+			if (leftSize == 0) return right;
+			if (rightSize == 0) return left;
+
+			const size_t size = leftSize + rightSize;
+			const auto data = new char[size + 1];
+
+			String newString = Create(data, size);
+			newString.InternalCopy(left.m_Data, leftSize);
+			newString.InternalConcat(leftSize, right.data(), rightSize);
+			return newString;
+		}
+
+		/// <summary>
+		/// Creates a new String from the concatenation of the two strings.
+		/// </summary>
+		/// <param name="left">String to concatenate</param>
+		/// <param name="right">String to concatenate</param>
+		/// <returns>New instance of the concatenated String</returns>
+		template <size_t TSize>
+		constexpr friend String operator+(const String& left, const char(&right)[TSize]) noexcept
+		{
+			const size_t leftSize = left.m_Size;
+			const size_t rightSize = TSize - 1;
+
+			if (leftSize + rightSize == 0) return {};
+			if (leftSize == 0) return right;
+			if (rightSize == 0) return left;
+
+			const size_t size = leftSize + rightSize;
+			const auto data = new char[size + 1];
+
+			String newString = Create(data, size);
+			newString.InternalCopy(left.m_Data, leftSize);
 			newString.InternalConcat(leftSize, right, rightSize);
 			return newString;
 		}
 
-		friend String operator+(const char* left, const String& right)
+		/// <summary>
+		/// Creates a new String from the concatenation of the two strings.
+		/// </summary>
+		/// <param name="left">String to concatenate</param>
+		/// <param name="character">Character to concatenate</param>
+		/// <returns>New instance of the concatenated String</returns>
+		constexpr friend String operator+(const String& left, const char character) noexcept
 		{
-			const size_t leftSize = strlen(left);
+			const size_t leftSize = left.m_Size;
+			constexpr size_t rightSize = 1;
+
+			if (leftSize == 0) 
+				return String {character};
+
+			const size_t size = leftSize + rightSize;
+			const auto data = new char[size + 1];
+
+			String newString = Create(data, size);
+			newString.InternalCopy(left.m_Data, left.m_Size);
+			newString.InternalConcat(leftSize, &character, rightSize);
+			return newString;
+		}
+
+		/// <summary>
+		/// Creates a new String from the concatenation of the two string.
+		/// </summary>
+		/// <param name="left">String to concatenate</param>
+		/// <param name="right">String to concatenate</param>
+		/// <returns>New instance of the concatenated String</returns>
+		constexpr friend String operator+(const CharSequence auto& left, const String& right) noexcept
+		{
+			const size_t leftSize = left.Length();
+			const size_t rightSize = right.m_Size;
+
+			if (leftSize + rightSize == 0) return {};
+			if (leftSize == 0) return right;
+			if (rightSize == 0) return left;
+
+			const size_t size = leftSize + rightSize;
+			const auto data = new char[size + 1];
+
+			String newString = Create(data, size);
+			newString.InternalCopy(left.Data(), leftSize);
+			newString.InternalConcat(leftSize, right.m_Data, rightSize);
+			return newString;
+		}
+
+		/// <summary>
+		/// Creates a new String from the concatenation of the two strings.
+		/// </summary>
+		/// <param name="left">String to concatenate</param>
+		/// <param name="right">String to concatenate</param>
+		/// <returns>New instance of the concatenated String</returns>
+		constexpr friend String operator+(const StdCharSequence auto& left, const String& right) noexcept
+		{
+			const size_t leftSize = left.size();
+			const size_t rightSize = right.m_Size;
+
+			if (leftSize + rightSize == 0) return {};
+			if (leftSize == 0) return right;
+			if (rightSize == 0) return left;
+
+			const size_t size = leftSize + rightSize;
+			const auto data = new char[size + 1];
+
+			String newString = Create(data, size);
+			newString.InternalCopy(left.data(), leftSize);
+			newString.InternalConcat(leftSize, right.m_Data, rightSize);
+			return newString;
+		}
+
+		/// <summary>
+		/// Creates a new String from the concatenation of the two strings.
+		/// </summary>
+		/// <param name="left">String to concatenate</param>
+		/// <param name="right">String to concatenate</param>
+		/// <returns>New instance of the concatenated String</returns>
+		template <size_t TSize>
+		constexpr friend String operator+(const char(&left)[TSize], const String& right) noexcept
+		{
+			constexpr size_t leftSize = TSize - 1;
 			const size_t rightSize = right.m_Size;
 
 			if (leftSize + rightSize == 0) return {};
@@ -1008,22 +2138,190 @@ namespace Micro
 
 			const size_t size = leftSize + rightSize;
 			const auto data = new char[size + 1];
-			String newString;
-			newString.m_Data = data;
-			newString.m_Size = size;
 
+			String newString = Create(data, size);
 			newString.InternalCopy(left, leftSize);
 			newString.InternalConcat(leftSize, right.m_Data, rightSize);
 			return newString;
 		}
 
-		constexpr friend bool operator==(const String& left, const String& right) noexcept
+		/// <summary>
+		/// Creates a new String from the concatenation of the two strings.
+		/// </summary>
+		/// <param name="character">Character to concatenate</param>
+		/// <param name="right">String to concatenate</param>
+		/// <returns>New instance of the concatenated String</returns>
+		constexpr friend String operator+(const char character, const String& right) noexcept
 		{
-			return left.Equals(right);
+			constexpr size_t leftSize = 1;
+			const size_t rightSize = right.m_Size;
+
+			if (rightSize == 0) 
+				return String{character};
+
+			const size_t size = leftSize + rightSize;
+			const auto data = new char[size + 1];
+
+			String newString = Create(data, size);
+			newString.InternalCopy(&character, leftSize);
+			newString.InternalConcat(leftSize, right.m_Data, rightSize);
+			return newString;
 		}
 
+		/// <summary>
+		/// Tests if the two strings are equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if equal</returns>
+		constexpr friend bool operator==(const String& left, const String& right) noexcept { return left.Equals(right); }
+
+		/// <summary>
+		/// Tests if the two strings are equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if equal</returns>
+		constexpr friend bool operator==(const String& left, const CharSequence auto& right) noexcept { return left.Equals(right); }
+
+		/// <summary>
+		/// Tests if the two strings are equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if equal</returns>
+		constexpr friend bool operator==(const String& left, const StdCharSequence auto& right) noexcept { return left.Equals(right); }
+
+		/// <summary>
+		/// Tests if the two strings are equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if equal</returns>
+		template <size_t TSize>
+		constexpr friend bool operator==(const String& left, const char(&right)[TSize]) noexcept { return left.Equals(right); }
+
+		/// <summary>
+		/// Tests if the string is equal to the character.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="character">Character to test against</param>
+		/// <returns>True, if equal</returns>
+		constexpr friend bool operator==(const String& left, const char character) noexcept { return left.Equals(character); }
+
+		/// <summary>
+		/// Tests if the two strings are equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if equal</returns>
+		constexpr friend bool operator==(const CharSequence auto& left, const String& right) noexcept { return right.Equals(left); }
+
+		/// <summary>
+		/// Tests if the two strings are equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if equal</returns>
+		constexpr friend bool operator==(const StdCharSequence auto& left, const String& right) noexcept { return right.Equals(left); }
+
+		/// <summary>
+		/// Tests if the two strings are equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if equal</returns>
+		template <size_t TSize>
+		constexpr friend bool operator==(const char(&left)[TSize], const String& right) noexcept { return right.Equals(left); }
+
+		/// <summary>
+		/// Tests if the character is equal to the string.
+		/// </summary>
+		/// <param name="character">Character to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if equal</returns>
+		constexpr friend bool operator==(const char character, const String& right) noexcept { return right.Equals(character); }
+
+		/// <summary>
+		/// Tests if the two strings are not equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if not equal</returns>
 		constexpr friend bool operator!=(const String& left, const String& right) noexcept { return !(left == right); }
 
+		/// <summary>
+		/// Tests if the two strings are not equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if not equal</returns>
+		constexpr friend bool operator!=(const String& left, const CharSequence auto& right) noexcept { return !(left == right); }
+
+		/// <summary>
+		/// Tests if the two strings are not equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if not equal</returns>
+		constexpr friend bool operator!=(const String& left, const StdCharSequence auto& right) noexcept { return !(left == right); }
+
+		/// <summary>
+		/// Tests if the two strings are not equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if not equal</returns>
+		template <size_t TSize>
+		constexpr friend bool operator!=(const String& left, const char (&right)[TSize]) noexcept { return !(left == right); }
+
+		/// <summary>
+		/// Tests if the string is not equal to the character.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="character">Character to test against</param>
+		/// <returns>True, if not equal</returns>
+		constexpr friend bool operator!=(const String& left, const char character) noexcept { return !(left == character); }
+
+		/// <summary>
+		/// Tests if the two strings are not equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if not equal</returns>
+		constexpr friend bool operator!=(const CharSequence auto& left, const String& right) noexcept { return !(left == right); }
+
+		/// <summary>
+		/// Tests if the two strings are not equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if not equal</returns>
+		constexpr friend bool operator!=(const StdCharSequence auto& left, const String& right) noexcept { return !(left == right); }
+
+		/// <summary>
+		/// Tests if the two strings are not equal.
+		/// </summary>
+		/// <param name="left">String to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if not equal</returns>
+		template <size_t TSize>
+		constexpr friend bool operator!=(const char (&left)[TSize], const String& right) noexcept { return !(left == right); }
+
+		/// <summary>
+		/// Tests if the character is not equal to the string.
+		/// </summary>
+		/// <param name="character">Character to test against</param>
+		/// <param name="right">String to test against</param>
+		/// <returns>True, if not equal</returns>
+		constexpr friend bool operator!=(const char character, const String& right) noexcept { return !(character == right); }
+
+		/// <summary>
+		/// Prints the given string out to the console.
+		/// </summary>
+		/// <param name="stream">Stream to print to the standard output</param>
+		/// <param name="current">String to print out</param>
+		/// <returns>True, if not equal</returns>
 		constexpr friend std::ostream& operator<<(std::ostream& stream, const String& current) noexcept
 		{
 			if (current.m_Size > 0)
@@ -1031,7 +2329,42 @@ namespace Micro
 			return stream;
 		}
 
+		
+		/*
+		 *  ============================================================
+		 *	|						  Static						   |
+		 *  ============================================================
+		 */
+
+
+		/// <summary>
+		/// Uses the char pointer and length to create a new string without another allocation.
+		/// </summary>
+		/// <param name="data">Char pointer</param>
+		/// <param name="length">Length of char pointer</param>
+		/// <returns>New instance of String with char pointer as the underlying buffer</returns>
+		NODISCARD constexpr static String Create(const char* data, const size_t length) noexcept
+		{
+			String string;
+			string.m_Data = const_cast<char*>(data);
+			string.m_Size = length;
+			string.m_Data[length] = 0;
+			return string;
+		}
+		
+
 	protected:
+		/*
+		 *  ============================================================
+		 *	|					Internal Helpers					   |
+		 *  ============================================================
+		 */
+
+
+		 /// <summary>
+		 /// Allocates a new block of memory with +1 capacity to account for null termination character.
+		 /// </summary>
+		 /// <param name="capacity">New capacity to allocate with</param>
 		constexpr void Allocate(const size_t capacity) noexcept
 		{
 			if (capacity == 0) return;
@@ -1042,6 +2375,10 @@ namespace Micro
 			m_Data[capacity] = 0;
 		}
 
+		/// <summary>
+		/// Reallocates a new block of memory or calls Allocate if the underlying buffer is null.
+		/// </summary>
+		/// <param name="capacity">New capacity to allocate with</param>
 		constexpr void Reallocate(const size_t capacity) noexcept
 		{
 			if (capacity == 0) return;
@@ -1060,14 +2397,25 @@ namespace Micro
 			Allocate(capacity);
 		}
 
-		constexpr void InternalCopy(const char* ptr, const size_t size) const noexcept
+		/// <summary>
+		/// Copies the char pointer into the underlying buffer using the given length.
+		/// </summary>
+		/// <param name="ptr">Char pointer to copy</param>
+		/// <param name="length">Length of char pointer</param>
+		constexpr void InternalCopy(const char* ptr, const size_t length) const noexcept
 		{
-			for (size_t i = 0; i < size; i++)
+			for (size_t i = 0; i < length; i++)
 				new(&m_Data[i]) char(ptr[i]);
 				
 			m_Data[m_Size] = 0;
 		}
 
+		/// <summary>
+		/// Copies the char pointer into the underlying buffer using the given length at a given starting index.
+		/// </summary>
+		/// <param name="startIndex">Index to start internal copy</param>
+		/// <param name="ptr">Char pointer to copy</param>
+		/// <param name="length">Length of char pointer</param>
 		constexpr void InternalConcat(const size_t startIndex, const char* ptr, const size_t length) const noexcept
 		{
 			for (size_t i = 0; i < length; i++)
@@ -1080,7 +2428,18 @@ namespace Micro
 	};
 
 
-	// Hash Function
+	/*
+	 *  ============================================================
+	 *	|					  Global Functions					   |
+	 *  ============================================================
+	 */
+
+
+	 /// <summary>
+	 /// Hashes the String to produce a unique hash code.
+	 /// </summary>
+	 /// <param name="object">String to hash</param>
+	 /// <returns>Hash code as a 'size_t'</returns>
 	template <>
 	NODISCARD inline size_t Hash(const String& object) noexcept
 	{
@@ -1092,8 +2451,13 @@ namespace Micro
 		return typeid(String).hash_code() + size + hash;
 	}
 
-	template <typename TElem, typename T>
-	NODISCARD String IntToString(T integral)
+	/// <summary>
+	/// Converts a signed integer into a String.
+	/// </summary>
+	/// <param name="integral">Signed integer to convert</param>
+	/// <returns>Signed integer as a String</returns>
+	template <typename TElem, std::signed_integral T>
+	NODISCARD String IntToString(T integral) noexcept
 	{
 		static_assert(std::is_integral_v<T>, "T must be integral");
 		using UType = std::make_unsigned_t<T>;
@@ -1112,7 +2476,12 @@ namespace Micro
 		return String(next, end);
 	}
 
-	template <typename TElem, typename T>
+	/// <summary>
+	/// Converts an unsigned integer into a String.
+	/// </summary>
+	/// <param name="integral">Unsigned integer to convert</param>
+	/// <returns>Unsigned integer as a String</returns>
+	template <typename TElem, std::unsigned_integral T>
 	NODISCARD String UIntToString(T integral)
 	{
 		static_assert(std::is_integral_v<T>, "T must be integral");
@@ -1123,22 +2492,79 @@ namespace Micro
 		return String(next, end);
 	}
 
-	NODISCARD inline String ToString(const bool boolean) { return {boolean ? "true" : "false"}; }
-	NODISCARD inline String ToString(const char character) { return String(character); }
-	NODISCARD inline String ToString(const int integral) { return IntToString<char>(integral); }
-	NODISCARD inline String ToString(const unsigned int integral) { return UIntToString<char>(integral); }
-	NODISCARD inline String ToString(const long integral) { return IntToString<char>(integral); }
-	NODISCARD inline String ToString(const unsigned long integral) { return UIntToString<char>(integral); }
-	NODISCARD inline String ToString(const long long integral) { return IntToString<char>(integral); }
-	NODISCARD inline String ToString(const unsigned long long integral) { return UIntToString<char>(integral); }
+	/// <summary>
+	/// Converts a bool into a String.
+	/// </summary>
+	/// <param name="boolean">Bool to convert</param>
+	/// <returns>Bool as a String</returns>
+	NODISCARD inline String ToString(const bool boolean) noexcept { return boolean ? String{"true"} : String{"false"}; }
 
-	NODISCARD inline String ToString(const double integral)
+	/// <summary>
+	/// Converts a character into a String.
+	/// </summary>
+	/// <param name="character">Character to convert</param>
+	/// <returns>Character as a String</returns>
+	NODISCARD inline String ToString(const char character) noexcept { return String(character); }
+
+	/// <summary>
+	/// Converts a signed integer into a String.
+	/// </summary>
+	/// <param name="integral">Signed integer to convert</param>
+	/// <returns>Signed integer as a String</returns>
+	NODISCARD inline String ToString(const int integral) noexcept { return IntToString<char>(integral); }
+
+	/// <summary>
+	/// Converts an unsigned integer into a String.
+	/// </summary>
+	/// <param name="integral">Unsigned integer to convert</param>
+	/// <returns>Unsigned integer as a String</returns>
+	NODISCARD inline String ToString(const unsigned int integral) noexcept { return UIntToString<char>(integral); }
+
+	/// <summary>
+	/// Converts an signed long into a String.
+	/// </summary>
+	/// <param name="integral">Signed long to convert</param>
+	/// <returns>Signed long as a String</returns>
+	NODISCARD inline String ToString(const long integral) noexcept { return IntToString<char>(integral); }
+
+	/// <summary>
+	/// Converts an unsigned long into a String.
+	/// </summary>
+	/// <param name="integral">Unsigned long to convert</param>
+	/// <returns>Unsigned long as a String</returns>
+	NODISCARD inline String ToString(const unsigned long integral) noexcept { return UIntToString<char>(integral); }
+
+	/// <summary>
+	/// Converts a long long into a String.
+	/// </summary>
+	/// <param name="integral">Long long to convert</param>
+	/// <returns>Long long as a String</returns>
+	NODISCARD inline String ToString(const long long integral) noexcept { return IntToString<char>(integral); }
+
+	/// <summary>
+	/// Converts an unsigned long long into a String.
+	/// </summary>
+	/// <param name="integral">Unsigned long long to convert</param>
+	/// <returns>Unsigned long long as a String</returns>
+	NODISCARD inline String ToString(const unsigned long long integral) noexcept { return UIntToString<char>(integral); }
+
+	/// <summary>
+	/// Converts a double into a String.
+	/// </summary>
+	/// <param name="floatingPoint">Double to convert</param>
+	/// <returns>Double as a String</returns>
+	NODISCARD inline String ToString(const double floatingPoint) noexcept
 	{
-		const auto size = static_cast<size_t>(_scprintf("%f", integral));
+		const auto size = static_cast<size_t>(_scprintf("%f", floatingPoint));
 		String string('\0', size);
-		auto _ = sprintf_s(string.Data(), size + 1, "%f", integral);
+		auto _ = sprintf_s(string.Data(), size + 1, "%f", floatingPoint);
 		return string;
 	}
 
-	NODISCARD inline String ToString(const float integral) { return ToString(static_cast<double>(integral)); }
+	/// <summary>
+	/// Converts a float into a String.
+	/// </summary>
+	/// <param name="floatingPoint">Float to convert</param>
+	/// <returns>Float as a String</returns>
+	NODISCARD inline String ToString(const float floatingPoint) noexcept { return ToString(static_cast<double>(floatingPoint)); }
 }

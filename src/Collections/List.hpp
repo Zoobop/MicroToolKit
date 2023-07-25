@@ -1,6 +1,5 @@
 #pragma once
 #include "Collections/Base/Collection.hpp"
-#include "Utility/Range.hpp"
 #include "Utility/Result.hpp"
 
 namespace Micro
@@ -285,36 +284,36 @@ namespace Micro
 			return count;
 		}
 
-		NODISCARD Result<T> Find(const Predicate<T>& predicate) const
+		NODISCARD RefResult<T> Find(const Predicate<T>& predicate) const
 		{
 			for (size_t i = 0; i < Base::m_Size; i++)
 			{
 				const T& elem = Base::m_Data[i];
 				if (predicate(elem))
-					return Result(elem);
+					return RefResult(elem);
 			}
 
-			return Result<T>::Empty();
+			return RefResult<T>::Empty();
 		}
 
 		NODISCARD Result<size_t> FindIndex(const Predicate<T>& predicate) const
 		{
 			for (size_t i = 0; i < Base::m_Size; i++)
 				if (predicate(Base::m_Data[i]))
-					return Result(i);
-			return Result<T>::Empty();
+					return Result<size_t>(i);
+			return Result<size_t>::Empty();
 		}
 
-		NODISCARD Result<T> FindLast(const Predicate<T>& predicate) const
+		NODISCARD RefResult<T> FindLast(const Predicate<T>& predicate) const
 		{
 			for (size_t i = Base::m_Size; i > 0; --i)
 			{
 				const T& elem = Base::m_Data[i - 1ULL];
 				if (predicate(elem))
-					return Result(elem);
+					return RefResult(elem);
 			}
 
-			return Result<T>::Empty();
+			return RefResult<T>::Empty();
 		}
 
 		NODISCARD Result<size_t> FindLastIndex(const Predicate<T>& predicate) const
@@ -323,9 +322,9 @@ namespace Micro
 			{
 				const T& elem = Base::m_Data[i - 1ULL];
 				if (predicate(elem))
-					return Result(i - 1ULL);
+					return Result<size_t>(i - 1ULL);
 			}
-			return Result<T>::Empty();
+			return Result<size_t>::Empty();
 		}
 
 		NODISCARD List FindAll(const Predicate<T>& predicate) const
@@ -343,7 +342,7 @@ namespace Micro
 		}
 
 		// Accessors
-		NODISCARD constexpr void Reserve(const size_t capacity) { Base::Reallocate(capacity); }
+		NODISCARD constexpr void Reserve(const size_t capacity) noexcept { Base::Reallocate(capacity); }
 
 		// Operator Overloads
 		NODISCARD const T& operator[](const size_t index) const
@@ -360,14 +359,6 @@ namespace Micro
 				throw IndexOutOfRangeException(index);
 
 			return Base::m_Data[index];
-		}
-
-		NODISCARD Base operator[](Range range)
-		{
-			if (range.end >= Base::m_Size || range.start >= range.end)
-				throw ArgumentOutOfRangeException(NAMEOF(range));
-
-			return {Base::m_Data + range.start, range.end - range.start};
 		}
 
 		List& operator=(const List& other)
