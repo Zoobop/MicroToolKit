@@ -16,7 +16,7 @@ namespace Micro
 		{
 			std::string dummy;
 			std::getline(std::cin, dummy);
-			return {std::move(dummy).data()};
+			return String{ dummy.data(), dummy.size() };
 		}
 
 		NODISCARD static int8_t ReadKey()

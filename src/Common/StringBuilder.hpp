@@ -11,7 +11,19 @@ namespace Micro
 		constexpr StringBuilder(const StringBuilder&) noexcept = default;
 		constexpr StringBuilder(StringBuilder&&) noexcept = default;
 
-		explicit StringBuilder(const size_t size) noexcept
+		constexpr explicit StringBuilder(const CharSequence auto& string) noexcept
+		{
+			Allocate(MAX(string.Length(), DefaultCapacity));
+			InternalCopy(string.Data(), string.Length());
+		}
+
+		constexpr explicit StringBuilder(const StdCharSequence auto& string) noexcept
+		{
+			Allocate(MAX(string.size(), DefaultCapacity));
+			InternalCopy(string.data(), string.size());
+		}
+
+		constexpr explicit StringBuilder(const size_t size) noexcept
 		{
 			Allocate(size);
 		}
@@ -28,19 +40,20 @@ namespace Micro
 		NODISCARD constexpr size_t Length() const noexcept { return m_Size; }
 		NODISCARD constexpr const char* Data() const noexcept { return m_Data; }
 		NODISCARD constexpr size_t Capacity() const noexcept { return m_Capacity; }
-		NODISCARD char* ToCharArray() const noexcept { return m_Data; }
-		NODISCARD String ToString() const noexcept { return {m_Data, m_Data + m_Size}; }
+		NODISCARD constexpr char* ToCharArray() const noexcept { return m_Data; }
+		NODISCARD constexpr String ToString() const noexcept { return {m_Data, m_Size}; }
 
 		// Utility
-		StringBuilder& Append(const CharSequence auto& string) noexcept
+		constexpr StringBuilder& Append(const CharSequence auto& string) noexcept
 		{
 			const size_t length = string.Length();
-			if (length == 0) return *this;
+			if (length == 0) 
+				return *this;
 
 			if (m_Data == nullptr)
 			{
 				Allocate(MAX(length, DefaultCapacity));
-				memcpy_s(m_Data, m_Capacity + 1, string.Data(), length);
+				InternalCopy(string.Data(), length);
 			}
 			else
 			{
@@ -50,23 +63,23 @@ namespace Micro
 					Reallocate(m_Capacity + (m_Capacity / 2));
 
 				// Set new data
-				for (size_t i = m_Size; i < newSize; i++)
-					m_Data[i] = string[i - m_Size];
+				InternalConcat(m_Size, string.Data(), newSize);
 			}
 
 			m_Size += length;
 			return *this;
 		}
 
-		StringBuilder& Append(const char* ptr) noexcept
+		constexpr StringBuilder& Append(const StdCharSequence auto& string) noexcept
 		{
-			const size_t length = strlen(ptr);
-			if (length == 0) return *this;
+			const size_t length = string.size();
+			if (length == 0)
+				return *this;
 
 			if (m_Data == nullptr)
 			{
 				Allocate(MAX(length, DefaultCapacity));
-				memcpy_s(m_Data, m_Capacity + 1, ptr, length);
+				InternalCopy(string.data(), length);
 			}
 			else
 			{
@@ -76,26 +89,77 @@ namespace Micro
 					Reallocate(m_Capacity + (m_Capacity / 2));
 
 				// Set new data
-				for (size_t i = m_Size; i < newSize; i++)
-					m_Data[i] = ptr[i - m_Size];
+				InternalConcat(m_Size, string.data(), newSize);
 			}
 
 			m_Size += length;
 			return *this;
 		}
 
-		StringBuilder& Append(const bool boolean) noexcept
+		template <size_t TSize>
+		constexpr StringBuilder& Append(const char (&ptr)[TSize]) noexcept
 		{
-			return Append(boolean ? "true" : "false");
+			constexpr size_t length = TSize - 1;
+			if constexpr (length == 0)
+				return *this;
+
+			if (m_Data == nullptr)
+			{
+				Allocate(MAX(length, DefaultCapacity));
+				InternalCopy(ptr, length);
+			}
+			else
+			{
+				// Reallocate, if necessary
+				const size_t newSize = m_Size + length;
+				if (newSize > m_Capacity)
+					Reallocate(m_Capacity + (m_Capacity / 2));
+
+				// Set new data
+				InternalConcat(m_Size, ptr, newSize);
+			}
+
+			m_Size += length;
+			return *this;
 		}
 
-		StringBuilder& Append(const char character) noexcept
+		constexpr StringBuilder& Append(const char* ptr, const size_t length) noexcept
+		{
+			if (length == 0) 
+				return *this;
+
+			if (m_Data == nullptr)
+			{
+				Allocate(MAX(length, DefaultCapacity));
+				InternalCopy(ptr, length);
+			}
+			else
+			{
+				// Reallocate, if necessary
+				const size_t newSize = m_Size + length;
+				if (newSize > m_Capacity)
+					Reallocate(m_Capacity + (m_Capacity / 2));
+
+				// Set new data
+				InternalConcat(m_Size, ptr, newSize);
+			}
+
+			m_Size += length;
+			return *this;
+		}
+
+		constexpr StringBuilder& Append(const bool boolean) noexcept
+		{
+			return boolean ? Append("true") : Append("false");
+		}
+
+		constexpr StringBuilder& Append(const char character) noexcept
 		{
 			constexpr size_t length = 1;
 			if (m_Data == nullptr)
 			{
 				Allocate(MAX(length, DefaultCapacity));
-				memcpy_s(m_Data, m_Capacity + 1, &character, length);
+				InternalCopy(&character, length);
 			}
 			else
 			{
@@ -111,12 +175,12 @@ namespace Micro
 			return *this;
 		}
 
-		StringBuilder& Append(const std::integral auto integer) noexcept
+		constexpr StringBuilder& Append(const std::integral auto integer) noexcept
 		{
 			return Append(Micro::ToString(integer));
 		}
 
-		StringBuilder& Remove(const size_t start, const size_t length = 1) noexcept
+		constexpr StringBuilder& Remove(const size_t start, const size_t length = 1) noexcept
 		{
 			const size_t size = start + length;
 			for (size_t i = start; i < size; i++)
@@ -136,24 +200,48 @@ namespace Micro
 		}
 
 		// Operator Overloads
-		StringBuilder& operator=(const StringBuilder& other)
+		NODISCARD constexpr char& operator[](const size_t index)
+		{
+			if (index >= m_Size)
+				throw IndexOutOfRangeException(index);
+
+			return m_Data[index];
+		}
+
+		NODISCARD constexpr char& operator[](const size_t index) const
+		{
+			if (index >= m_Size)
+				throw IndexOutOfRangeException(index);
+
+			return m_Data[index];
+		}
+
+		constexpr StringBuilder& operator=(const StringBuilder& other)
 		{
 			if (this == &other)
 				return *this;
 
-			Clear();
+			const size_t length = other.m_Size;
+			if (!m_Data)
+			{
+				Allocate(length);
+			}
+			else
+			{
+				if (length != m_Size)
+					Reallocate(length);
+			}
 
-			Allocate(other.m_Capacity);
-			memcpy_s(m_Data, m_Capacity + 1, other.m_Data, other.m_Capacity);
+			InternalCopy(other.m_Data, length);
 			return *this;
 		}
 
-		StringBuilder& operator=(StringBuilder&& other) noexcept
+		constexpr StringBuilder& operator=(StringBuilder&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
 
-			Clear();
+			delete[] m_Data;
 
 			m_Data = other.m_Data;
 			m_Size = other.m_Size;
@@ -167,7 +255,7 @@ namespace Micro
 		}
 
 	private:
-		void Allocate(const size_t capacity)
+		constexpr void Allocate(const size_t capacity) noexcept
 		{
 			if (capacity == 0) return;
 
@@ -177,7 +265,7 @@ namespace Micro
 			m_Capacity = capacity;
 		}
 
-		void Reallocate(const size_t capacity)
+		constexpr void Reallocate(const size_t capacity) noexcept
 		{
 			if (capacity == 0) return;
 			const size_t length = capacity + 1;
@@ -193,6 +281,20 @@ namespace Micro
 
 			// Allocate initial memory
 			Allocate(capacity);
+		}
+
+		constexpr void InternalCopy(const char* ptr, const size_t size) const noexcept
+		{
+			for (size_t i = 0; i < size; i++)
+				new(&m_Data[i]) char(ptr[i]);
+
+			m_Data[m_Size] = 0;
+		}
+
+		constexpr void InternalConcat(const size_t startIndex, const char* ptr, const size_t length) const noexcept
+		{
+			for (size_t i = 0; i < length; i++)
+				new(&m_Data[i + startIndex]) char(ptr[i]);
 		}
 
 	private:

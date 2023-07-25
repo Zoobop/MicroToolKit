@@ -39,6 +39,12 @@ namespace Micro
 		{
 		}
 
+		template <size_t TSize>
+		constexpr Sequence(const T (&data)[TSize]) noexcept
+			: m_Data(data), m_Capacity(TSize)
+		{
+		}
+
 		constexpr Sequence(const T* begin, const T* end) noexcept
 			: m_Data(begin), m_Capacity(end - begin)
 		{
@@ -147,7 +153,7 @@ namespace Micro
 	}
 
 	template <typename T>
-	NODISCARD bool Contains(const Sequence<T>& container, const T& item)
+	NODISCARD constexpr bool Contains(const Sequence<T>& container, const T& item) noexcept
 	{
 		for (const T& elem : container)
 			if (elem == item)
@@ -177,7 +183,7 @@ namespace Micro
 	}
 
 	template <typename T>
-	void Reverse(Sequence<T>& sequence)
+	constexpr void Reverse(Sequence<T>& sequence) noexcept
 	{
 		const size_t length = sequence.m_Capacity / 2;
 		for (size_t i = 0; i < length; ++i)

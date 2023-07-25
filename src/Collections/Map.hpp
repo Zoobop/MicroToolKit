@@ -193,7 +193,7 @@ namespace Micro
 			throw KeyNotFoundException("Key could not be found in the Map.", NAMEOF(key));
 		}
 
-		NODISCARD Result<KeyValuePair> Find(const Predicate<const TKey&> predicate) const noexcept
+		NODISCARD RefResult<KeyValuePair> Find(const Predicate<const TKey&> predicate) const noexcept
 		{
 			auto metaData = Base::m_MetaData;
 			while (metaData != nullptr)
@@ -203,13 +203,13 @@ namespace Micro
 				while (bucket != nullptr && bucket->IsValid())
 				{
 					if (predicate(bucket->Value.Component1))
-						return Result(bucket->Value);
+						return RefResult(bucket->Value);
 
 					bucket = bucket->Next;
 				}
 			}
 
-			return Result<KeyValuePair>::Empty();
+			return RefResult<KeyValuePair>::Empty();
 		}
 
 		NODISCARD bool ContainsKey(const TKey& key) const noexcept

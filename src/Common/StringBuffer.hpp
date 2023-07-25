@@ -6,7 +6,13 @@ namespace Micro
 	class StringBuffer final
 	{
 	public:
-		// Constructors/Destructors
+		/*
+		 *  ============================================================
+		 *	|                 Constructors/Destructors                 |
+		 *  ============================================================
+		 */
+
+
 		constexpr StringBuffer() noexcept = default;
 		constexpr StringBuffer(const StringBuffer&) noexcept = default;
 		constexpr StringBuffer(StringBuffer&&) noexcept = default;
@@ -15,177 +21,256 @@ namespace Micro
 		{
 		}
 
-		StringBuffer(const char* ptr) noexcept
-			: m_Ptr(ptr), m_Size(strlen(ptr))
+		constexpr StringBuffer(const CharSequence auto& string) noexcept
+			: m_Data(string.Data()), m_Size(string.Length())
 		{
 		}
 
-		constexpr StringBuffer(const String& string) noexcept
-			: m_Ptr(string.Data()), m_Size(string.Length())
+		constexpr StringBuffer(const StdCharSequence auto& string) noexcept
+			: m_Data(string.data()), m_Size(string.size())
+		{
+		}
+
+		template <size_t TSize>
+		constexpr StringBuffer(const char (&string)[TSize]) noexcept
+			: m_Data(string), m_Size(TSize - 1)
+		{
+		}
+
+		constexpr StringBuffer(const char* ptr, const size_t length) noexcept
+			: m_Data(ptr), m_Size(length)
 		{
 		}
 
 		constexpr ~StringBuffer() noexcept = default;
 
-		// Utility
-		NODISCARD StringBuffer Slice(const size_t start) const
+		
+		/*
+		 *  ============================================================
+		 *	|                        Accessors                         |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0; }
+		NODISCARD constexpr size_t Length() const noexcept { return m_Size; }
+		NODISCARD constexpr const char* Data() const noexcept { return m_Data; }
+
+		
+		/*
+		 *  ============================================================
+		 *	|                         Utility                          |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr StringBuffer Slice(const size_t start) const
 		{
 			if (start >= m_Size)
 				throw IndexOutOfRangeException(start);
 
-			return {m_Ptr + start, m_Ptr + m_Size};
+			return {m_Data + start, m_Data + m_Size};
 		}
 
-		NODISCARD StringBuffer Slice(const size_t start, const size_t length) const
+		NODISCARD constexpr StringBuffer Slice(const size_t start, const size_t length) const
 		{
 			if (start + length > m_Size)
 				throw IndexOutOfRangeException(start + length);
 
-			return {m_Ptr + start, m_Ptr + start + length};
+			return {m_Data + start, m_Data + start + length};
 		}
 
-		NODISCARD StringBuffer Trim(const char character = ' ') noexcept
+		NODISCARD constexpr StringBuffer Trim() const noexcept
+		{
+			constexpr char whitespace[6]{ '\n', '\t', '\r', '\b', ' ', '\0' };
+			const Sequence<char> set(whitespace);
+
+			size_t begin = 0;
+			size_t end = 0;
+			const size_t length = m_Size / 2;
+			for (size_t i = 0; i < length; ++i)
+			{
+				const size_t endIndex = m_Size - 1 - i;
+				const bool foundBegin = Micro::Contains(set, m_Data[i]);
+				const bool foundEnd = Micro::Contains(set, m_Data[endIndex]);
+
+				if (foundBegin) begin = i + 1;
+				if (foundEnd) end = endIndex;
+
+				if (!(foundBegin || foundEnd))
+					break;
+			}
+
+			return Slice(begin, end - begin);
+		}
+
+		NODISCARD constexpr StringBuffer Trim(const char character) const noexcept
 		{
 			size_t begin = 0;
 			size_t end = 0;
-			bool searchBegin = true;
-			bool searchEnd = true;
-
-			for (size_t i = 0; i < m_Size && searchBegin || searchEnd; ++i)
+			for (size_t i = 0; i < m_Size; ++i)
 			{
-				if (m_Ptr[i] != character && searchBegin)
-				{
-					searchBegin = false;
-					begin = i;
-				}
+				const size_t endIndex = m_Size - 1 - i;
+				const bool foundBegin = m_Data[i] == character;
+				const bool foundEnd = m_Data[endIndex] == character;
 
-				if (m_Ptr[m_Size - i - 1] != character && searchEnd)
-				{
-					searchEnd = false;
-					end = m_Size - i - 1;
-				}
+				if (foundBegin) begin = i + 1;
+				if (foundEnd) end = endIndex;
+
+				if (!(foundBegin || foundEnd))
+					break;
 			}
 
-			if (begin == 0 && end == m_Size - 1) return *this;
-			if (searchBegin && searchEnd) return *this;
-			if (searchBegin) return Slice(begin);
-			if (searchEnd) return Slice(0, m_Size - end);
-			return Slice(begin, m_Size - begin - end);
+			return Slice(begin, end - begin);
 		}
 
-		NODISCARD StringBuffer Trim(const std::same_as<char> auto ... characters) noexcept
+		NODISCARD constexpr StringBuffer Trim(std::convertible_to<char> auto... characters) const noexcept
+		{
+			constexpr size_t paramSize = sizeof ...(characters);
+			if constexpr (paramSize == 0)
+				return *this;
+
+			const char values[paramSize + 1] = { characters..., '\0' };
+			const Sequence<char> set(values);
+
+			size_t begin = 0;
+			size_t end = 0;
+			const size_t length = m_Size / 2;
+			for (size_t i = 0; i < length; ++i)
+			{
+				const size_t endIndex = m_Size - 1 - i;
+				const bool foundBegin = Micro::Contains(set, m_Data[i]);
+				const bool foundEnd = Micro::Contains(set, m_Data[endIndex]);
+
+				if (foundBegin) begin = i + 1;
+				if (foundEnd) end = endIndex;
+
+				if (!(foundBegin || foundEnd))
+					break;
+			}
+
+			return Slice(begin, end - begin);
+		}
+
+		NODISCARD constexpr StringBuffer TrimStart() const noexcept
+		{
+			constexpr char whitespace[6]{ '\n', '\t', '\r', '\b', ' ', '\0' };
+			const Sequence<char> set(whitespace);
+
+			size_t begin = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				if (Micro::Contains(set, m_Data[i]))
+					begin = i + 1;
+				else
+					break;
+			}
+
+			return Slice(begin);
+		}
+
+		NODISCARD constexpr StringBuffer TrimStart(const char character) const noexcept
+		{
+			size_t begin = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				if (m_Data[i] == character)
+					begin = i + 1;
+				else
+					break;
+			}
+
+			return Slice(begin);
+		}
+
+		NODISCARD constexpr StringBuffer TrimStart(std::convertible_to<char> auto... characters) const noexcept
 		{
 			constexpr size_t length = sizeof ...(characters);
-			if (length == 0)
+			if constexpr (length == 0)
 				return *this;
 
-			const auto values = { characters... };
-			const Sequence<char> set(values, length);
+			const char values[length + 1] = { characters..., '\0' };
+			const Sequence<char> set(values);
 
 			size_t begin = 0;
-			size_t end = 0;
-			bool searchBegin = true;
-			bool searchEnd = true;
-
-			for (size_t i = 0; i < m_Size && searchBegin || searchEnd; ++i)
+			for (size_t i = 0; i < m_Size; ++i)
 			{
-				if (Contains(set, m_Ptr[i]) && searchBegin)
-				{
-					searchBegin = false;
-					begin = i;
-				}
-
-				if (Contains(set, m_Ptr[m_Size - i - 1]) && searchEnd)
-				{
-					searchEnd = false;
-					end = m_Size - i - 1;
-				}
+				if (Micro::Contains(set, m_Data[i]))
+					begin = i + 1;
+				else
+					break;
 			}
 
-			if (searchBegin && searchEnd) return *this;
-			if (searchBegin) return Slice(begin);
-			if (searchEnd) return Slice(0, ++end);
-			return Slice(begin, ++end);
+			return Slice(begin);
 		}
 
-		NODISCARD StringBuffer TrimStart(const char character = ' ') noexcept
+		NODISCARD constexpr StringBuffer TrimEnd() const noexcept
 		{
+			constexpr char whitespace[6]{ '\n', '\t', '\r', '\b', ' ', '\0' };
+			const Sequence<char> set(whitespace);
+
+			size_t end = 0;
 			for (size_t i = 0; i < m_Size; ++i)
-				if (m_Ptr[i] != character)
-					return Slice(i);
+			{
+				const size_t offset = m_Size - 1 - i;
+				if (Micro::Contains(set, m_Data[offset]))
+					end = offset;
+				else
+					break;
+			}
 
-			return *this;
+			return Slice(0, end);
 		}
 
-		NODISCARD StringBuffer TrimStart(const std::same_as<char> auto... characters) noexcept
+		NODISCARD constexpr StringBuffer TrimEnd(const char character) const noexcept
 		{
-			if (sizeof ...(characters) == 0)
+			size_t end = 0;
+			for (size_t i = 0; i < m_Size; ++i)
+			{
+				const size_t offset = m_Size - 1 - i;
+				if (m_Data[offset] == character)
+					end = offset;
+				else
+					break;
+			}
+
+			return Slice(0, end);
+		}
+
+		NODISCARD constexpr StringBuffer TrimEnd(std::convertible_to<char> auto... characters) const noexcept
+		{
+			constexpr size_t length = sizeof ...(characters);
+			if constexpr (length == 0)
 				return *this;
 
-			const auto values = { characters... };
+			const char values[length + 1] = { characters..., '\0' };
+			const Sequence<char> set(values);
+
+			size_t end = 0;
 			for (size_t i = 0; i < m_Size; ++i)
 			{
-				bool found = false;
-				for (auto& c : values)
-				{
-					if (m_Ptr[i] == c)
-					{
-						found = true;
-						break;
-					}
-				}
-
-				if (!found)
-					return Slice(i);
+				const size_t offset = m_Size - 1 - i;
+				if (Micro::Contains(set, m_Data[offset]))
+					end = m_Size - i - 1;
+				else
+					break;
 			}
 
-			return *this;
+			return Slice(0, end);
 		}
 
-		NODISCARD StringBuffer TrimEnd(const char character = ' ') noexcept
-		{
-			size_t end = 0;
-			bool searchEnd = true;
-
-			for (size_t i = 0; i < m_Size || !searchEnd; ++i)
-				if (m_Ptr[m_Size - i - 1] != character && searchEnd)
-				{
-					searchEnd = false;
-					end = m_Size - i - 1;
-				}
-
-			if (searchEnd) return Slice(0, end);
-			return *this;
-		}
-
-		NODISCARD StringBuffer TrimEnd(const std::same_as<char> auto... characters) noexcept
-		{
-			const size_t length = characters.size();
-			if (length == 0) return *this;
-
-			const auto values = { characters... };
-			const Sequence<char> set(values, length);
-
-			size_t end = 0;
-			bool searchEnd = true;
-
-			for (size_t i = 0; i < m_Size || !searchEnd; ++i)
-				if (Micro::Contains(set, m_Ptr[m_Size - i - 1]) && searchEnd)
-				{
-					searchEnd = false;
-					end = m_Size - i - 1;
-				}
-
-			if (searchEnd) return Slice(0, end);
-			return *this;
-		}
+		NODISCARD constexpr String ToString() const noexcept { return { m_Data, m_Size }; }
 
 		NODISCARD constexpr bool Equals(const StringBuffer& other) const noexcept
 		{
-			const size_t length = MIN(other.m_Size, m_Size);
-			for (size_t i = 0; i < length; i++)
-				if (m_Ptr[i] != other[i])
+			if (m_Size != other.Length())
+				return false;
+
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				if (m_Data[i] != other[i])
 					return false;
+			}
 
 			return true;
 		}
@@ -194,59 +279,65 @@ namespace Micro
 		NODISCARD constexpr bool Equals(const char (&other)[TSize]) const noexcept
 		{
 			constexpr size_t length = TSize - 1;
-			if (length != m_Size)
+			if (m_Size != length)
 				return false;
 
 			for (size_t i = 0; i < length; i++)
-				if (m_Ptr[i] != other[i])
+			{
+				if (m_Data[i] != other[i])
 					return false;
+			}
 
 			return true;
 		}
 
 		constexpr void Clear() noexcept
 		{
-			m_Ptr = nullptr;
+			m_Data = nullptr;
 			m_Size = 0;
 		}
 
-		// Accessors
-		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0; }
-		NODISCARD constexpr size_t Length() const noexcept { return m_Size; }
-		NODISCARD constexpr const char* Data() const noexcept { return m_Ptr; }
-		NODISCARD String ToString() const noexcept { return {m_Ptr, m_Ptr + m_Size}; }
 
-		// Operator Overloads
-		NODISCARD char operator[](const size_t index)
+		/*
+		 *  ============================================================
+		 *	|					Operator Overloads					   |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr char operator[](const size_t index)
 		{
 			if (index >= m_Size)
 				throw IndexOutOfRangeException(index);
 
-			return m_Ptr[index];
+			return m_Data[index];
 		}
 
-		NODISCARD char operator[](const size_t index) const
+		NODISCARD constexpr char operator[](const size_t index) const
 		{
 			if (index >= m_Size)
 				throw IndexOutOfRangeException(index);
 
-			return m_Ptr[index];
+			return m_Data[index];
 		}
 
-		StringBuffer& operator=(const StringBuffer& other) noexcept
+		constexpr StringBuffer& operator=(const StringBuffer& other) noexcept
 		{
-			m_Ptr = other.m_Ptr;
+			if (this == &other)
+				return *this;
+
+			m_Data = other.m_Data;
 			m_Size = other.m_Size;
 
 			return *this;
 		}
 
-		StringBuffer& operator=(StringBuffer&& other) noexcept
+		constexpr StringBuffer& operator=(StringBuffer&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
 
-			m_Ptr = other.m_Ptr;
+			m_Data = other.m_Data;
 			m_Size = other.m_Size;
 
 			other.Clear();
@@ -254,46 +345,52 @@ namespace Micro
 			return *this;
 		}
 
-		StringBuffer& operator=(const String& other)
+		constexpr StringBuffer& operator=(const String& other) noexcept
 		{
-			m_Ptr = other.Data();
+			m_Data = other.Data();
 			m_Size = other.Length();
 			return *this;
 		}
 
-		friend bool operator==(const StringBuffer& left, const StringBuffer& right)
-		{
-			return left.Equals(right);
-		}
+		constexpr friend bool operator==(const StringBuffer& left, const StringBuffer& right) noexcept { return left.Equals(right); }
 
-		friend bool operator!=(const StringBuffer& left, const StringBuffer& right)
-		{
-			return !(left == right);
-		}
+		constexpr friend bool operator!=(const StringBuffer& left, const StringBuffer& right) noexcept { return !(left == right); }
 
-		friend std::ostream& operator<<(std::ostream& stream, const StringBuffer& current)
+		friend std::ostream& operator<<(std::ostream& stream, const StringBuffer& current) noexcept
 		{
 			if (current.m_Size > 0)
 				for (size_t i = 0; i < current.m_Size; i++)
-					stream << current.m_Ptr[i];
-			else
-				stream << "";
+					stream << current.m_Data[i];
+
 			return stream;
 		}
 
 	private:
-		StringBuffer(const char* begin, const char* end)
-			: m_Ptr(begin), m_Size(strlen(begin) - strlen(end))
+		/*
+		 *  ============================================================
+		 *	|					Internal Helpers					   |
+		 *  ============================================================
+		 */
+
+
+		constexpr StringBuffer(const char* begin, const char* end) noexcept
+			: m_Data(begin), m_Size(end - begin)
 		{
 		}
 
 	private:
-		const char* m_Ptr = nullptr;
+		const char* m_Data = nullptr;
 		size_t m_Size = 0;
 	};
 
 
-	// Hash Function
+	/*
+	 *  ============================================================
+	 *	|					  Global Functions					   |
+	 *  ============================================================
+	 */
+
+
 	template <>
 	NODISCARD inline size_t Hash(const StringBuffer& object) noexcept
 	{
