@@ -44,7 +44,7 @@ namespace Micro
 
 		constexpr ~StringBuffer() noexcept = default;
 
-		
+
 		/*
 		 *  ============================================================
 		 *	|                        Accessors                         |
@@ -64,7 +64,7 @@ namespace Micro
 		 */
 
 
-		NODISCARD constexpr StringBuffer Slice(const size_t start) const
+		NODISCARD StringBuffer Slice(const size_t start) const
 		{
 			if (start >= m_Size)
 				throw IndexOutOfRangeException(start);
@@ -300,7 +300,7 @@ namespace Micro
 
 		/*
 		 *  ============================================================
-		 *	|					Operator Overloads					   |
+		 *	|                    Operator Overloads                    |
 		 *  ============================================================
 		 */
 
@@ -368,7 +368,7 @@ namespace Micro
 	private:
 		/*
 		 *  ============================================================
-		 *	|					Internal Helpers					   |
+		 *	|                     Internal Helpers                     |
 		 *  ============================================================
 		 */
 
@@ -386,7 +386,7 @@ namespace Micro
 
 	/*
 	 *  ============================================================
-	 *	|					  Global Functions					   |
+	 *	|                      Global Functions                    |
 	 *  ============================================================
 	 */
 
