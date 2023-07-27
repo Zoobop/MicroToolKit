@@ -99,7 +99,7 @@ namespace Micro
 		 * \brief Initializes a new instance of the String class by copying the value of the String-like argument that is based on the CharSequence concept specifications.
 		 * \param string String-like object to copy
 		 */
-		constexpr String(const CharSequence auto& string) noexcept
+		constexpr explicit String(const CharSequence auto& string) noexcept
 		{
 			const size_t length = string.Length();
 			if (length == 0)
@@ -113,7 +113,7 @@ namespace Micro
 		 * \brief Initializes a new instance of the String class by copying the value of the String-like argument that is based on the StdCharSequence concept specifications.
 		 * \param string String-like object to move
 		 */
-		constexpr String(const StdCharSequence auto& string) noexcept
+		constexpr explicit String(const StdCharSequence auto& string) noexcept
 		{
 			const size_t length = string.size();
 			if (length == 0)
@@ -216,7 +216,7 @@ namespace Micro
 		/// Represents if the string is empty or not.
 		/// </summary>
 		/// <returns>True, if the string is empty.</returns>
-		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0; }
+		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0 || m_Data == nullptr; }
 
 		/// <summary>
 		/// Represents a 64-bit unsigned integer as the length of the string.
@@ -1876,20 +1876,21 @@ namespace Micro
 		template <size_t TSize>
 		constexpr String& operator=(const char(&string)[TSize]) noexcept
 		{
-			if (TSize == 0)
+			constexpr size_t length = TSize - 1;
+			if (length == 0)
 				return *this;
 
 			if (!m_Data)
 			{
-				Allocate(TSize);
+				Allocate(length);
 			}
 			else
 			{
-				if (TSize != m_Size)
-					Reallocate(TSize);
+				if (length != m_Size)
+					Reallocate(length);
 			}
 
-			InternalCopy(string, TSize);
+			InternalCopy(string, length);
 			return *this;
 		}
 
@@ -2321,7 +2322,7 @@ namespace Micro
 		/// </summary>
 		/// <param name="stream">Stream to print to the standard output</param>
 		/// <param name="current">String to print out</param>
-		/// <returns>True, if not equal</returns>
+		/// <returns>Reference of the stream</returns>
 		constexpr friend std::ostream& operator<<(std::ostream& stream, const String& current) noexcept
 		{
 			if (current.m_Size > 0)
@@ -2361,10 +2362,10 @@ namespace Micro
 		 */
 
 
-		 /// <summary>
-		 /// Allocates a new block of memory with +1 capacity to account for null termination character.
-		 /// </summary>
-		 /// <param name="capacity">New capacity to allocate with</param>
+		/// <summary>
+		/// Allocates a new block of memory with +1 capacity to account for null termination character.
+		/// </summary>
+		/// <param name="capacity">New capacity to allocate with</param>
 		constexpr void Allocate(const size_t capacity) noexcept
 		{
 			if (capacity == 0) return;
@@ -2435,11 +2436,11 @@ namespace Micro
 	 */
 
 
-	 /// <summary>
-	 /// Hashes the String to produce a unique hash code.
-	 /// </summary>
-	 /// <param name="object">String to hash</param>
-	 /// <returns>Hash code as a 'size_t'</returns>
+	/// <summary>
+	/// Hashes the String to produce a unique hash code.
+	/// </summary>
+	/// <param name="object">String to hash</param>
+	/// <returns>Hash code as a 'size_t'</returns>
 	template <>
 	NODISCARD inline size_t Hash(const String& object) noexcept
 	{

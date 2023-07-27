@@ -15,19 +15,19 @@ namespace Micro
 		constexpr Function(Function&&) noexcept = default;
 		constexpr ~Function() noexcept = default;
 
-		constexpr Function(TReturn(*lambda)(Args...)) noexcept
-			: m_Ptr(lambda)
+		constexpr Function(TReturn(*func)(Args...)) noexcept
+			: m_Ptr(func)
 		{
 		}
 
-		TReturn operator()(Args... args)
+		constexpr TReturn operator()(Args... args) noexcept
 		{
-			return m_Ptr(std::forward<Args>(std::move(args))...);
+			return m_Ptr(std::forward<Args>(args)...);
 		}
 
-		TReturn operator()(Args... args) const
+		constexpr TReturn operator()(Args... args) const noexcept
 		{
-			return m_Ptr(std::forward<Args>(std::move(args))...);
+			return m_Ptr(std::forward<Args>(args)...);
 		}
 
 		constexpr Function& operator=(const Function&) noexcept = default;
