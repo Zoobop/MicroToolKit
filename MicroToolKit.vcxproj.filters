@@ -60,13 +60,13 @@
     <ClInclude Include="src\Collections\Base\Collection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\Result.hpp">
+    <ClInclude Include="src\Utility\Options\Result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Collections\Base\Iterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Collections\Base\Sequence.hpp">
+    <ClInclude Include="src\Collections\Base\Span.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Common\String.hpp">
@@ -78,7 +78,7 @@
     <ClInclude Include="src\Common\StringBuilder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Exceptions\Exception.hpp">
+    <ClInclude Include="src\Core\Errors\Error.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Memory\Allocator.hpp">
@@ -111,10 +111,10 @@
     <ClInclude Include="src\Collections\Base\HashTable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Experimental\Enumerator.hpp">
+    <ClInclude Include="src\Collections\Base\Enumerator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Experimental\Enumerable.hpp">
+    <ClInclude Include="src\Collections\Base\Enumerable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\IO\IOHelpers.hpp">
@@ -127,6 +127,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Common\Guid.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Options\Optional.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Errors\IError.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

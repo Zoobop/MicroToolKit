@@ -1,26 +1,37 @@
 #pragma once
 
 #include "Collections/Base/Collection.hpp"
-#include "Utility/Result.hpp"
+#include "Utility/Options/Optional.hpp"
 
 namespace Micro
 {
 	template <typename T>
-	class Queue final : public ContiguousCollection<T, Allocator<T>>
+	class Queue final : public HeapCollection<T>
 	{
 	public:
-		// Aliases
-		using Base = ContiguousCollection<T, Allocator<T>>;
-		using Sequence = Sequence<T>;
+		/*
+		 *  ============================================================
+		 *	|                          Aliases                         |
+		 *  ============================================================
+		 */
 
-		friend Base;
 
-		// Constructors/Destructors
+		using Base = HeapCollection<T>;
+		using Span = Span<T>;
+
+		
+		/*
+		 *  ============================================================
+		 *	|                  Constructors/Destructors                |
+		 *  ============================================================
+		 */
+
+
 		constexpr Queue() noexcept : Base()
 		{
 		}
 
-		constexpr Queue(const Queue& other) : Base(other)
+		constexpr Queue(const Queue& other) noexcept : Base(other)
 		{
 		}
 
@@ -28,7 +39,7 @@ namespace Micro
 		{
 		}
 
-		constexpr Queue(const Base& other) : Base(other)
+		constexpr Queue(const Base& other) noexcept : Base(other)
 		{
 		}
 
@@ -36,35 +47,37 @@ namespace Micro
 		{
 		}
 
-		constexpr Queue(const Sequence& other) : Base(other)
-		{
-		}
-
-		constexpr Queue(Sequence&& other) noexcept : Base(std::move(other))
-		{
-		}
-
 		constexpr Queue(std::initializer_list<T>&& initializerList) noexcept : Base(std::move(initializerList))
 		{
 		}
 
-		explicit constexpr Queue(std::convertible_to<T> auto... elements) noexcept : Base(
+		constexpr explicit Queue(const Span& other) noexcept : Base(other)
+		{
+		}
+
+		constexpr explicit Queue(std::convertible_to<T> auto... elements) noexcept : Base(
 			std::forward<T>(static_cast<T>(elements))...)
 		{
 		}
 
-		explicit Queue(const size_t capacity) : Base()
+		constexpr explicit Queue(const size_t capacity) noexcept : Base(capacity)
 		{
-			Reserve(capacity);
 		}
 
 		constexpr ~Queue() noexcept override = default;
 
-		// Utility
-		void Enqueue(const T& value)
+		
+		/*
+		 *  ============================================================
+		 *	|                         Utility                          |
+		 *  ============================================================
+		 */
+
+
+		constexpr void Enqueue(const T& value) noexcept
 		{
 			if (!Base::m_Data.IsValidMemory())
-				Base::Allocate(c_DefaultCapacity);
+				Base::Allocate(DefaultCapacity);
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
@@ -73,10 +86,10 @@ namespace Micro
 			++Base::m_Size;
 		}
 
-		void Enqueue(T&& value)
+		constexpr void Enqueue(T&& value) noexcept
 		{
 			if (!Base::m_Data.IsValidMemory())
-				Base::Allocate(c_DefaultCapacity);
+				Base::Allocate(DefaultCapacity);
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
@@ -85,79 +98,164 @@ namespace Micro
 			++Base::m_Size;
 		}
 
-		NODISCARD RefResult<T> Dequeue()
+		template <typename... Args>
+		constexpr T& Emplace(Args&&... args) noexcept
+		{
+			if (!Base::m_Data.IsValidMemory())
+				Base::Allocate(DefaultCapacity);
+			else if (Base::m_Capacity <= Base::m_Size)
+				Base::Reallocate(Base::m_Capacity * 2);
+
+			ShiftRight<T>(Base::m_Data, Base::m_Size, 0);
+			new(&Base::m_Data[0]) T(std::forward<Args>(args)...);
+			return Base::m_Data[0];
+		}
+
+		constexpr void EnqueueRange(const Base& collection) noexcept
+		{
+			if (collection.IsEmpty())
+				return;
+
+			const size_t size = collection.Size();
+			const T* data = collection.Data();
+
+			const size_t length = Base::m_Size + size;
+			Base::HandleReallocation(length);
+
+			for (size_t i = 0; i < size; i++)
+				Enqueue(data[i]);
+		}
+
+		constexpr void EnqueueRange(Base&& collection) noexcept
+		{
+			if (collection.IsEmpty())
+				return;
+
+			const size_t size = collection.Size();
+			T* data = const_cast<T*>(collection.Data());
+
+			const size_t length = Base::m_Size + size;
+			Base::HandleReallocation(length);
+
+			for (size_t i = 0; i < size; i++)
+				Enqueue(std::move(data[i]));
+		}
+
+		/// <summary>
+		/// Enqueues all the elements from the given span to the Queue by copy.
+		/// </summary>
+		/// <param name="span">Span to add to the Queue</param>
+		constexpr void EnqueueRange(const Span& span) noexcept
+		{
+			if (span.IsEmpty())
+				return;
+
+			const size_t size = span.Capacity();
+			const T* data = span.Data();
+
+			const size_t length = Base::m_Size + size;
+			Base::HandleReallocation(length);
+
+			for (size_t i = 0; i < size; i++)
+				Enqueue(data[i]);
+		}
+
+		constexpr void EnqueueRange(std::convertible_to<T> auto... elements) noexcept
+		{
+			constexpr size_t argumentCount = sizeof ...(elements);
+			static_assert(argumentCount != 0, "Cannot call 'EnqueueRange' without any arguments!");
+
+			const size_t length = Base::m_Size + argumentCount;
+			Base::HandleReallocation(length);
+
+			for (auto values = { static_cast<T>(std::move(elements))... }; auto && item : values)
+				Enqueue(std::move(item));
+		}
+
+		NODISCARD constexpr Result<T> Dequeue() noexcept
 		{
 			if (!Base::IsEmpty())
 			{
-				T&& item = std::move(Base::m_Data[0]);
+				auto item = std::move(Base::m_Data[0]);
 				Base::m_Data[0].~T();
 
 				ShiftLeft<T>(Base::m_Data, Base::m_Size, 1);
 				--Base::m_Size;
-				return RefResult(item);
+				return Result<T>::Ok(std::move(item));
 			}
-			return RefResult<T>::Empty();
+			return Result<T>::Error(InvalidOperationError("Cannot dequeue from empty Queue!"));
 		}
 
-		NODISCARD RefResult<T> Peek() const
+		NODISCARD constexpr Result<T&> Peek() const noexcept
 		{
 			if (!Base::IsEmpty())
-				return RefResult(Base::m_Data[0]);
-			return RefResult<T>::Empty();
+				return Result<T&>::Ok(Base::m_Data[0]);
+
+			return Result<T&>::Error(InvalidOperationError("Cannot peek from empty Queue!"));
 		}
 
-		NODISCARD RefResult<T> Front() const { return !Base::IsEmpty() ? RefResult(Base::m_Data[0]) : RefResult<T>::Empty(); }
-		NODISCARD RefResult<T> Back() const
-		{
-			return !Base::IsEmpty() ? RefResult(Base::m_Data[Base::m_Size - 1]) : RefResult<T>::Empty();
-		}
 
-		// Accessors
-		NODISCARD constexpr void Reserve(const size_t capacity) { Base::Reallocate(capacity); }
+		/*
+		 *  ============================================================
+		 *	|                    Operator Overloads                    |
+		 *  ============================================================
+		 */
 
-		// Operator Overloads
-		Queue& operator=(const Queue& other)
+
+		/// <summary>
+		/// Copies the elements from the given Queue.
+		/// </summary>
+		/// <param name="queue">Queue to copy</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr Queue& operator=(const Queue& queue) noexcept
 		{
 			// Validation
-			if (this == &other)
+			if (this == &queue)
 				return *this;
 
-			const size_t size = other.m_Capacity;
-			if (size == 0)
+			const size_t capacity = queue.m_Capacity;
+			if (capacity == 0)
 				return *this;
 
 			// Allocation
 			if (!Base::IsEmpty())
-				Reallocate(other.m_Capacity);
+				Base::Reallocate(capacity);
 			else
-				Allocate(other.m_Capacity);
+				Base::Allocate(capacity);
+
+			Base::m_Size = queue.m_Size;
 
 			// Assignment
-			Copy(other.m_Data, other.m_Size, Base::m_Data, Base::m_Capacity);
+			Base::CopyFrom(queue);
 			return *this;
 		}
 
-		Queue& operator=(Queue&& other) noexcept
+		/// <summary>
+		/// Moves the elements from the given Queue.
+		/// </summary>
+		/// <param name="queue">Queue to move</param>
+		/// <returns>Reference of this instance</returns>
+		constexpr Queue& operator=(Queue&& queue) noexcept
 		{
 			// Validation
-			if (this == &other)
+			if (this == &queue)
 				return *this;
 
-			const size_t size = other.m_Capacity;
-			if (size == 0) return *this;
-
-			// Allocation
 			if (!Base::IsEmpty())
-				Reallocate(other.m_Capacity);
-			else
-				Allocate(other.m_Capacity);
+				Base::Clear();
 
-			// Assignment
-			Move(other.m_Data, other.m_Size, Base::m_Data, Base::m_Capacity);
+			Base::m_Data = queue.m_Data;
+			Base::m_Size = queue.m_Size;
+			Base::m_Capacity = queue.m_Capacity;
+
+			queue.m_Data = nullptr;
+			queue.m_Size = 0;
+			queue.m_Capacity = 0;
+
 			return *this;
 		}
 
 	private:
-		static constexpr size_t c_DefaultCapacity = 4;
+		static constexpr size_t DefaultCapacity = 16;
 	};
 }

@@ -546,12 +546,12 @@ namespace Micro
 		/// </summary>
 		/// <param name="index">Index of element</param>
 		/// <returns>Reference of character at index</returns>
-		NODISCARD constexpr char& operator[](const size_t index)
+		NODISCARD constexpr Optional<char&> operator[](const size_t index) noexcept
 		{
 			if (index >= m_Size)
-				throw IndexOutOfRangeException(index);
+				return Optional<char&>::Empty();
 
-			return m_Data[index];
+			return Optional<char&>(m_Data[index]);
 		}
 
 		/// <summary>
@@ -559,12 +559,12 @@ namespace Micro
 		/// </summary>
 		/// <param name="index">Index of element</param>
 		/// <returns>Reference of character at index</returns>
-		NODISCARD constexpr const char& operator[](const size_t index) const
+		NODISCARD constexpr Optional<char&> operator[](const size_t index) const noexcept
 		{
 			if (index >= m_Size)
-				throw IndexOutOfRangeException(index);
+				return Optional<char&>::Empty();
 
-			return m_Data[index];
+			return Optional<char&>(m_Data[index]);
 		}
 
 		/// <summary>
@@ -739,9 +739,10 @@ namespace Micro
 	NODISCARD inline size_t Hash(const StringBuilder& object) noexcept
 	{
 		const size_t size = object.Length();
+		const auto data = object.Data();
 		size_t hash = 0;
 		for (size_t i = 0; i < size; i++)
-			hash += object[i];
+			hash += data[i];
 
 		return typeid(StringBuilder).hash_code() + size + hash;
 	}

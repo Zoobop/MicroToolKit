@@ -41,7 +41,7 @@ namespace Micro
 	}
 
 	template <StringConvertible T>
-	NODISCARD constexpr String Join(const char character, const Sequence<T>& sequence) noexcept
+	NODISCARD constexpr String Join(const char character, const Span<T>& sequence) noexcept
 	{
 		constexpr size_t defaultSize = 64;
 
@@ -54,7 +54,7 @@ namespace Micro
 	}
 
 	template <StringConvertible T, size_t TSize>
-	NODISCARD constexpr String Join(const char (&string)[TSize], const Sequence<T>& sequence) noexcept
+	NODISCARD constexpr String Join(const char (&string)[TSize], const Span<T>& sequence) noexcept
 	{
 		constexpr size_t defaultSize = 64;
 
@@ -67,7 +67,7 @@ namespace Micro
 	}
 
 	template <StringConvertible T>
-	NODISCARD constexpr String Join(const CharSequence auto& string, const Sequence<T>& sequence) noexcept
+	NODISCARD constexpr String Join(const CharSequence auto& string, const Span<T>& sequence) noexcept
 	{
 		constexpr size_t defaultSize = 64;
 

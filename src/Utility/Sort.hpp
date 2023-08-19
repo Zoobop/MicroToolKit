@@ -1,5 +1,5 @@
 #pragma once
-#include "Collections/Base/Sequence.hpp"
+#include "Collections/Base/Span.hpp"
 #include "Core/Function.hpp"
 
 namespace Micro
@@ -28,7 +28,7 @@ namespace Micro
 	NODISCARD constexpr bool LessThanEqual(const T& left, const T& right) noexcept { return left <= right; }
 
 	template <Comparable T>
-	constexpr void Sort(Sequence<T>& sequence, const Func<bool, T, T>& predicate = GreaterThan<T>) noexcept
+	constexpr void Sort(Span<T>& sequence, const Func<bool, T, T>& predicate = GreaterThan<T>) noexcept
 	{
 		auto data = sequence.Data();
 		const size_t size = sequence.Size();
@@ -48,7 +48,7 @@ namespace Micro
 	}
 
 	template <Comparable T>
-	constexpr void ReverseSort(Sequence<T>& sequence, const Func<bool, T, T>& predicate = GreaterThan<T>) noexcept
+	constexpr void ReverseSort(Span<T>& sequence, const Func<bool, T, T>& predicate = GreaterThan<T>) noexcept
 	{
 		auto data = sequence.Data();
 		const size_t size = sequence.Size();

@@ -1,93 +1,57 @@
 #pragma once
 #include <ostream>
 
-#include "Experimental/Enumerable.hpp"
 #include "Core/Memory/Allocator.hpp"
-#include "Collections/Base/Iterator.hpp"
-#include "Collections/Base/Sequence.hpp"
+#include "Collections/Base/Enumerable.hpp"
+#include "Collections/Base/Span.hpp"
 
 namespace Micro
 {
-	template <typename T>
-#ifdef EXPERIMENTAL
-	class Collection : public Enumerable<T>
-#else
-	class Collection
-#endif
-	{
-	public:
-		constexpr Collection() noexcept = default;
-		constexpr Collection(const Collection&) noexcept = default;
-		constexpr Collection(Collection&&) noexcept = default;
-#ifdef EXPERIMENTAL
-		constexpr ~Collection() noexcept override = default;
-#else
-		constexpr virtual ~Collection() noexcept = default;
-#endif
-		
-
-		NODISCARD constexpr virtual const T* Data() const noexcept = 0;
-		NODISCARD constexpr virtual size_t Capacity() const noexcept = 0;
-
-		constexpr Collection& operator=(const Collection&) noexcept = default;
-		constexpr Collection& operator=(Collection&&) noexcept = default;
-	};
-
 	template <typename T, typename TAllocator = Allocator<T>>
-	class ContiguousCollection : public Collection<T>
+	class HeapCollection : public Enumerable<T>
 	{
 	public:
-		// Aliases
-		using Iterator = ContiguousIterator<T>;
-		using ConstIterator = const Iterator;
+		/*
+		 *  ============================================================
+		 *	|                          Aliases                         |
+		 *  ============================================================
+		 */
+
+
 		using Memory = Memory<T>;
 		using AllocatorProxy = AllocatorProxy<T, TAllocator>;
-		using Sequence = Sequence<T>;
+		using Span = Span<T>;
 
-		// Constructors/Destructor
-		constexpr ContiguousCollection() noexcept = default;
+		
+		/*
+		 *  ============================================================
+		 *	|                  Constructors/Destructors                |
+		 *  ============================================================
+		 */
 
-		ContiguousCollection(const ContiguousCollection& other)
+
+		constexpr HeapCollection() noexcept = default;
+
+		constexpr HeapCollection(const HeapCollection& other) noexcept
 		{
-			if (other.m_Data == nullptr)
+			if (other.IsEmpty())
 				return;
 
 			Allocate(other.m_Capacity);
-
-			auto result = Copy(m_Data, m_Capacity, other.m_Data, other.m_Capacity);
-			if (result == Error)
-				throw BadCopyException();
+			
+			for (size_t i = 0; i < other.m_Size; i++)
+				new(&m_Data[m_Size++]) T(other.m_Data[i]);
 		}
 
-		ContiguousCollection(ContiguousCollection&& other) noexcept
-			: m_Data(other.m_Data), m_Size(other.m_Size), m_Capacity(other.m_Capacity)
+		constexpr HeapCollection(HeapCollection&& other) noexcept
+			: m_Data(std::move(other.m_Data)), m_Size(other.m_Size), m_Capacity(other.m_Capacity)
 		{
 			other.m_Data = nullptr;
 			other.m_Size = 0;
 			other.m_Capacity = 0;
 		}
 
-		ContiguousCollection(const Sequence& other)
-		{
-			if (other.m_Data == nullptr)
-				return;
-
-			Allocate(other.m_Capacity);
-
-			auto result = Copy(m_Data, m_Capacity, other.m_Data, other.m_Capacity);
-			if (result == Error)
-				throw BadCopyException();
-		}
-
-		ContiguousCollection(Sequence&& other) noexcept
-			: m_Data(other.m_Data), m_Size(other.m_Capacity), m_Capacity(other.m_Capacity)
-		{
-			other.m_Data = nullptr;
-			other.m_Size = 0;
-			other.m_Capacity = 0;
-		}
-
-		ContiguousCollection(std::initializer_list<T>&& initializerList) noexcept
+		constexpr HeapCollection(std::initializer_list<T>&& initializerList) noexcept
 		{
 			const size_t length = initializerList.size();
 			if (length == 0)
@@ -96,13 +60,25 @@ namespace Micro
 			Allocate(length);
 
 			for (auto& elem : initializerList)
-				m_Data[m_Size++] = std::move(const_cast<T&>(elem));
+				new(&m_Data[m_Size++]) T(std::move(const_cast<T&>(elem)));
 		}
 
-		explicit ContiguousCollection(std::convertible_to<T> auto... elements) noexcept
+		constexpr explicit HeapCollection(const Span& sequence) noexcept
+		{
+			const size_t length = sequence.Capacity();
+			if (length == 0)
+				return;
+
+			Allocate(length);
+
+			for (size_t i = 0; i < length; i++)
+				new(&m_Data[m_Size++]) T(sequence[i]);
+		}
+
+		constexpr explicit HeapCollection(std::convertible_to<T> auto... elements) noexcept
 		{
 			// Get number of elements (arg count)
-			const size_t length = sizeof ...(elements);
+			constexpr size_t length = sizeof ...(elements);
 
 			Allocate(length);
 
@@ -111,39 +87,35 @@ namespace Micro
 				new(&m_Data[m_Size++]) T(std::move(elem));
 		}
 
-		~ContiguousCollection() override
+		constexpr explicit HeapCollection(const size_t capacity) noexcept { Allocate(capacity); }
+
+		constexpr ~HeapCollection() noexcept override
 		{
 			// Invalidate memory, then free
 			AllocatorProxy::ClearMemory(m_Data, m_Size);
 			AllocatorProxy::Dispose(m_Data, m_Capacity);
-		}
 
-		// Utility
-		virtual void Clear()
-		{
-			// Invalidate data
-			AllocatorProxy::ClearMemory(m_Data, m_Size);
+			m_Data = nullptr;
 			m_Size = 0;
+			m_Capacity = 0;
 		}
 
-		NODISCARD virtual bool Contains(const T& value)
-		{
-			for (size_t i = 0; i < m_Size; i++)
-				if (m_Data[i] == value)
-					return true;
+		
+		/*
+		 *  ============================================================
+		 *	|                         Accessors                        |
+		 *  ============================================================
+		 */
 
-			return false;
-		}
 
-		// Accessors
-		NODISCARD constexpr bool IsEmpty() const { return m_Size == 0; }
-		NODISCARD constexpr const T* Data() const noexcept override { return m_Data; }
-		NODISCARD constexpr size_t Size() const { return m_Size; }
-		NODISCARD constexpr size_t Capacity() const noexcept override { return m_Capacity; }
-		NODISCARD constexpr Sequence AsSequence() const noexcept { return {m_Data, m_Size}; }
+		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0 || m_Data == nullptr; }
+		NODISCARD constexpr const T* Data() const noexcept { return m_Data; }
+		NODISCARD constexpr size_t Size() const noexcept { return m_Size; }
+		NODISCARD constexpr size_t Capacity() const noexcept { return m_Capacity; }
+		NODISCARD constexpr Span AsSpan() const noexcept { return {m_Data, m_Size}; }
 
-#ifdef EXPERIMENTAL
-		// Enumerators
+		/* Enumerators (Iterators) */
+
 		NODISCARD Enumerator<T> GetEnumerator() override
 		{
 			for (size_t i = 0; i < m_Size; i++)
@@ -161,18 +133,47 @@ namespace Micro
 				co_yield element;
 			}
 		}
-#else		
-		// Iterators
-		NODISCARD constexpr Iterator begin() const noexcept { return Iterator(m_Data); }
-		NODISCARD constexpr Iterator end() const noexcept { return Iterator(m_Data + m_Size); }
-		NODISCARD constexpr ConstIterator cbegin() const noexcept { return Iterator(m_Data); }
-		NODISCARD constexpr ConstIterator cend() const noexcept { return Iterator(m_Data + m_Size); }
-#endif
 
-		// Operator Overloads
-		NODISCARD explicit constexpr operator Sequence() const noexcept { return AsSequence(); }
 
-		ContiguousCollection& operator=(const ContiguousCollection& other)
+		/*
+		 *  ============================================================
+		 *	|                         Utility                          |
+		 *  ============================================================
+		 */
+
+
+		 /// <summary>
+		 /// Test if each element within the given collection.
+		 /// </summary>
+		 /// <param name="collection">Collection to test equivalence</param>
+		 /// <returns>True, if all elements match</returns>
+		NODISCARD constexpr bool Equals(const HeapCollection& collection) const noexcept { return Micro::Equals(AsSpan(), collection.AsSpan()); }
+
+		/// <summary>
+		/// Searches for the given element within the collection.
+		/// </summary>
+		/// <param name="value">Value to find</param>
+		/// <returns>True, if found</returns>
+		NODISCARD constexpr bool Contains(const T& value) const noexcept { return Micro::Contains(AsSpan(), value); }
+
+		constexpr void Clear() noexcept
+		{
+			// Invalidate data
+			AllocatorProxy::ClearMemory(m_Data, m_Size);
+			m_Size = 0;
+		}
+
+
+		/*
+		 *  ============================================================
+		 *	|                    Operator Overloads                    |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr operator Span() const noexcept { return AsSpan(); }
+
+		constexpr HeapCollection& operator=(const HeapCollection& other) noexcept
 		{
 			// Validation
 			if (this == &other)
@@ -187,18 +188,20 @@ namespace Micro
 			else
 				Allocate(other.m_Capacity);
 
-			// Assignment
-			auto result = Copy(m_Data, m_Capacity, other.m_Data, other.m_Capacity);
-			if (result == Error)
-				throw BadCopyException();
+			m_Size = other.m_Size;
 
+			// Assignment
+			CopyFrom(other);
 			return *this;
 		}
 
-		ContiguousCollection& operator=(ContiguousCollection&& other) noexcept
+		constexpr HeapCollection& operator=(HeapCollection&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
+
+			if (!IsEmpty())
+				Clear();
 
 			m_Data = other.m_Data;
 			m_Size = other.m_Size;
@@ -211,7 +214,7 @@ namespace Micro
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const ContiguousCollection& current)
+		friend std::ostream& operator<<(std::ostream& stream, const HeapCollection& current) noexcept
 		{
 			stream << "[";
 			for (size_t i = 0; i < current.m_Size; i++)
@@ -226,14 +229,44 @@ namespace Micro
 		}
 
 	protected:
-		void Allocate(const size_t capacity)
+		/*
+		 *  ============================================================
+		 *	|                      Internal Helpers                    |
+		 *  ============================================================
+		 */
+
+		
+		constexpr void Allocate(const size_t capacity) noexcept
 		{
 			m_Capacity = AllocatorProxy::Allocate(m_Data, m_Capacity, capacity);
 		}
 
-		void Reallocate(const size_t capacity)
+		constexpr void Reallocate(const size_t capacity) noexcept
 		{
 			m_Capacity = AllocatorProxy::Reallocate(m_Data, m_Capacity, capacity);
+		}
+
+		/// <summary>
+		/// Determines the correct capacity to allocate or reallocate with. (Reallocates with
+		///	'capacity + (capacity / 2)', but uses the expected capacity when above that calculated value) 
+		/// </summary>
+		/// <param name="expectedCapacity">Expected capacity to allocate with</param>
+		constexpr void HandleReallocation(const size_t expectedCapacity)
+		{
+			if (expectedCapacity > m_Capacity)
+				Reallocate(MAX(m_Capacity + (m_Capacity / 2), expectedCapacity));
+		}
+
+		constexpr void CopyFrom(const HeapCollection& other) noexcept
+		{
+			for (size_t i = 0; i < other.m_Size; i++)
+				m_Data[i] = other.m_Data[i];
+		}
+
+		constexpr void MoveFrom(HeapCollection&& other) noexcept
+		{
+			for (size_t i = 0; i < other.m_Size; i++)
+				m_Data[i] = std::move(other.m_Data[i]);
 		}
 
 	protected:
@@ -242,68 +275,106 @@ namespace Micro
 		size_t m_Capacity = 0;
 	};
 
+
 	template <typename T, size_t TSize>
-	class FixedCollection : public Collection<T>
+	class StackCollection : public Enumerable<T>
 	{
 	public:
-		// Aliases
-		using Iterator = ContiguousIterator<T>;
-		using ConstIterator = const Iterator;
-		using Memory = Memory<T>;
-		using Sequence = Sequence<T>;
+		/*
+		 *  ============================================================
+		 *	|                          Aliases                         |
+		 *  ============================================================
+		 */
 
-		// Constructors/Destructor
-		constexpr FixedCollection() noexcept = default;
 
-		FixedCollection(const FixedCollection& other)
+		using Span = Span<T>;
+
+
+		/*
+		 *  ============================================================
+		 *	|                  Constructors/Destructors                |
+		 *  ============================================================
+		 */
+
+
+		constexpr StackCollection() noexcept = default;
+
+		constexpr StackCollection(const StackCollection& other) noexcept
 		{
 			for (size_t i = 0; i < TSize; i++)
 				new(&m_Data[i]) T(other.m_Data[i]);
 		}
 
-		FixedCollection(FixedCollection&& other) noexcept
+		constexpr StackCollection(StackCollection&& other) noexcept
 		{
 			for (size_t i = 0; i < TSize; i++)
 				new(&m_Data[i]) T(std::move(other.m_Data[i]));
 		}
 
-		FixedCollection(std::initializer_list<T>&& initializerList) noexcept
+		constexpr StackCollection(std::initializer_list<T>&& initializerList) noexcept
 		{
-			if (initializerList.size() == 0)
+			const size_t capacity = initializerList.size();
+			if (capacity == 0)
 				return;
 
-			size_t index = 0;
-			for (auto& elem : initializerList)
-			{
-				if (index == TSize)
-					return;
-
-				new(&m_Data[index++]) T(std::move(const_cast<T&>(elem)));
-			}
+			const size_t length = MIN(capacity, TSize);
+			const auto data = initializerList.begin();
+			for (size_t i = 0; i < length; i++)
+				new(&m_Data[i]) T(std::move(const_cast<T&>(data[i])));
 		}
 
-		explicit FixedCollection(std::convertible_to<T> auto... elements) noexcept
+		constexpr explicit StackCollection(const Span& sequence) noexcept
 		{
-			// Move values in data block
+			const size_t capacity = sequence.Capacity();
+			if (capacity == 0)
+				return;
+
+			const size_t length = MIN(capacity, TSize);
+			for (size_t i = 0; i < length; i++)
+				new(&m_Data[i]) T(sequence[i]);
+		}
+
+		constexpr explicit StackCollection(std::convertible_to<T> auto... elements) noexcept
+		{
+			constexpr size_t capacity = sizeof ...(elements);
+			if (capacity == 0)
+				return;
+
+			constexpr size_t length = MIN(capacity, TSize);
+			const T values[] { std::forward<T>(elements)... };
+
 			size_t index = 0;
-			for (auto values = {elements...}; auto&& elem : values)
+			for (auto&& e : values)
 			{
-				if (index == TSize)
+				if (index == length)
 					return;
 
-				new(&m_Data[index++]) T(std::move(elem));
+				new(&m_Data[index++]) T(std::move(e));
 			}
 		}
 
-		constexpr ~FixedCollection() noexcept override = default;
+		constexpr explicit StackCollection(const T(&array)[TSize]) noexcept
+		{
+			for (size_t i = 0; i < TSize; i++)
+				new(&m_Data[i]) T(array[i]);
+		}
 
-		// Accessors
-		NODISCARD constexpr const T* Data() const noexcept override { return static_cast<const T*>(&m_Data); }
-		NODISCARD constexpr size_t Capacity() const noexcept override { return TSize; }
-		NODISCARD constexpr Sequence AsSequence() const noexcept { return {&m_Data[0], TSize}; }
+		constexpr ~StackCollection() noexcept override = default;
 
-#ifdef EXPERIMENTAL
-		// Enumerators
+
+		/*
+		 *  ============================================================
+		 *	|                         Accessors                        |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr const T* Data() const noexcept { return m_Data; }
+		NODISCARD constexpr size_t Capacity() const noexcept { return TSize; }
+		NODISCARD constexpr Span AsSpan() const noexcept { return { m_Data, TSize}; }
+
+		/* Enumerators (Iterators) */
+
 		NODISCARD Enumerator<T> GetEnumerator() override
 		{
 			for (size_t i = 0; i < TSize; i++)
@@ -321,39 +392,59 @@ namespace Micro
 				co_yield element;
 			}
 		}
-#else		
-		// Iterators
-		NODISCARD constexpr Iterator begin() const noexcept { return Iterator(m_Data); }
-		NODISCARD constexpr Iterator end() const noexcept { return Iterator(m_Data + TSize); }
-		NODISCARD constexpr ConstIterator cbegin() const noexcept { return Iterator(m_Data); }
-		NODISCARD constexpr ConstIterator cend() const noexcept { return Iterator(m_Data + TSize); }
-#endif
 
-		// Operator Overloads
-		NODISCARD explicit constexpr operator Sequence() const noexcept { return AsSequence(); }
 
-		FixedCollection& operator=(const FixedCollection& other)
+		/*
+		 *  ============================================================
+		 *	|                         Utility                          |
+		 *  ============================================================
+		 */
+
+
+		/// <summary>
+		/// Test if each element within the given collection.
+		/// </summary>
+		/// <param name="collection">Collection to test equivalence</param>
+		/// <returns>True, if all elements match</returns>
+		NODISCARD constexpr bool Equals(const StackCollection& collection) const noexcept { return Micro::Equals(AsSpan(), collection.AsSpan()); }
+
+		/// <summary>
+		/// Searches for the given element within the collection.
+		/// </summary>
+		/// <param name="value">Value to find</param>
+		/// <returns>True, if found</returns>
+		NODISCARD constexpr bool Contains(const T& value) const noexcept { return Micro::Contains(AsSpan(), value); }
+
+
+		/*
+		 *  ============================================================
+		 *	|                    Operator Overloads                    |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr operator Span() const noexcept { return AsSpan(); }
+
+		constexpr StackCollection& operator=(const StackCollection& other) noexcept
 		{
 			// Validation
 			if (this == &other)
 				return *this;
 
 			CopyFrom(other);
-
 			return *this;
 		}
 
-		FixedCollection& operator=(FixedCollection&& other) noexcept
+		constexpr StackCollection& operator=(StackCollection&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
 
 			MoveFrom(std::move(other));
-
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const FixedCollection& current)
+		friend std::ostream& operator<<(std::ostream& stream, const StackCollection& current) noexcept
 		{
 			stream << "[";
 			for (size_t i = 0; i < TSize; i++)
@@ -368,13 +459,20 @@ namespace Micro
 		}
 
 	protected:
-		void CopyFrom(const FixedCollection& other) noexcept
+		/*
+		 *  ============================================================
+		 *	|                      Internal Helpers                    |
+		 *  ============================================================
+		 */
+
+
+		constexpr void CopyFrom(const StackCollection& other) noexcept
 		{
 			for (size_t i = 0; i < TSize; i++)
 				m_Data[i] = other.m_Data[i];
 		}
 
-		void MoveFrom(FixedCollection&& other) noexcept
+		constexpr void MoveFrom(StackCollection&& other) noexcept
 		{
 			for (size_t i = 0; i < TSize; i++)
 				m_Data[i] = std::move(other.m_Data[i]);

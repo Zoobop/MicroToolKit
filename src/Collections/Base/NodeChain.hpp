@@ -2,6 +2,8 @@
 #include "Iterator.hpp"
 #include "Core/Core.hpp"
 
+#include "Core/Errors/Error.hpp"
+
 namespace Micro
 {
 	template <typename T, typename TNode>

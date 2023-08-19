@@ -4,7 +4,7 @@
 namespace Micro
 {
 	template <typename T>
-	class Allocator
+	class Allocator final
 	{
 	public:
 		using Memory = Memory<T>;
@@ -12,9 +12,9 @@ namespace Micro
 		constexpr Allocator() noexcept = default;
 		constexpr Allocator(const Allocator&) noexcept = default;
 		constexpr Allocator(Allocator&&) noexcept = default;
-		constexpr virtual ~Allocator() noexcept = default;
+		constexpr ~Allocator() noexcept = default;
 
-		NODISCARD virtual size_t Allocate(Memory& data, const size_t currentCapacity, const size_t newCapacity)
+		NODISCARD constexpr size_t Allocate(Memory& data, const size_t currentCapacity, const size_t newCapacity) noexcept
 		{
 			// Don't allocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -24,7 +24,7 @@ namespace Micro
 			return newCapacity;
 		}
 
-		NODISCARD virtual size_t Reallocate(Memory& data, const size_t currentCapacity, const size_t newCapacity)
+		NODISCARD constexpr size_t Reallocate(Memory& data, const size_t currentCapacity, const size_t newCapacity) noexcept
 		{
 			// Don't reallocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -48,14 +48,14 @@ namespace Micro
 			return newCapacity;
 		}
 
-		virtual void ClearMemory(Memory& data, const size_t capacity)
+		constexpr void ClearMemory(Memory& data, const size_t capacity) noexcept
 		{
 			// Invalidate memory
 			for (size_t i = 0; i < capacity; i++)
 				data[i].~T();
 		}
 
-		virtual void Dispose(Memory& data, const size_t capacity)
+		constexpr void Dispose(Memory& data, const size_t capacity) noexcept
 		{
 			Delete(data.Data, capacity);
 		}
@@ -64,28 +64,29 @@ namespace Micro
 		constexpr Allocator& operator=(Allocator&&) noexcept = default;
 	};
 
+
 	template <typename T, std::derived_from<Allocator<T>> TAllocator>
-	class AllocatorProxy
+	class AllocatorProxy final
 	{
 	public:
 		using Memory = Memory<T>;
 
-		static size_t Allocate(Memory& data, const size_t currentCapacity, const size_t newCapacity)
+		constexpr static size_t Allocate(Memory& data, const size_t currentCapacity, const size_t newCapacity) noexcept
 		{
 			return s_Allocator.Allocate(data, currentCapacity, newCapacity);
 		}
 
-		static size_t Reallocate(Memory& data, const size_t currentCapacity, const size_t newCapacity)
+		constexpr static size_t Reallocate(Memory& data, const size_t currentCapacity, const size_t newCapacity) noexcept
 		{
 			return s_Allocator.Reallocate(data, currentCapacity, newCapacity);
 		}
 
-		static void ClearMemory(Memory& data, const size_t capacity)
+		constexpr static void ClearMemory(Memory& data, const size_t capacity) noexcept
 		{
 			s_Allocator.ClearMemory(data, capacity);
 		}
 
-		static void Dispose(Memory& data, const size_t capacity)
+		constexpr static void Dispose(Memory& data, const size_t capacity) noexcept
 		{
 			s_Allocator.Dispose(data, capacity);
 		}

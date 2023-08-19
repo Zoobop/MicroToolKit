@@ -75,7 +75,7 @@ namespace Micro
 				FileInfo fileInfo{path, contents.ToString()};
 				return fileInfo;
 			}
-			throw IOException(path);
+			throw IOError(path);
 		}
 
 		NODISCARD static FileInfo GetFileInfo(const String& path)
@@ -91,7 +91,7 @@ namespace Micro
 				//contents.SyncSize();
 				return {path, contents.ToString()};
 			}
-			throw IOException(path.Data());
+			throw IOError(path.Data());
 		}
 
 		NODISCARD static String ReadAllText(const char* path)
@@ -112,7 +112,7 @@ namespace Micro
 				builder.Remove(builder.Length() - 1);
 				return builder.ToString();
 			}
-			throw IOException(path);
+			throw IOError(path);
 		}
 
 		NODISCARD static String ReadAllText(const String& path)
@@ -133,7 +133,7 @@ namespace Micro
 				builder.Remove(builder.Length() - 1);
 				return builder.ToString();
 			}
-			throw IOException(path.Data());
+			throw IOError(path.Data());
 		}
 
 		// TODO: Wait for String/StringBuffer/StringBuilder overhaul
@@ -165,7 +165,7 @@ namespace Micro
 				fileLines.Emplace(builder.ToString());
 				return fileLines;
 			}
-			throw IOException(path.Data());
+			throw IOError(path.Data());
 		}
 
 		// TODO: Wait for String/StringBuffer/StringBuilder overhaul
@@ -197,7 +197,7 @@ namespace Micro
 				fileLines.Emplace(builder.ToString());
 				return fileLines;
 			}
-			throw IOException(path);
+			throw IOError(path);
 		}
 
 		static void WriteAllText(const char* path, const Streamable auto& contents) noexcept
@@ -219,7 +219,7 @@ namespace Micro
 		}
 
 		template <Streamable T>
-		static void WriteAllLines(const char* path, const Sequence<T>& contents) noexcept
+		static void WriteAllLines(const char* path, const Span<T>& contents) noexcept
 		{
 			if (std::ofstream out(path, static_cast<std::ios_base::openmode>(FileAccess::Write)); out)
 			{
@@ -230,7 +230,7 @@ namespace Micro
 		}
 
 		template <Streamable T>
-		static void WriteAllLines(const String& path, const Sequence<T>& contents) noexcept
+		static void WriteAllLines(const String& path, const Span<T>& contents) noexcept
 		{
 			if (std::ofstream out(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Write)); out)
 			{
@@ -259,7 +259,7 @@ namespace Micro
 		}
 
 		template <Streamable T>
-		static void AppendAllLines(const char* path, const Sequence<T>& contents)
+		static void AppendAllLines(const char* path, const Span<T>& contents)
 		{
 			if (std::ofstream out(path, static_cast<std::ios_base::openmode>(FileAccess::Append)); out)
 			{
@@ -270,7 +270,7 @@ namespace Micro
 		}
 
 		template <Streamable T>
-		static void AppendAllLines(const String& path, const Sequence<T>& contents)
+		static void AppendAllLines(const String& path, const Span<T>& contents)
 		{
 			if (std::ofstream out(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Append)); out)
 			{

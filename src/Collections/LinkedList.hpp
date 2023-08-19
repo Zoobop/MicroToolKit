@@ -190,7 +190,7 @@ namespace Micro
 				return std::move(value);
 			}
 
-			throw InvalidOperationException("Linked LinkedList is empty.");
+			throw InvalidOperationError("Linked LinkedList is empty.");
 		}
 
 		NODISCARD T PopFront()
@@ -227,7 +227,7 @@ namespace Micro
 				return std::move(value);
 			}
 
-			throw InvalidOperationException("Linked LinkedList is empty.");
+			throw InvalidOperationError("Linked LinkedList is empty.");
 		}
 
 		bool Remove(const T& value)
@@ -281,7 +281,7 @@ namespace Micro
 		NODISCARD T& At(const size_t index)
 		{
 			if (index >= Base::m_Size)
-				throw IndexOutOfRangeException(index);
+				throw IndexOutOfRangeError(index);
 
 			auto node = Base::m_Head;
 			for (size_t i = 0; i < index; i++)
@@ -293,7 +293,7 @@ namespace Micro
 		NODISCARD const T& At(const size_t index) const
 		{
 			if (index >= Base::m_Size)
-				throw IndexOutOfRangeException(index);
+				throw IndexOutOfRangeError(index);
 
 			auto node = Base::m_Head;
 			for (size_t i = 0; i < index; i++)

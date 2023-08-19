@@ -1,46 +1,49 @@
 #pragma once
 
 #include "Collections/Base/Collection.hpp"
-#include "Utility/Result.hpp"
+#include "Utility/Options/Result.hpp"
 
 namespace Micro
 {
 	template <typename T>
-	class Stack final : public ContiguousCollection<T, Allocator<T>>
+	class Stack final : public HeapCollection<T>
 	{
 	public:
-		// Aliases
-		using Base = ContiguousCollection<T, Allocator<T>>;
-		using Sequence = Sequence<T>;
+		/*
+		 *  ============================================================
+		 *	|                          Aliases                         |
+		 *  ============================================================
+		 */
 
-		friend Base;
 
-		// Constructors/Destructors
+		using Base = HeapCollection<T>;
+		using Span = Span<T>;
+
+
+		/*
+		 *  ============================================================
+		 *	|                  Constructors/Destructors                |
+		 *  ============================================================
+		 */
+
+
 		constexpr Stack() noexcept : Base()
 		{
 		}
 
-		constexpr Stack(const Stack& other) : Base(other)
+		constexpr Stack(const Stack& stack) noexcept : Base(stack)
 		{
 		}
 
-		constexpr Stack(Stack&& other) noexcept : Base(std::move(other))
+		constexpr Stack(Stack&& stack) noexcept : Base(std::move(stack))
 		{
 		}
 
-		constexpr Stack(const Base& other) : Base(other)
+		constexpr Stack(const Base& collection) : Base(collection)
 		{
 		}
 
-		constexpr Stack(Base&& other) noexcept : Base(std::move(other))
-		{
-		}
-
-		constexpr Stack(const Sequence& other) : Base(other)
-		{
-		}
-
-		constexpr Stack(Sequence&& other) noexcept : Base(std::move(other))
+		constexpr Stack(Base&& collection) noexcept : Base(std::move(collection))
 		{
 		}
 
@@ -48,33 +51,43 @@ namespace Micro
 		{
 		}
 
-		explicit constexpr Stack(std::convertible_to<T> auto... elements) noexcept : Base(
+		constexpr explicit Stack(const Span& other) : Base(other)
+		{
+		}
+
+		constexpr explicit Stack(std::convertible_to<T> auto... elements) noexcept : Base(
 			std::forward<T>(static_cast<T>(elements))...)
 		{
 		}
 
-		explicit Stack(const size_t capacity) : Base()
+		constexpr explicit Stack(const size_t capacity) : Base(capacity)
 		{
-			Reserve(capacity);
 		}
 
 		constexpr ~Stack() noexcept override = default;
 
-		// Utility
-		void Push(const T& value)
+
+		/*
+		 *  ============================================================
+		 *	|                         Utility                          |
+		 *  ============================================================
+		 */
+
+
+		constexpr void Push(const T& value) noexcept
 		{
 			if (!Base::m_Data.IsValidMemory())
-				Base::Allocate(c_DefaultCapacity);
+				Base::Allocate(DefaultCapacity);
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
 			Base::m_Data[Base::m_Size++] = value;
 		}
 
-		void Push(T&& value)
+		constexpr void Push(T&& value) noexcept
 		{
 			if (!Base::m_Data.IsValidMemory())
-				Base::Allocate(c_DefaultCapacity);
+				Base::Allocate(DefaultCapacity);
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
@@ -82,10 +95,10 @@ namespace Micro
 		}
 
 		template <typename... Args>
-		T& Emplace(Args&&... args)
+		constexpr T& Emplace(Args&&... args) noexcept
 		{
 			if (!Base::m_Data.IsValidMemory())
-				Base::Allocate(c_DefaultCapacity);
+				Base::Allocate(DefaultCapacity);
 			else if (Base::m_Capacity <= Base::m_Size)
 				Base::Reallocate(Base::m_Capacity * 2);
 
@@ -93,102 +106,140 @@ namespace Micro
 			return Base::m_Data[Base::m_Size++];
 		}
 
-		void PushRange(const Collection<T>& container)
+		constexpr void PushRange(const Base& collection) noexcept
 		{
-			for (const auto& item : container)
-				Push(item);
+			if (collection.IsEmpty())
+				return;
+
+			const size_t size = collection.Size();
+			const T* data = collection.Data();
+
+			const size_t length = Base::m_Size + size;
+			Base::HandleReallocation(length);
+
+			for (size_t i = 0; i < size; i++)
+				Push(data[i]);
 		}
 
-		void PushRange(T firstElem, std::convertible_to<T> auto... elements)
+		constexpr void PushRange(Base&& collection) noexcept
 		{
-			for (auto values = {firstElem, static_cast<T>(std::move(elements))...}; auto&& item : values)
+			if (collection.IsEmpty())
+				return;
+
+			const size_t size = collection.Size();
+			T* data = const_cast<T*>(collection.Data());
+
+			const size_t length = Base::m_Size + size;
+			Base::HandleReallocation(length);
+
+			for (size_t i = 0; i < size; i++)
+				Push(std::move(data[i]));
+		}
+
+		/// <summary>
+		/// Pushes all the elements from the given span to the stack by copy.
+		/// </summary>
+		/// <param name="span">Span to add to the stack</param>
+		constexpr void PushRange(const Span& span) noexcept
+		{
+			if (span.IsEmpty())
+				return;
+
+			const size_t size = span.Capacity();
+			const T* data = span.Data();
+
+			const size_t length = Base::m_Size + size;
+			Base::HandleReallocation(length);
+
+			for (size_t i = 0; i < size; i++)
+				Push(data[i]);
+		}
+
+		constexpr void PushRange(std::convertible_to<T> auto... elements) noexcept
+		{
+			constexpr size_t argumentCount = sizeof ...(elements);
+			static_assert(argumentCount != 0, "Cannot call 'PushRange' without any arguments!");
+
+			const size_t length = Base::m_Size + argumentCount;
+			Base::HandleReallocation(length);
+
+			for (auto values = { static_cast<T>(std::move(elements))... }; auto&& item : values)
 				Push(std::move(item));
 		}
 
-		NODISCARD RefResult<T> Pop()
+		NODISCARD constexpr Result<T> Pop() noexcept
 		{
 			if (!Base::IsEmpty())
 			{
-				auto& item = std::move(Base::m_Data[Base::m_Size - 1]);
+				auto item = std::move(Base::m_Data[Base::m_Size - 1]);
 				Base::m_Data[Base::m_Size - 1].~T();
 				--Base::m_Size;
-				return RefResult(std::move(item));
+				return Result<T>::Ok(std::move(item));
 			}
 
-			return RefResult<T>::Empty();
+			return Result<T>::Error(InvalidOperationError("Cannot pop from empty Stack!"));
 		}
 
-		NODISCARD bool TryPop(T& out)
+		NODISCARD constexpr Result<T&> Peek() const noexcept
 		{
 			if (!Base::IsEmpty())
-			{
-				out = std::move(Base::m_Data[Base::m_Size - 1]);
-				Base::m_Data[Base::m_Size - 1].~T();
-				--Base::m_Size;
-				return true;
-			}
-			return false;
+				return Result<T&>::Ok(Base::m_Data[Base::m_Size - 1]);
+
+			return Result<T&>::Error(InvalidOperationError("Cannot peek from empty Stack!"));
 		}
 
-		NODISCARD RefResult<T> Peek() const
-		{
-			if (!Base::IsEmpty())
-				return RefResult(Base::m_Data[Base::m_Size - 1]);
-			return RefResult<T>::Empty();
-		}
+		
+		/*
+		 *  ============================================================
+		 *	|                    Operator Overloads                    |
+		 *  ============================================================
+		 */
 
-		NODISCARD RefResult<T> Front() const { return !Base::IsEmpty() ? RefResult(Base::m_Data[0]) : RefResult<T>::Empty(); }
-		NODISCARD RefResult<T> Back() const
-		{
-			return !Base::IsEmpty() ? RefResult(Base::m_Data[Base::m_Size - 1]) : RefResult<T>::Empty();
-		}
 
-		// Accessors
-		NODISCARD constexpr void Reserve(const size_t capacity) { Base::Reallocate(capacity); }
-
-		// Operator Overloads
-		Stack& operator=(const Stack& other)
+		constexpr Stack& operator=(const Stack& stack) noexcept
 		{
 			// Validation
-			if (this == &other)
+			if (this == &stack)
 				return *this;
 
-			const size_t size = other.m_Capacity;
-			if (size == 0)
+			const size_t capacity = stack.m_Capacity;
+			if (capacity == 0)
 				return *this;
 
 			// Allocation
 			if (!Base::IsEmpty())
-				Reallocate(other.m_Capacity);
+				Base::Reallocate(capacity);
 			else
-				Allocate(other.m_Capacity);
+				Base::Allocate(capacity);
+
+			Base::m_Size = stack.m_Size;
 
 			// Assignment
-			Copy(other.m_Data, other.m_Size, Base::m_Data, Base::m_Capacity);
+			Base::CopyFrom(stack);
 			return *this;
 		}
 
-		Stack& operator=(Stack&& other) noexcept
+		constexpr Stack& operator=(Stack&& stack) noexcept
 		{
 			// Validation
-			if (this == &other)
+			if (this == &stack)
 				return *this;
 
-			const size_t size = other.m_Capacity;
-			if (size == 0) return *this;
-
-			// Allocation
 			if (!Base::IsEmpty())
-				Reallocate(other.m_Capacity);
-			else
-				Allocate(other.m_Capacity);
+				Base::Clear();
 
-			// Assignment
-			Move(other.m_Data, other.m_Size, Base::m_Data, Base::m_Capacity);
+			Base::m_Data = stack.m_Data;
+			Base::m_Size = stack.m_Size;
+			Base::m_Capacity = stack.m_Capacity;
+
+			stack.m_Data = nullptr;
+			stack.m_Size = 0;
+			stack.m_Capacity = 0;
+
 			return *this;
 		}
 
 	private:
-		static constexpr size_t c_DefaultCapacity = 4;
+		static constexpr size_t DefaultCapacity = 16;
 	};
 }

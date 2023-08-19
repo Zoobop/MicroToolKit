@@ -8,7 +8,7 @@ namespace Micro
 	class ContiguousIterator final
 	{
 	public:
-		constexpr ContiguousIterator(T* ptr) noexcept
+		constexpr explicit ContiguousIterator(T* ptr) noexcept
 			: m_Ptr(ptr)
 		{
 		}
@@ -80,7 +80,17 @@ namespace Micro
 			return m_Ptr;
 		}
 
+		constexpr const T* operator->() const noexcept
+		{
+			return m_Ptr;
+		}
+
 		constexpr T& operator*() noexcept
+		{
+			return *m_Ptr;
+		}
+
+		constexpr const T& operator*() const noexcept
 		{
 			return *m_Ptr;
 		}

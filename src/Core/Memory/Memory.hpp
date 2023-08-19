@@ -4,48 +4,31 @@
 
 #include "Core/Core.hpp"
 #include "Core/Typedef.hpp"
-#include "Core/Exceptions/Exception.hpp"
 
 namespace Micro
 {
-	constexpr errno_t Success = 0;
-	constexpr errno_t Error = -1;
-
 	template <typename T>
-	NODISCARD constexpr bool Equals(const T& obj1, const T& obj2)
-	{
-		try
-		{
-			return obj1 == obj2;
-		}
-		catch (const Exception&)
-		{
-			return &obj1 == &obj2;
-		}
-	}
-
-	template <typename T>
-	constexpr errno_t Copy(T* source, const size_t sourceSize, T* destination, const size_t destinationSize) noexcept
+	constexpr bool Copy(T* source, const size_t sourceSize, T* destination, const size_t destinationSize) noexcept
 	{
 		if (destinationSize < sourceSize)
-			return Error;
+			return false;
 
 		for (size_t i = 0; i < sourceSize; i++)
 			destination[i] = source[i];
 
-		return Success;
+		return true;
 	}
 
 	template <typename T>
-	constexpr errno_t Move(T* source, const size_t sourceSize, T* destination, const size_t destinationSize) noexcept
+	constexpr bool Move(T* source, const size_t sourceSize, T* destination, const size_t destinationSize) noexcept
 	{
 		if (destinationSize < sourceSize)
-			return Error;
+			return false;
 
 		for (size_t i = 0; i < sourceSize; i++)
 			destination[i] = std::move(source[i]);
 
-		return Success;
+		return true;
 	}
 
 	template <typename T>
@@ -72,6 +55,14 @@ namespace Micro
 			data[index] = std::move(data[offset]);
 			data[offset] = std::move(temp);
 		}
+	}
+
+	NODISCARD constexpr size_t GetLength(const char* str)
+	{
+		size_t size = 0;
+		while (str[size] != '\0')
+			size++;
+		return size;
 	}
 
 

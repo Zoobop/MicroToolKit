@@ -1,6 +1,8 @@
 #pragma once
-#include "Collections/Base/Sequence.hpp"
-#include "Utility/Result.hpp"
+#include "Core/Hash.hpp"
+#include "Collections/Base/Span.hpp"
+#include "Collections/Base/Enumerable.hpp"
+#include "Utility/Options/Optional.hpp"
 
 namespace Micro
 {
@@ -51,9 +53,19 @@ namespace Micro
 	/**
 	 * \brief Standard class used to hold and represent text as a sequence of UTF-8 code units.
 	 */
-	class String final
+	class String final : public Enumerable<char>
 	{
 	public:
+		/*
+		 *  ============================================================
+		 *	|                          Aliases                         |
+		 *  ============================================================
+		 */
+
+
+		using Memory = Memory<char>;
+
+
 		/*
 		 *  ============================================================
 		 *	|                  Constructors/Destructors                |
@@ -154,6 +166,20 @@ namespace Micro
 
 		/**
 		 * \brief Initializes a new instance of the String class by copying the value of the char pointer (raw string literal).
+		 * \param string Raw string literal as a char pointer
+		 */
+		constexpr String(const char* string) noexcept
+		{
+			const size_t length = GetLength(string);
+			if (length == 0)
+				return;
+
+			Allocate(length);
+			InternalCopy(string, length);
+		}
+
+		/**
+		 * \brief Initializes a new instance of the String class by copying the value of the char pointer (raw string literal).
 		 * \tparam TSize Represents the implicit capture of the raw string literal's size (including null termination)
 		 * \param string Raw string literal as a char pointer
 		 */
@@ -196,7 +222,7 @@ namespace Micro
 		/**
 		 * \brief Frees the memory of the underlying char buffer and sets it to null.
 		 */
-		constexpr ~String() noexcept
+		constexpr ~String() noexcept override
 		{
 			delete[] m_Data;
 
@@ -235,6 +261,35 @@ namespace Micro
 		/// </summary>
 		/// <returns>Character array of type 'char*'.</returns>
 		NODISCARD constexpr char* Data() noexcept { return m_Data; }
+
+
+		/* Enumerators (Iterators) */
+
+		/// <summary>
+		/// Gets the Enumerator that enumerates over the characters in the string.
+		/// </summary>
+		/// <returns>Enumerator to enumerate over characters</returns>
+		NODISCARD Enumerator GetEnumerator() override
+		{
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
+
+		/// <summary>
+		/// Gets the Enumerator that enumerates over the characters in the string. (const version)
+		/// </summary>
+		/// <returns>Enumerator to enumerate over characters</returns>
+		NODISCARD Enumerator GetEnumerator() const override
+		{
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				const auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
 
 
 		/*
@@ -572,29 +627,29 @@ namespace Micro
 		}
 
 		/// <summary>
-		/// Gets the span of characters from the start index to the end of the string. Throws an 'IndexOutOfRangeException', if index is invalid.
+		/// Gets the span of characters from the start index to the end of the string.
 		/// </summary>
 		/// <param name="start">Index to start substring</param>
-		/// <returns>New instance of a String with characters starting at the start index</returns>
-		NODISCARD constexpr String Substring(const size_t start) const
+		/// <returns>New instance of a String with characters starting at the start index, or an empty String if invalid</returns>
+		NODISCARD constexpr String Substring(const size_t start) const noexcept
 		{
 			const size_t length = m_Size - start;
 			if (IsEmpty() || length == 0 || start >= m_Size || length + start > m_Size)
-				throw IndexOutOfRangeException(length);
+				return Empty();
 
 			return { &m_Data[start], length };
 		}
 
 		/// <summary>
-		/// Gets the span of characters from the start index to 'length' characters passed. Throws an 'IndexOutOfRangeException', if index is invalid.
+		/// Gets the span of characters from the start index to 'length' characters passed.
 		/// </summary>
 		/// <param name="start">Index to start substring</param>
 		/// <param name="length">Number of characters to grab passed the start index</param>
-		/// <returns>New instance of a String with characters starting at the start index through length</returns>
-		NODISCARD constexpr String Substring(const size_t start, const size_t length) const
+		/// <returns>New instance of a String with characters starting at the start index through length, or an empty String if invalid</returns>
+		NODISCARD constexpr String Substring(const size_t start, const size_t length) const noexcept
 		{
 			if (IsEmpty() || start >= m_Size || length + start > m_Size) 
-				throw IndexOutOfRangeException(length);
+				return Empty();
 
 			return { &m_Data[start], length };
 		}
@@ -606,7 +661,7 @@ namespace Micro
 		NODISCARD constexpr String Trim() const noexcept
 		{
 			constexpr char whitespace[6]{ '\n', '\t', '\r', '\b', ' ', '\0'};
-			const Sequence<char> set(whitespace);
+			const Span<char> set(whitespace);
 
 			size_t begin = 0;
 			size_t end = 0;
@@ -664,7 +719,7 @@ namespace Micro
 				return *this;
 
 			const char values[paramSize + 1] = {characters..., '\0'};
-			const Sequence<char> set(values);
+			const Span<char> set(values);
 
 			size_t begin = 0;
 			size_t end = 0;
@@ -692,7 +747,7 @@ namespace Micro
 		NODISCARD constexpr String TrimStart() const noexcept
 		{
 			constexpr char whitespace[6]{ '\n', '\t', '\r', '\b', ' ', '\0' };
-			const Sequence<char> set(whitespace);
+			const Span<char> set(whitespace);
 
 			size_t begin = 0;
 			for (size_t i = 0; i < m_Size; ++i)
@@ -737,7 +792,7 @@ namespace Micro
 				return *this;
 
 			const char values[length + 1] = {characters..., '\0'};
-			const Sequence<char> set(values);
+			const Span<char> set(values);
 
 			size_t begin = 0;
 			for (size_t i = 0; i < m_Size; ++i)
@@ -758,7 +813,7 @@ namespace Micro
 		NODISCARD constexpr String TrimEnd() const noexcept
 		{
 			constexpr char whitespace[6]{ '\n', '\t', '\r', '\b', ' ', '\0' };
-			const Sequence<char> set(whitespace);
+			const Span<char> set(whitespace);
 
 			size_t end = 0;
 			for (size_t i = 0; i < m_Size; ++i)
@@ -805,7 +860,7 @@ namespace Micro
 				return *this;
 
 			const char values[length + 1] = { characters..., '\0' };
-			const Sequence<char> set(values);
+			const Span<char> set(values);
 
 			size_t end = 0;
 			for (size_t i = 0; i < m_Size; ++i)
@@ -1049,11 +1104,11 @@ namespace Micro
 		/// </summary>
 		/// <param name="string">String-like object to find</param>
 		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> IndexOf(const CharSequence auto& string) const noexcept
+		NODISCARD constexpr Optional<size_t> IndexOf(const CharSequence auto& string) const noexcept
 		{
 			const size_t length = string.Length();
 			if (IsEmpty() || length == 0 || length > m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
@@ -1067,15 +1122,15 @@ namespace Micro
 						count++;
 
 						if (count == length)
-							return Result<size_t>(i);
+							return Optional<size_t>(i);
 
 						if (index >= m_Size)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 					}
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1083,11 +1138,11 @@ namespace Micro
 		/// </summary>
 		/// <param name="string">String-like object to find</param>
 		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> IndexOf(const StdCharSequence auto& string) const noexcept
+		NODISCARD constexpr Optional<size_t> IndexOf(const StdCharSequence auto& string) const noexcept
 		{
 			const size_t length = string.size();
 			if (IsEmpty() || length == 0 || length > m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
@@ -1101,15 +1156,15 @@ namespace Micro
 						count++;
 
 						if (count == length)
-							return Result<size_t>(i);
+							return Optional<size_t>(i);
 
 						if (index >= m_Size)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 					}
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1119,11 +1174,11 @@ namespace Micro
 		/// <param name="string">Raw string literal to find</param>
 		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
 		template <size_t TSize>
-		NODISCARD constexpr Result<size_t> IndexOf(const char(&string)[TSize]) const noexcept
+		NODISCARD constexpr Optional<size_t> IndexOf(const char(&string)[TSize]) const noexcept
 		{
 			constexpr size_t length = TSize - 1;
 			if (IsEmpty() || length == 0 || length > m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
@@ -1137,15 +1192,15 @@ namespace Micro
 						count++;
 
 						if (count == length)
-							return Result<size_t>(i);
+							return Optional<size_t>(i);
 
 						if (index >= m_Size)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 					}
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1153,13 +1208,13 @@ namespace Micro
 		/// </summary>
 		/// <param name="character">Character to find</param>
 		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> IndexOf(const char character) const noexcept
+		NODISCARD constexpr Optional<size_t> IndexOf(const char character) const noexcept
 		{
 			for (size_t i = 0; i < m_Size; ++i)
 				if (m_Data[i] == character)
-					return Result<size_t>(i);
+					return Optional<size_t>(i);
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1168,11 +1223,11 @@ namespace Micro
 		/// <param name="string">String-like object to find</param>
 		/// <param name="startIndex">Index to start at</param>
 		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> IndexOf(const CharSequence auto& string, const size_t startIndex) const noexcept
+		NODISCARD constexpr Optional<size_t> IndexOf(const CharSequence auto& string, const size_t startIndex) const noexcept
 		{
 			const size_t length = string.Length();
 			if (IsEmpty() || length == 0 || length > m_Size || startIndex >= m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = startIndex; i < m_Size; ++i)
 			{
@@ -1186,15 +1241,15 @@ namespace Micro
 						count++;
 
 						if (count == length)
-							return Result<size_t>(i);
+							return Optional<size_t>(i);
 
 						if (index >= m_Size)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 					}
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1203,11 +1258,11 @@ namespace Micro
 		/// <param name="string">String-like object to find</param>
 		/// <param name="startIndex">Index to start at</param>
 		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> IndexOf(const StdCharSequence auto& string, const size_t startIndex) const noexcept
+		NODISCARD constexpr Optional<size_t> IndexOf(const StdCharSequence auto& string, const size_t startIndex) const noexcept
 		{
 			const size_t length = string.size();
 			if (IsEmpty() || length == 0 || length > m_Size || startIndex >= m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = startIndex; i < m_Size; ++i)
 			{
@@ -1221,15 +1276,15 @@ namespace Micro
 						count++;
 
 						if (count == length)
-							return Result<size_t>(i);
+							return Optional<size_t>(i);
 
 						if (index >= m_Size)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 					}
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1240,11 +1295,11 @@ namespace Micro
 		/// <param name="startIndex">Index to start at</param>
 		/// <returns>Index of the start of the string, or an invalid result if not found</returns>
 		template <size_t TSize>
-		NODISCARD constexpr Result<size_t> IndexOf(const char(&string)[TSize], const size_t startIndex) const noexcept
+		NODISCARD constexpr Optional<size_t> IndexOf(const char(&string)[TSize], const size_t startIndex) const noexcept
 		{
 			constexpr size_t length = TSize - 1;
 			if (IsEmpty() || length == 0 || length > m_Size || startIndex >= m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = startIndex; i < m_Size; ++i)
 			{
@@ -1258,15 +1313,15 @@ namespace Micro
 						count++;
 
 						if (count == length)
-							return Result<size_t>(i);
+							return Optional<size_t>(i);
 
 						if (index >= m_Size)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 					}
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1275,16 +1330,16 @@ namespace Micro
 		/// <param name="character">Character to find</param>
 		/// <param name="startIndex">Index to start at</param>
 		/// <returns>Index of the start of the character, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> IndexOf(const char character, const size_t startIndex) const noexcept
+		NODISCARD constexpr Optional<size_t> IndexOf(const char character, const size_t startIndex) const noexcept
 		{
 			if (startIndex >= m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = startIndex; i < m_Size; ++i)
 				if (m_Data[i] == character)
-					return Result<size_t>(i);
+					return Optional<size_t>(i);
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1292,11 +1347,11 @@ namespace Micro
 		/// </summary>
 		/// <param name="string">String-like object to find</param>
 		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> LastIndexOf(const CharSequence auto& string) const noexcept
+		NODISCARD constexpr Optional<size_t> LastIndexOf(const CharSequence auto& string) const noexcept
 		{
 			const size_t length = string.Length();
 			if (IsEmpty() || length == 0 || length > m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
@@ -1308,10 +1363,10 @@ namespace Micro
 					while (m_Data[index] == string[count])
 					{
 						if (count == 0)
-							return Result<size_t>(index);
+							return Optional<size_t>(index);
 
 						if (index == 0)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 
 						--index;
 						--count;
@@ -1319,7 +1374,7 @@ namespace Micro
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1327,11 +1382,11 @@ namespace Micro
 		/// </summary>
 		/// <param name="string">String-like object to find</param>
 		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> LastIndexOf(const StdCharSequence auto& string) const noexcept
+		NODISCARD constexpr Optional<size_t> LastIndexOf(const StdCharSequence auto& string) const noexcept
 		{
 			const size_t length = string.size();
 			if (IsEmpty() || length == 0 || length > m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
@@ -1343,10 +1398,10 @@ namespace Micro
 					while (m_Data[index] == string[count])
 					{
 						if (count == 0)
-							return Result<size_t>(index);
+							return Optional<size_t>(index);
 
 						if (index == 0)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 
 						--index;
 						--count;
@@ -1354,7 +1409,7 @@ namespace Micro
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1364,11 +1419,11 @@ namespace Micro
 		/// <param name="string">Raw string literal to find</param>
 		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
 		template <size_t TSize>
-		NODISCARD constexpr Result<size_t> LastIndexOf(const char(&string)[TSize]) const noexcept
+		NODISCARD constexpr Optional<size_t> LastIndexOf(const char(&string)[TSize]) const noexcept
 		{
 			constexpr size_t length = TSize - 1;
 			if (IsEmpty() || length == 0 || length > m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
@@ -1380,10 +1435,10 @@ namespace Micro
 					while (m_Data[index] == string[count])
 					{
 						if (count == 0)
-							return Result<size_t>(index);
+							return Optional<size_t>(index);
 
 						if (index == 0)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 
 						--index;
 						--count;
@@ -1391,7 +1446,7 @@ namespace Micro
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1399,16 +1454,16 @@ namespace Micro
 		/// </summary>
 		/// <param name="character">Character to find</param>
 		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> LastIndexOf(const char character) const noexcept
+		NODISCARD constexpr Optional<size_t> LastIndexOf(const char character) const noexcept
 		{
 			for (size_t i = 0; i < m_Size; ++i)
 			{
 				const size_t offset = m_Size - 1 - i;
 				if (m_Data[offset] == character)
-					return Result<size_t>(offset);
+					return Optional<size_t>(offset);
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1417,11 +1472,11 @@ namespace Micro
 		/// <param name="string">String-like object to find</param>
 		/// <param name="endIndex">Index to end at</param>
 		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> LastIndexOf(const CharSequence auto& string, const size_t endIndex) const noexcept
+		NODISCARD constexpr Optional<size_t> LastIndexOf(const CharSequence auto& string, const size_t endIndex) const noexcept
 		{
 			const size_t length = string.Length();
 			if (IsEmpty() || length == 0 || length > m_Size || endIndex >= m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
@@ -1433,10 +1488,10 @@ namespace Micro
 					while (m_Data[index] == string[count])
 					{
 						if (count == 0)
-							return Result<size_t>(index);
+							return Optional<size_t>(index);
 
 						if (index == 0)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 
 						--index;
 						--count;
@@ -1444,7 +1499,7 @@ namespace Micro
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1453,11 +1508,11 @@ namespace Micro
 		/// <param name="string">String-like object to find</param>
 		/// <param name="endIndex">Index to end at</param>
 		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> LastIndexOf(const StdCharSequence auto& string, const size_t endIndex) const noexcept
+		NODISCARD constexpr Optional<size_t> LastIndexOf(const StdCharSequence auto& string, const size_t endIndex) const noexcept
 		{
 			const size_t length = string.size();
 			if (IsEmpty() || length == 0 || length > m_Size || endIndex >= m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
@@ -1469,10 +1524,10 @@ namespace Micro
 					while (m_Data[index] == string[count])
 					{
 						if (count == 0)
-							return Result<size_t>(index);
+							return Optional<size_t>(index);
 
 						if (index == 0)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 
 						--index;
 						--count;
@@ -1480,7 +1535,7 @@ namespace Micro
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1491,11 +1546,11 @@ namespace Micro
 		/// <param name="endIndex">Index to end at</param>
 		/// <returns>Last index of the start of the string, or an invalid result if not found</returns>
 		template <size_t TSize>
-		NODISCARD constexpr Result<size_t> LastIndexOf(const char(&string)[TSize], const size_t endIndex) const noexcept
+		NODISCARD constexpr Optional<size_t> LastIndexOf(const char(&string)[TSize], const size_t endIndex) const noexcept
 		{
 			constexpr size_t length = TSize - 1;
 			if (IsEmpty() || length == 0 || length > m_Size || endIndex >= m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
@@ -1507,10 +1562,10 @@ namespace Micro
 					while (m_Data[index] == string[count])
 					{
 						if (count == 0)
-							return Result<size_t>(index);
+							return Optional<size_t>(index);
 
 						if (index == 0)
-							return Result<size_t>::Empty();
+							return Optional<size_t>::Empty();
 
 						--index;
 						--count;
@@ -1518,7 +1573,7 @@ namespace Micro
 				}
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1527,19 +1582,19 @@ namespace Micro
 		/// <param name="character">Character to find</param>
 		/// <param name="endIndex">Index to end at</param>
 		/// <returns>Last index of the character, or an invalid result if not found</returns>
-		NODISCARD constexpr Result<size_t> LastIndexOf(const char character, const size_t endIndex) const noexcept
+		NODISCARD constexpr Optional<size_t> LastIndexOf(const char character, const size_t endIndex) const noexcept
 		{
 			if (endIndex >= m_Size)
-				return Result<size_t>::Empty();
+				return Optional<size_t>::Empty();
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
 				const size_t offset = endIndex - i;
 				if (m_Data[offset] == character)
-					return Result<size_t>(offset);
+					return Optional<size_t>(offset);
 			}
 
-			return Result<size_t>::Empty();
+			return Optional<size_t>::Empty();
 		}
 
 		/// <summary>
@@ -1728,6 +1783,35 @@ namespace Micro
 
 		/*
 		 *  ============================================================
+		 *	|                          Static                          |
+		 *  ============================================================
+		 */
+
+
+		/// <summary>
+		/// Creates an empty String. (No heap allocations)
+		/// </summary>
+		/// <returns>New instance of an empty String</returns>
+		NODISCARD constexpr static String Empty() noexcept { return {}; }
+
+		/// <summary>
+		/// Uses the char pointer and length to create a new string without another allocation.
+		/// </summary>
+		/// <param name="data">Char pointer</param>
+		/// <param name="length">Length of char pointer</param>
+		/// <returns>New instance of String with char pointer as the underlying buffer</returns>
+		NODISCARD constexpr static String Create(const char* data, const size_t length) noexcept
+		{
+			String string;
+			string.m_Data = const_cast<char*>(data);
+			string.m_Size = length;
+			string.m_Data[length] = 0;
+			return string;
+		}
+
+
+		/*
+		 *  ============================================================
 		 *	|                    Operator Overloads                    |
 		 *  ============================================================
 		 */
@@ -1744,34 +1828,34 @@ namespace Micro
 		constexpr operator std::string() const noexcept { return m_Data; }
 
 		/**
-		 * \brief Implicit conversion to Sequence<char>
+		 * \brief Implicit conversion to std::string
 		 */
-		constexpr operator Sequence<char>() const noexcept { return {m_Data, m_Size}; }
+		constexpr operator Span<char>() const noexcept { return { m_Data, m_Size }; }
 
 		/// <summary>
-		/// Gets the character at the given index. Throws an 'IndexOutOfRangeException', if index is invalid.
+		/// Gets the character at the given index, or an empty result if invalid.
 		/// </summary>
 		/// <param name="index">Index of element</param>
-		/// <returns>Copy of character at index</returns>
-		NODISCARD constexpr char operator[](const size_t index)
+		/// <returns>Copy of character at index, or empty result if invalid</returns>
+		NODISCARD constexpr Optional<char> operator[](const size_t index) noexcept
 		{
 			if (index >= m_Size)
-				throw IndexOutOfRangeException(index);
+				return Optional<char>::Empty();
 
-			return m_Data[index];
+			return Optional<char>(m_Data[index]);
 		}
 
 		/// <summary>
-		/// Gets the character at the given index. Throws an 'IndexOutOfRangeException', if index is invalid. (const version)
+		/// Gets the character at the given index, or an empty result if invalid. (const version)
 		/// </summary>
 		/// <param name="index">Index of element</param>
-		/// <returns>Copy of character at index</returns>
-		NODISCARD constexpr char operator[](const size_t index) const
+		/// <returns>Copy of character at index, or empty result if invalid</returns>
+		NODISCARD constexpr Optional<char> operator[](const size_t index) const noexcept
 		{
 			if (index >= m_Size)
-				throw IndexOutOfRangeException(index);
+				return Optional<char>::Empty();
 
-			return m_Data[index];
+			return Optional<char>(m_Data[index]);
 		}
 
 		/// <summary>
@@ -1809,7 +1893,8 @@ namespace Micro
 			if (this == &string)
 				return *this;
 
-			Clear();
+			if (m_Data != nullptr)
+				Clear();
 
 			m_Data = string.m_Data;
 			m_Size = string.m_Size;
@@ -2330,30 +2415,6 @@ namespace Micro
 			return stream;
 		}
 
-		
-		/*
-		 *  ============================================================
-		 *	|                          Static                          |
-		 *  ============================================================
-		 */
-
-
-		/// <summary>
-		/// Uses the char pointer and length to create a new string without another allocation.
-		/// </summary>
-		/// <param name="data">Char pointer</param>
-		/// <param name="length">Length of char pointer</param>
-		/// <returns>New instance of String with char pointer as the underlying buffer</returns>
-		NODISCARD constexpr static String Create(const char* data, const size_t length) noexcept
-		{
-			String string;
-			string.m_Data = const_cast<char*>(data);
-			string.m_Size = length;
-			string.m_Data[length] = 0;
-			return string;
-		}
-		
-
 	protected:
 		/*
 		 *  ============================================================
@@ -2445,9 +2506,10 @@ namespace Micro
 	NODISCARD inline size_t Hash(const String& object) noexcept
 	{
 		const size_t size = object.Length();
+		const auto data = object.Data();
 		size_t hash = 0;
 		for (size_t i = 0; i < size; i++)
-			hash += object[i];
+			hash += data[i];
 
 		return typeid(String).hash_code() + size + hash;
 	}

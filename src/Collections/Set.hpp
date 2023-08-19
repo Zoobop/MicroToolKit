@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base/Sequence.hpp"
+#include "Base/Span.hpp"
 #include "Collections/Base/HashTable.hpp"
 
 namespace Micro

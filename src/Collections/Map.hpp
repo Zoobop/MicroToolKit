@@ -171,7 +171,7 @@ namespace Micro
 			}
 
 			// Throw exception if key is not found (key hashes to valid index but is not present)
-			throw KeyNotFoundException("Key could not be found in the Map.", NAMEOF(key));
+			throw KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key));
 		}
 
 		NODISCARD KeyValuePair& Find(const TKey& key)
@@ -190,10 +190,10 @@ namespace Micro
 			}
 
 			// Throw exception if key is not found (key hashes to valid index but is not present)
-			throw KeyNotFoundException("Key could not be found in the Map.", NAMEOF(key));
+			throw KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key));
 		}
 
-		NODISCARD RefResult<KeyValuePair> Find(const Predicate<const TKey&> predicate) const noexcept
+		NODISCARD Optional<KeyValuePair> Find(const Predicate<const TKey&> predicate) const noexcept
 		{
 			auto metaData = Base::m_MetaData;
 			while (metaData != nullptr)
@@ -209,7 +209,7 @@ namespace Micro
 				}
 			}
 
-			return RefResult<KeyValuePair>::Empty();
+			return Optional<KeyValuePair>::Empty();
 		}
 
 		NODISCARD bool ContainsKey(const TKey& key) const noexcept
@@ -279,7 +279,7 @@ namespace Micro
 			const auto& pair = Base::m_Data[hash];
 
 			if (!pair.IsValid())
-				throw KeyNotFoundException("Key could not be found in the Map.", NAMEOF(key));
+				throw KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key));
 
 			return pair.Value.Component2;
 		}
@@ -290,7 +290,7 @@ namespace Micro
 			auto& pair = Base::m_Data[hash];
 
 			if (!pair.IsValid())
-				throw KeyNotFoundException("Key could not be found in the Map.", NAMEOF(key));
+				throw KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key));
 
 			return pair.Value.Component2;
 		}
