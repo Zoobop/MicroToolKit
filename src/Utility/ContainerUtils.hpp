@@ -2,55 +2,18 @@
 
 #include "Common/String.hpp"
 #include "Common/StringBuilder.hpp"
-#include "Collections/Array.hpp"
+#include "Common/Span.hpp"
 
 namespace Micro
 {
-	template <typename T, size_t TSize>
-	NODISCARD String ArrayToString(const Array<T, TSize>& array)
-	{
-		StringBuilder builder(TSize);
-
-		builder.Append('[');
-
-		const T* data = array.Data();
-		for (size_t i = 0; i < TSize; i++)
-		{
-			try
-			{
-				builder.Append(data[i]);
-			}
-			catch (const Exception&)
-			{
-				builder.Append(&data[i]);
-			}
-
-			if (i != TSize - 1)
-				builder.Append(", ");
-		}
-
-		builder.Append(']');
-		return builder.ToString();
-	}
-
-	template <typename T>
-	NODISCARD String ArrayToString(const T* data, const size_t size)
+	NODISCARD constexpr String CollectionToString(const StringBuildable auto* data, const size_t size)
 	{
 		StringBuilder builder(size);
-
 		builder.Append('[');
 
 		for (size_t i = 0; i < size; i++)
 		{
-			try
-			{
-				builder.Append(data[i]);
-			}
-			catch (const Exception&)
-			{
-				builder.Append(&data[i]);
-			}
-
+            builder.Append(data[i]);
 			if (i != size - 1)
 				builder.Append(", ");
 		}
@@ -59,25 +22,35 @@ namespace Micro
 		return builder.ToString();
 	}
 
-	template <typename T, size_t TSize>
-	NODISCARD String ArrayToString(const T (&data)[TSize])
+	template <size_t TSize>
+	NODISCARD constexpr String CollectionToString(const StringBuildable auto (&data)[TSize])
 	{
 		StringBuilder builder(TSize);
-
 		builder.Append('[');
 
 		for (size_t i = 0; i < TSize; i++)
 		{
-			try
-			{
-				builder.Append(data[i]);
-			}
-			catch (const Exception&)
-			{
-				builder.Append(&data[i]);
-			}
-
+            builder.Append(data[i]);
 			if (i != TSize - 1)
+				builder.Append(", ");
+		}
+
+		builder.Append(']');
+		return builder.ToString();
+	}
+
+    template <StringBuildable T>
+	NODISCARD constexpr String SpanToString(const Span<T>& span)
+	{
+        const size_t length = span.Capacity();
+		StringBuilder builder(length);
+		builder.Append('[');
+
+		const T* data = span.Data();
+		for (size_t i = 0; i < length; i++)
+		{
+            builder.Append(data[i]);
+			if (i != length - 1)
 				builder.Append(", ");
 		}
 

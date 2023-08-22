@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base/Span.hpp"
+#include "MicroToolKit/src/Common/Span.hpp"
 #include "Collections/Base/HashTable.hpp"
 
 namespace Micro
@@ -205,7 +205,7 @@ namespace Micro
 			return false;
 		}
 
-		NODISCARD void IntersectWith(const Set& other)
+		void IntersectWith(const Set& other)
 		{
 			auto metaData = Base::m_MetaData;
 			while (metaData != nullptr)
@@ -226,7 +226,7 @@ namespace Micro
 			}
 		}
 
-		NODISCARD void UnionWith(const Set& other)
+		void UnionWith(const Set& other)
 		{
 			auto metaData = other.m_MetaData;
 			while (metaData != nullptr)

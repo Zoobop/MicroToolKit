@@ -753,6 +753,20 @@ namespace Micro
 	};
 
 
+    /*
+     *  ============================================================
+     *	|                        Concepts                          |
+     *  ============================================================
+     */
+
+
+    /// <summary>
+    /// Represents an object that can be appended by a StringBuilder.
+    /// </summary>
+    template <typename T>
+    concept StringBuildable = StringConvertible<T> || CharSequence<T> || StdCharSequence<T> || std::is_integral_v<T> || std::is_floating_point_v<T>;
+
+
 	/*
 	 *  ============================================================
 	 *	|                      Global Functions                    |

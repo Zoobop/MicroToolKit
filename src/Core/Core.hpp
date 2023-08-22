@@ -27,5 +27,3 @@
 
 #define NODISCARD	[[nodiscard]]
 #define NORETURN	[[noreturn]]
-
-//#define EXPERIMENTAL

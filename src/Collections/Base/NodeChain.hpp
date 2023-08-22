@@ -187,7 +187,7 @@ namespace Micro
 			m_Size = Allocator::Reallocate(m_Head, m_Tail, m_Size, capacity);
 		}
 
-		NODISCARD void CopyFrom(const NodeChain& other)
+		void CopyFrom(const NodeChain& other)
 		{
 			auto node = m_Head;
 			for (auto iter = other.m_Head; IsNodeValid(iter); iter = iter->Next)
@@ -214,7 +214,7 @@ namespace Micro
 			return node;
 		}
 
-		NODISCARD constexpr static void AssignNode(Node*& node, const T& value) noexcept
+		constexpr static void AssignNode(Node*& node, const T& value) noexcept
 		{
 			if (node == nullptr)
 			{
@@ -227,7 +227,7 @@ namespace Micro
 			node->Status = MemStatus::Valid;
 		}
 
-		NODISCARD constexpr static void AssignNode(Node*& node, T&& value) noexcept
+		constexpr static void AssignNode(Node*& node, T&& value) noexcept
 		{
 			if (node == nullptr)
 			{

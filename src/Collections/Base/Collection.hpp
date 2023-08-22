@@ -3,11 +3,11 @@
 
 #include "Core/Memory/Allocator.hpp"
 #include "Collections/Base/Enumerable.hpp"
-#include "Collections/Base/Span.hpp"
+#include "Common/Span.hpp"
 
 namespace Micro
 {
-	template <typename T, typename TAllocator = Allocator<T>>
+    template <typename T, typename TAllocator = Allocator<T>>
 	class HeapCollection : public Enumerable<T>
 	{
 	public:

@@ -63,7 +63,7 @@ namespace Micro
 				return newCapacity;
 			}
 
-			NODISCARD static void Dispose(Node* head)
+			static void Dispose(Node* head)
 			{
 				auto node = head;
 				while (IsNodeValid(node))
@@ -171,7 +171,7 @@ namespace Micro
 				return newCapacity;
 			}
 
-			NODISCARD static void Dispose(Node* head)
+			static void Dispose(Node* head)
 			{
 				auto node = head;
 				while (IsNodeValid(node))

@@ -22,7 +22,7 @@ namespace Micro
 		constexpr Guid(const Guid&) noexcept = default;
 		constexpr Guid(Guid&&) noexcept = default;
 
-		constexpr Guid(const char (&guid)[37]) noexcept
+		constexpr explicit Guid(const char (&guid)[37]) noexcept
 		{
 			constexpr size_t length = 36;
 			for (size_t i = 0; i < length; i++)

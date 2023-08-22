@@ -53,7 +53,7 @@ namespace Micro
 		}
 
 		template <size_t TSize>
-		constexpr Span(const T (&data)[TSize]) noexcept
+		constexpr explicit Span(const T (&data)[TSize]) noexcept
 			: m_Data(data), m_Capacity(TSize)
 		{
 		}
@@ -258,6 +258,9 @@ namespace Micro
 
 			return *this;
 		}
+
+        constexpr friend bool operator==(const Span<T>& left, const Span<T> right) noexcept { return left.Equals(right); }
+        constexpr friend bool operator!=(const Span<T>& left, const Span<T> right) noexcept { return !(left == right); }
 
 		friend std::ostream& operator<<(std::ostream& stream, const Span& current) noexcept
 		{

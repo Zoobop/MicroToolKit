@@ -57,9 +57,12 @@ namespace Micro
 		}
 	}
 
-	NODISCARD constexpr size_t GetLength(const char* str)
+	NODISCARD constexpr size_t GetLength(const char* str) noexcept
 	{
 		size_t size = 0;
+        if (str == nullptr)
+            return size;
+
 		while (str[size] != '\0')
 			size++;
 		return size;

@@ -61,6 +61,16 @@ namespace Micro
 		{
 		}
 
+        /**
+		 * \brief Initializes a new instance of the StringBuffer class to have the underlying pointer reference be
+		 *		  the same as the raw string literal.
+		 * \param string Raw string literal
+		 */
+		constexpr StringBuffer(const char* string) noexcept
+			: m_Data(string), m_Size(GetLength(string))
+		{
+		}
+
 		/**
 		 * \brief Initializes a new instance of the StringBuffer class to have the underlying pointer reference be
 		 *		  the same as the raw string literal.

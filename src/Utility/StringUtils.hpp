@@ -112,7 +112,7 @@ namespace Micro
 				continue;
 
 			const size_t stringLength = i - headIndex;
-			list.Emplace(buffer.Slice(0, stringLength).ToString());
+			list.Emplace(buffer.Slice(0, stringLength).Value().ToString());
 
 			buffer = buffer.Slice(stringLength + 1);
 			headIndex = i + 1;

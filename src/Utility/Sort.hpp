@@ -1,5 +1,5 @@
 #pragma once
-#include "Collections/Base/Span.hpp"
+#include "MicroToolKit/src/Common/Span.hpp"
 #include "Core/Function.hpp"
 
 namespace Micro

@@ -1,6 +1,6 @@
 #pragma once
 #include "Core/Hash.hpp"
-#include "Collections/Base/Span.hpp"
+#include "Span.hpp"
 #include "Collections/Base/Enumerable.hpp"
 #include "Utility/Options/Optional.hpp"
 
@@ -15,6 +15,7 @@ namespace Micro
 	 *  ============================================================
 	 */
 
+    
 	/// <summary>
 	/// Represents a string-like object within the MicroToolKit library.
 	/// </summary>
@@ -2514,13 +2515,51 @@ namespace Micro
 		return typeid(String).hash_code() + size + hash;
 	}
 
+
+    namespace Internal
+	{
+		template <typename TElem, typename UType>
+		NODISCARD constexpr TElem* UIntegral_Internal(TElem* rNext, UType value) noexcept
+		{
+			// format value into buffer *ending at* rNext
+			static_assert(std::is_unsigned_v<UType>, "value must be unsigned");
+
+#ifdef _WIN64
+			auto truncatedValue = value;
+#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+
+			constexpr bool isBigUnsigned = sizeof(UType) > 4;
+			if constexpr (isBigUnsigned) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
+				while (value > 0xFFFFFFFFU) {
+					auto chunk = static_cast<unsigned long>(value % 1000000000);
+					value /= 1000000000;
+
+					for (int i = 0; i != 9; ++i) {
+						*--_RNext = static_cast<TElem>('0' + chunk % 10);
+						chunk /= 10;
+					}
+				}
+			}
+
+			auto truncatedValue = static_cast<unsigned long>(value);
+#endif // _WIN64
+
+			do {
+				*--rNext = static_cast<TElem>('0' + truncatedValue % 10);
+				truncatedValue /= 10;
+			} while (truncatedValue != 0);
+			return rNext;
+		}
+	}
+
+
 	/// <summary>
 	/// Converts a signed integer into a String.
 	/// </summary>
 	/// <param name="integral">Signed integer to convert</param>
 	/// <returns>Signed integer as a String</returns>
 	template <typename TElem, std::signed_integral T>
-	NODISCARD String IntToString(T integral) noexcept
+	NODISCARD constexpr String IntToString(T integral) noexcept
 	{
 		static_assert(std::is_integral_v<T>, "T must be integral");
 		using UType = std::make_unsigned_t<T>;
@@ -2530,11 +2569,11 @@ namespace Micro
 		const auto uValue = static_cast<UType>(integral);
 		if (integral < 0)
 		{
-			next = std::_UIntegral_to_buff(next, 0 - uValue);
+			next = Internal::UIntegral_Internal(next, 0 - uValue);
 			*--next = '-';
 		}
 		else
-			next = std::_UIntegral_to_buff(next, uValue);
+			next = Internal::UIntegral_Internal(next, uValue);
 
 		return String(next, end);
 	}
@@ -2545,13 +2584,13 @@ namespace Micro
 	/// <param name="integral">Unsigned integer to convert</param>
 	/// <returns>Unsigned integer as a String</returns>
 	template <typename TElem, std::unsigned_integral T>
-	NODISCARD String UIntToString(T integral)
+	NODISCARD constexpr String UIntToString(T integral) noexcept
 	{
 		static_assert(std::is_integral_v<T>, "T must be integral");
 		static_assert(std::is_unsigned_v<T>, "T must be unsigned");
 		TElem buffer[21];
 		TElem* const end = std::end(buffer);
-		TElem* const next = std::_UIntegral_to_buff(end, integral);
+		TElem* const next = Internal::UIntegral_Internal(end, integral);
 		return String(next, end);
 	}
 
@@ -2560,56 +2599,56 @@ namespace Micro
 	/// </summary>
 	/// <param name="boolean">Bool to convert</param>
 	/// <returns>Bool as a String</returns>
-	NODISCARD inline String ToString(const bool boolean) noexcept { return boolean ? String{"true"} : String{"false"}; }
+	NODISCARD constexpr String ToString(const bool boolean) noexcept { return boolean ? String{"true"} : String{"false"}; }
 
 	/// <summary>
 	/// Converts a character into a String.
 	/// </summary>
 	/// <param name="character">Character to convert</param>
 	/// <returns>Character as a String</returns>
-	NODISCARD inline String ToString(const char character) noexcept { return String(character); }
+	NODISCARD constexpr String ToString(const char character) noexcept { return String(character); }
 
 	/// <summary>
 	/// Converts a signed integer into a String.
 	/// </summary>
 	/// <param name="integral">Signed integer to convert</param>
 	/// <returns>Signed integer as a String</returns>
-	NODISCARD inline String ToString(const int integral) noexcept { return IntToString<char>(integral); }
+	NODISCARD constexpr String ToString(const int integral) noexcept { return IntToString<char>(integral); }
 
 	/// <summary>
 	/// Converts an unsigned integer into a String.
 	/// </summary>
 	/// <param name="integral">Unsigned integer to convert</param>
 	/// <returns>Unsigned integer as a String</returns>
-	NODISCARD inline String ToString(const unsigned int integral) noexcept { return UIntToString<char>(integral); }
+	NODISCARD constexpr String ToString(const unsigned int integral) noexcept { return UIntToString<char>(integral); }
 
 	/// <summary>
 	/// Converts an signed long into a String.
 	/// </summary>
 	/// <param name="integral">Signed long to convert</param>
 	/// <returns>Signed long as a String</returns>
-	NODISCARD inline String ToString(const long integral) noexcept { return IntToString<char>(integral); }
+	NODISCARD constexpr String ToString(const long integral) noexcept { return IntToString<char>(integral); }
 
 	/// <summary>
 	/// Converts an unsigned long into a String.
 	/// </summary>
 	/// <param name="integral">Unsigned long to convert</param>
 	/// <returns>Unsigned long as a String</returns>
-	NODISCARD inline String ToString(const unsigned long integral) noexcept { return UIntToString<char>(integral); }
+	NODISCARD constexpr String ToString(const unsigned long integral) noexcept { return UIntToString<char>(integral); }
 
 	/// <summary>
 	/// Converts a long long into a String.
 	/// </summary>
 	/// <param name="integral">Long long to convert</param>
 	/// <returns>Long long as a String</returns>
-	NODISCARD inline String ToString(const long long integral) noexcept { return IntToString<char>(integral); }
+	NODISCARD constexpr String ToString(const long long integral) noexcept { return IntToString<char>(integral); }
 
 	/// <summary>
 	/// Converts an unsigned long long into a String.
 	/// </summary>
 	/// <param name="integral">Unsigned long long to convert</param>
 	/// <returns>Unsigned long long as a String</returns>
-	NODISCARD inline String ToString(const unsigned long long integral) noexcept { return UIntToString<char>(integral); }
+	NODISCARD constexpr String ToString(const unsigned long long integral) noexcept { return UIntToString<char>(integral); }
 
 	/// <summary>
 	/// Converts a double into a String.

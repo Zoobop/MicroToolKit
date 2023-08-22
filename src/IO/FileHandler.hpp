@@ -24,15 +24,15 @@ namespace Micro
 
 		constexpr FileInfo() noexcept = default;
 
-		FileInfo(const String& path, String&& data) noexcept
+		constexpr FileInfo(const String& path, String&& data) noexcept
 			: contents(std::move(data)), path(path)
 		{
 			const auto& result = path.IndexOf('.');
 			if (!result.IsValid()) 
 				return;
 
-			const StringBuffer bufferView = path;
-			extension = bufferView.Slice(result);
+			const StringBuffer bufferView = path.Data();
+			extension = bufferView.Slice(result.Value()).Value();
 		}
 	};
 
