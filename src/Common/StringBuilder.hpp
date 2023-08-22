@@ -1,12 +1,13 @@
 #pragma once
 #include "Common/String.hpp"
+#include "Utility/Options/Result.hpp"
 
 namespace Micro
 {
 	/**
 	 * \brief Represents a way to efficiently build a String using fewer allocations and direct mutations.
 	 */
-	class StringBuilder final
+	class StringBuilder final : public Enumerable<char>
 	{
 	public:
 		/*
@@ -63,7 +64,7 @@ namespace Micro
 		/**
 		 * \brief Frees the memory of the underlying char buffer and sets it to null.
 		 */
-		constexpr ~StringBuilder() noexcept
+		constexpr ~StringBuilder() noexcept override
 		{
 			delete[] m_Data;
 			m_Data = nullptr;
@@ -108,6 +109,35 @@ namespace Micro
 		/// </summary>
 		/// <returns>Character array of type 'char*'.</returns>
 		NODISCARD constexpr char* ToCharArray() const noexcept { return m_Data; }
+
+
+		/* Enumerators (Iterators) */
+
+		/// <summary>
+		/// Gets the Enumerator that enumerates over the characters in the string.
+		/// </summary>
+		/// <returns>Enumerator to enumerate over characters</returns>
+		NODISCARD Enumerator GetEnumerator() override
+		{
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
+
+		/// <summary>
+		/// Gets the Enumerator that enumerates over the characters in the string. (const version)
+		/// </summary>
+		/// <returns>Enumerator to enumerate over characters</returns>
+		NODISCARD Enumerator GetEnumerator() const override
+		{
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				const auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
 
 
 		/*
@@ -542,29 +572,29 @@ namespace Micro
 
 
 		/// <summary>
-		/// Gets the character at the given index. Throws an 'IndexOutOfRangeException', if index is invalid.
+		/// Gets the character at the given index, or an error result, if index is invalid.
 		/// </summary>
 		/// <param name="index">Index of element</param>
 		/// <returns>Reference of character at index</returns>
-		NODISCARD constexpr Optional<char&> operator[](const size_t index) noexcept
+		NODISCARD constexpr Result<char&> operator[](const size_t index) noexcept
 		{
 			if (index >= m_Size)
-				return Optional<char&>::Empty();
+				return Result<char&>::Error(IndexOutOfRangeError(index));
 
-			return Optional<char&>(m_Data[index]);
+			return Result<char&>::Ok(m_Data[index]);
 		}
 
 		/// <summary>
-		/// Gets the character at the given index. Throws an 'IndexOutOfRangeException', if index is invalid. (const version)
+		/// Gets the character at the given index, or an error result, if index is invalid. (const version)
 		/// </summary>
 		/// <param name="index">Index of element</param>
 		/// <returns>Reference of character at index</returns>
-		NODISCARD constexpr Optional<char&> operator[](const size_t index) const noexcept
+		NODISCARD constexpr Result<char> operator[](const size_t index) const noexcept
 		{
 			if (index >= m_Size)
-				return Optional<char&>::Empty();
+				return Result<char>::Error(IndexOutOfRangeError(index));
 
-			return Optional<char&>(m_Data[index]);
+			return Result<char>::Ok(m_Data[index]);
 		}
 
 		/// <summary>
@@ -719,7 +749,7 @@ namespace Micro
 		size_t m_Size = 0;
 		size_t m_Capacity = 0;
 
-		constexpr static size_t DefaultCapacity = 64;
+		constexpr static size_t DefaultCapacity = 32;
 	};
 
 

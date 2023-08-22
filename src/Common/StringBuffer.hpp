@@ -6,7 +6,7 @@ namespace Micro
 	/**
 	 * \brief Represents a way to manipulate a String's underlying buffer without any allocations or modifying the source buffer.
 	 */
-	class StringBuffer final
+	class StringBuffer final : public Enumerable<char>
 	{
 	public:
 		/*
@@ -87,7 +87,7 @@ namespace Micro
 		/**
 		 * \brief Removes the pointer reference by setting it to null.
 		 */
-		constexpr ~StringBuffer() noexcept = default;
+		constexpr ~StringBuffer() noexcept override = default;
 
 
 		/*
@@ -115,7 +115,36 @@ namespace Micro
 		/// <returns>Character array of type 'const char*'.</returns>
 		NODISCARD constexpr const char* Data() const noexcept { return m_Data; }
 
-		
+
+		/* Enumerators (Iterators) */
+
+		/// <summary>
+		/// Gets the Enumerator that enumerates over the characters in the string.
+		/// </summary>
+		/// <returns>Enumerator to enumerate over characters</returns>
+		NODISCARD Enumerator GetEnumerator() override
+		{
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
+
+		/// <summary>
+		/// Gets the Enumerator that enumerates over the characters in the string. (const version)
+		/// </summary>
+		/// <returns>Enumerator to enumerate over characters</returns>
+		NODISCARD Enumerator GetEnumerator() const override
+		{
+			for (size_t i = 0; i < m_Size; i++)
+			{
+				const auto& element = m_Data[i];
+				co_yield element;
+			}
+		}
+
+
 		/*
 		 *  ============================================================
 		 *	|                         Utility                          |
@@ -124,11 +153,11 @@ namespace Micro
 
 
 		/// <summary>
-		/// Gets the span of characters from the start index to the end of the string. Throws an 'IndexOutOfRangeException', if index is invalid.
+		/// Gets the span of characters from the start index to the end of the string, or an empty result if index is invalid.
 		/// </summary>
 		/// <param name="start">Index to start slice</param>
 		/// <returns>New view of a StringBuffer with characters starting at the start index</returns>
-		NODISCARD constexpr Optional<StringBuffer> Slice(const size_t start) const
+		NODISCARD constexpr Optional<StringBuffer> Slice(const size_t start) const noexcept
 		{
 			if (start >= m_Size)
 				return Optional<StringBuffer>::Empty();
@@ -137,12 +166,12 @@ namespace Micro
 		}
 
 		/// <summary>
-		/// Gets the span of characters from the start index to 'length' characters passed. Throws an 'IndexOutOfRangeException', if index is invalid.
+		/// Gets the span of characters from the start index to 'length' characters passed, or an empty result if index is invalid.
 		/// </summary>
 		/// <param name="start">Index to start slice</param>
 		/// <param name="length">Number of characters to grab passed the start index</param>
 		/// <returns>New view of a StringBuffer with characters starting at the start index through length</returns>
-		NODISCARD constexpr Optional<StringBuffer> Slice(const size_t start, const size_t length) const
+		NODISCARD constexpr Optional<StringBuffer> Slice(const size_t start, const size_t length) const noexcept
 		{
 			if (start + length > m_Size)
 				return Optional<StringBuffer>::Empty();
@@ -1238,6 +1267,16 @@ namespace Micro
 		 *  ============================================================
 		 */
 
+
+		 /**
+		  * \brief Implicit conversion to const char*
+		  */
+		constexpr operator const char* () const noexcept { return m_Data; }
+
+		/**
+		 * \brief Implicit conversion to Span<char>
+		 */
+		constexpr operator Span<char>() const noexcept { return { m_Data, m_Size }; }
 
 		/// <summary>
 		/// Gets the character at the given index, or an empty result if invalid.

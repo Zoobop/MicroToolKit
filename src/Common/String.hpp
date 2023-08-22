@@ -101,7 +101,7 @@ namespace Micro
 		 * \param string String to move
 		 */
 		constexpr String(String&& string) noexcept
-			: m_Data(string.m_Data), m_Size(string.m_Size)
+			: m_Data(std::move(string.m_Data)), m_Size(string.m_Size)
 		{
 			string.m_Data = nullptr;
 			string.m_Size = 0;
@@ -224,7 +224,7 @@ namespace Micro
 		 */
 		constexpr ~String() noexcept override
 		{
-			delete[] m_Data;
+			delete[] m_Data.Data;
 
 			m_Data = nullptr;
 			m_Size = 0;
@@ -242,7 +242,7 @@ namespace Micro
 		/// Represents if the string is empty or not.
 		/// </summary>
 		/// <returns>True, if the string is empty.</returns>
-		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0 || m_Data == nullptr; }
+		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0 || !m_Data.IsValidMemory(); }
 
 		/// <summary>
 		/// Represents a 64-bit unsigned integer as the length of the string.
@@ -1825,10 +1825,10 @@ namespace Micro
 		/**
 		 * \brief Implicit conversion to std::string
 		 */
-		constexpr operator std::string() const noexcept { return m_Data; }
+		constexpr operator std::string() const noexcept { return m_Data.Data; }
 
 		/**
-		 * \brief Implicit conversion to std::string
+		 * \brief Implicit conversion to Span<char>
 		 */
 		constexpr operator Span<char>() const noexcept { return { m_Data, m_Size }; }
 
@@ -1869,7 +1869,7 @@ namespace Micro
 				return *this;
 
 			const size_t length = string.m_Size;
-			if (!m_Data)
+			if (!m_Data.IsValidMemory())
 			{
 				Allocate(length);
 			}
@@ -1893,7 +1893,7 @@ namespace Micro
 			if (this == &string)
 				return *this;
 
-			if (m_Data != nullptr)
+			if (m_Data.IsValidMemory())
 				Clear();
 
 			m_Data = string.m_Data;
@@ -1916,7 +1916,7 @@ namespace Micro
 				return *this;
 
 			const size_t length = string.Size();
-			if (!m_Data)
+			if (!m_Data.IsValidMemory())
 			{
 				Allocate(length);
 			}
@@ -1938,7 +1938,7 @@ namespace Micro
 		constexpr String& operator=(const StdCharSequence auto& string) noexcept
 		{
 			const size_t length = string.size();
-			if (!m_Data)
+			if (!m_Data.IsValidMemory())
 			{
 				Allocate(length);
 			}
@@ -1965,7 +1965,7 @@ namespace Micro
 			if (length == 0)
 				return *this;
 
-			if (!m_Data)
+			if (!m_Data.IsValidMemory())
 			{
 				Allocate(length);
 			}
@@ -1986,7 +1986,7 @@ namespace Micro
 		/// <returns>Reference of this instance</returns>
 		constexpr String& operator=(const char character) noexcept
 		{
-			if (!m_Data)
+			if (!m_Data.IsValidMemory())
 			{
 				Allocate(1);
 			}
@@ -2464,7 +2464,7 @@ namespace Micro
 		/// </summary>
 		/// <param name="ptr">Char pointer to copy</param>
 		/// <param name="length">Length of char pointer</param>
-		constexpr void InternalCopy(const char* ptr, const size_t length) const noexcept
+		constexpr void InternalCopy(const char* ptr, const size_t length) noexcept
 		{
 			for (size_t i = 0; i < length; i++)
 				new(&m_Data[i]) char(ptr[i]);
@@ -2478,14 +2478,14 @@ namespace Micro
 		/// <param name="startIndex">Index to start internal copy</param>
 		/// <param name="ptr">Char pointer to copy</param>
 		/// <param name="length">Length of char pointer</param>
-		constexpr void InternalConcat(const size_t startIndex, const char* ptr, const size_t length) const noexcept
+		constexpr void InternalConcat(const size_t startIndex, const char* ptr, const size_t length) noexcept
 		{
 			for (size_t i = 0; i < length; i++)
 				new(&m_Data[i + startIndex]) char(ptr[i]);
 		}
 
 	private:
-		char* m_Data = nullptr;
+		Memory m_Data = nullptr;
 		size_t m_Size = 0;
 	};
 

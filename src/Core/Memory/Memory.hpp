@@ -104,7 +104,7 @@ namespace Micro
 
 	enum struct MemStatus : uint8_t { Valid = 0, Invalid = 1 };
 
-	inline std::ostream& operator<<(std::ostream& stream, const MemStatus memStatus)
+	inline std::ostream& operator<<(std::ostream& stream, const MemStatus memStatus) noexcept
 	{
 		stream << (memStatus == MemStatus::Valid ? "Valid" : "Invalid");
 		return stream;
@@ -117,12 +117,12 @@ namespace Micro
 		{
 		}
 
-		constexpr Memory(const Memory&) noexcept = default;
-		constexpr Memory(Memory&&) noexcept = default;
-
 		constexpr Memory(Null) noexcept : Data(nullptr), Status(MemStatus::Valid)
 		{
 		}
+
+		constexpr Memory(const Memory&) noexcept = default;
+		constexpr Memory(Memory&&) noexcept = default;
 
 		constexpr Memory(T* data) noexcept : Data(data), Status(MemStatus::Valid)
 		{
@@ -140,7 +140,7 @@ namespace Micro
 			Status = MemStatus::Invalid;
 		}
 
-		NODISCARD constexpr bool IsValidMemory() noexcept
+		NODISCARD constexpr bool IsValidMemory() const noexcept
 		{
 			return !(Data == nullptr || Status != MemStatus::Valid);
 		}
@@ -167,8 +167,8 @@ namespace Micro
 		}
 
 		NODISCARD constexpr operator T*() const noexcept { return Data; }
-		NODISCARD T& operator[](const size_t index) { return Data[index]; }
-		NODISCARD const T& operator[](const size_t index) const { return Data[index]; }
+		NODISCARD constexpr T& operator[](const size_t index) { return Data[index]; }
+		NODISCARD constexpr const T& operator[](const size_t index) const { return Data[index]; }
 
 		T* Data;
 		MemStatus Status;

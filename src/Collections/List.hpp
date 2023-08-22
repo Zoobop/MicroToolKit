@@ -421,7 +421,7 @@ namespace Micro
 			Base::m_Data[index].~T();
 
 			// Shift items down (+1 to shift invalid data to the end)
-			ShiftLeft(Base::m_Data.Data, Base::m_Size, index + 1);
+			ShiftLeft<T>(Base::m_Data, Base::m_Size, index + 1);
 
 			// Decrement size
 			--Base::m_Size;
