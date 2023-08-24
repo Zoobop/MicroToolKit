@@ -33,6 +33,7 @@ namespace Micro
 
 		// Utility
 		NODISCARD constexpr String ToString() const noexcept { return m_Guid; }
+		NODISCARD constexpr const char* Data() const noexcept { return m_Guid; }
 
 		// Operator Overloads
 		constexpr Guid& operator=(const Guid&) noexcept = default;
@@ -86,4 +87,15 @@ namespace Micro
 	private:
 		char m_Guid[37]{};
 	};
+
+	template <>
+	NODISCARD inline size_t Hash(const Guid& guid) noexcept 
+	{
+		const auto data = guid.Data();
+		auto hash = 0;
+		for (size_t i = 0; i < 36; i++)
+			hash += data[i];
+
+		return typeid(Guid).hash_code() + hash; 
+	}
 }

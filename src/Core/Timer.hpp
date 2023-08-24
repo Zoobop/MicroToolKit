@@ -1,39 +1,21 @@
 ﻿#pragma once
-
-#include <iostream>
 #include <chrono>
+
+#include "IO/IOHandler.hpp"
 
 namespace Micro
 {
-	struct Nanosecond
-	{
-		inline static const char* TimeAbbreviation = "ns";
-	};
+	struct Nanosecond final	{ constexpr static const char* TimeAbbreviation = "ns"; };
 
-	struct Microsecond
-	{
-		inline static const char* TimeAbbreviation = "us";
-	};
+	struct Microsecond final { constexpr static const char* TimeAbbreviation = "us"; };
 
-	struct Millisecond
-	{
-		inline static const char* TimeAbbreviation = "ms";
-	};
+	struct Millisecond final { constexpr static const char* TimeAbbreviation = "ms"; };
 
-	struct Second
-	{
-		inline static const char* TimeAbbreviation = "s";
-	};
+	struct Second final { constexpr static const char* TimeAbbreviation = "s"; };
 
-	struct Minute
-	{
-		inline static const char* TimeAbbreviation = "min";
-	};
+	struct Minute final { constexpr static const char* TimeAbbreviation = "min"; };
 
-	struct Hour
-	{
-		inline static const char* TimeAbbreviation = "hr";
-	};
+	struct Hour final { constexpr static const char* TimeAbbreviation = "hr"; };
 
 
 	template <typename TFactor, typename TTimeUnit>
@@ -44,20 +26,20 @@ namespace Micro
 		using Time = std::chrono::time_point<Clock>;
 
 		// Constructors/Destructors
-		TimeHandle() = delete;
-		TimeHandle(const TimeHandle&) = delete;
-		TimeHandle(TimeHandle&&) = delete;
+		constexpr TimeHandle() noexcept = delete;
+		constexpr TimeHandle(const TimeHandle&) noexcept = delete;
+		constexpr TimeHandle(TimeHandle&&) noexcept = delete;
 
-		TimeHandle(const char* timerName = "Time")
+		constexpr explicit TimeHandle(const char* timerName = "Timer") noexcept
 			: m_TimerName(timerName), m_StartTime(Clock::now()),
 			  m_TimeStamp(Clock::now())
 		{
 		}
 
-		~TimeHandle() { Stop(); }
+		constexpr ~TimeHandle() noexcept { Stop(); }
 
 		// Utility
-		void Stamp(const char* stampName = "")
+		constexpr void Stamp(const char* stampName = nullptr) noexcept
 		{
 			const auto currentTime = Clock::now();
 			const auto start = std::chrono::time_point_cast<TFactor>(m_TimeStamp).time_since_epoch().count();
@@ -65,33 +47,28 @@ namespace Micro
 			const auto duration = end - start;
 			m_TimeStamp = currentTime;
 
-			if (stampName != "")
-				std::cout << "Time Stamp: " << duration << " " << TTimeUnit::TimeAbbreviation << "\t(" << stampName <<
-					")\n";
+			if (stampName)
+				IO::WriteLine("[{}] Time Stamp: {} {}\t({})", m_TimerName.Data(), duration, TTimeUnit::TimeAbbreviation, stampName);
 			else
-				std::cout << "Time Stamp: " << duration << " " << TTimeUnit::TimeAbbreviation << "\n";
+				IO::WriteLine("[{}] Time Stamp: {} {}", m_TimerName.Data(), duration, TTimeUnit::TimeAbbreviation);
 		}
 
-		void Stop()
+		constexpr void Stop() noexcept
 		{
 			const auto stopTime = Clock::now();
 			const auto start = std::chrono::time_point_cast<TFactor>(m_StartTime).time_since_epoch().count();
 			const auto end = std::chrono::time_point_cast<TFactor>(stopTime).time_since_epoch().count();
 			const auto duration = (end - start);
 
-			if (m_TimerName != "")
-				std::cout << "Time: " << duration << " " << TTimeUnit::TimeAbbreviation << "\t(" << m_TimerName <<
-					")\n";
-			else
-				std::cout << "Time: " << duration << " " << TTimeUnit::TimeAbbreviation << "\n";
+			IO::WriteLine("Time: {} {}\t[{}]", duration, TTimeUnit::TimeAbbreviation, m_TimerName.Data());
 		}
 
 		// Operator Overloads
-		TimeHandle& operator=(const TimeHandle&) = delete;
-		TimeHandle& operator=(TimeHandle&&) noexcept = delete;
+		constexpr TimeHandle& operator=(const TimeHandle&) noexcept = delete;
+		constexpr TimeHandle& operator=(TimeHandle&&) noexcept = delete;
 
 	private:
-		const char* m_TimerName;
+		string m_TimerName;
 		Time m_StartTime;
 		Time m_TimeStamp;
 	};
@@ -104,10 +81,5 @@ namespace Micro
 	using HourTimer = TimeHandle<std::chrono::hours, Hour>;
 }
 
-#define PROFILER()			::Micro::MicrosecondTimer timer(__FUNCTION__)
+#define PROFILE()			::Micro::MicrosecondTimer timer(__FUNCTION__)
 #define BENCHMARK()			::Micro::MillisecondTimer timer(__FUNCTION__)
-#define EASYTIMER()			::Micro::SecondTimer timer(__FUNCTION__)
-
-#define TEST_PROFILER(name)				::Micro::MicrosecondTimer timer(name)
-#define TEST_BENCHMARK(name)			::Micro::MillisecondTimer timer(name)
-#define TEST_EASYTIMER(name)			::Micro::SecondTimer timer(name)

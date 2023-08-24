@@ -4,6 +4,7 @@
 
 #include "IO/IOHelpers.hpp"
 #include "Common/String.hpp"
+#include "Utility/Parse.hpp"
 
 namespace Micro
 {
@@ -19,11 +20,18 @@ namespace Micro
 			return String{ dummy.data(), dummy.size() };
 		}
 
-		NODISCARD static int8_t ReadKey()
+		NODISCARD static i8 ReadKey()
 		{
-			int8_t key;
+			i8 key;
 			std::cin >> key;
 			return key;
+		}
+
+		NODISCARD static i32 ReadInt()
+		{
+			std::string dummy;
+			std::getline(std::cin, dummy);
+			return Parse<i32>(StringBuffer{ dummy });
 		}
 
 		static void WriteLine() noexcept
@@ -54,8 +62,7 @@ namespace Micro
 			std::cout << (boolean ? "true" : "false");
 		}
 
-		template <Streamable T>
-		static void Write(const T& object) noexcept
+		static void Write(const Streamable auto& object) noexcept
 		{
 			std::cout << object;
 		}

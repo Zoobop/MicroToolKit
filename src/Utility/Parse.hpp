@@ -13,34 +13,34 @@ namespace Micro
 	NODISCARD constexpr char Parse(const StringBuffer& string) { return string.IsEmpty() ? '\0' : string[0]; }
 
 	template <>
-	NODISCARD constexpr int8_t Parse(const StringBuffer& string) { return string.IsEmpty() ? '\0' : string[0]; }
+	NODISCARD constexpr i8 Parse(const StringBuffer& string) { return string.IsEmpty() ? '\0' : string[0]; }
 
 	template <>
-	NODISCARD inline int16_t Parse(const StringBuffer& string)
+	NODISCARD inline i16 Parse(const StringBuffer& string)
 	{
-		return (int16_t)std::stoi({ string.Data(), string.Length() });
+		return static_cast<i16>(std::stoi({string.Data(), string.Length()}));
 	}
 
 	template <>
-	NODISCARD inline int32_t Parse(const StringBuffer& string)
+	NODISCARD inline i32 Parse(const StringBuffer& string)
 	{
 		return std::stoi({ string.Data(), string.Length() });
 	}
 
 	template <>
-	NODISCARD inline int64_t Parse(const StringBuffer& string)
+	NODISCARD inline i64 Parse(const StringBuffer& string)
 	{
 		return std::stoll({ string.Data(), string.Length() });
 	}
 
 	template <>
-	NODISCARD inline float_t Parse(const StringBuffer& string)
+	NODISCARD inline f32 Parse(const StringBuffer& string)
 	{
 		return std::stof({ string.Data(), string.Length() });
 	}
 
 	template <>
-	NODISCARD inline double_t Parse(const StringBuffer& string)
+	NODISCARD inline f64 Parse(const StringBuffer& string)
 	{
 		return std::stod({ string.Data(), string.Length() });
 	}
