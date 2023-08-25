@@ -7,7 +7,7 @@
 
 namespace Micro
 {
-    template <typename T, typename TAllocator = Allocator<T>>
+    template <typename T>
 	class HeapCollection : public Enumerable<T>
 	{
 	public:
@@ -19,7 +19,7 @@ namespace Micro
 
 
 		using Memory = Memory<T>;
-		using AllocatorProxy = AllocatorProxy<T, TAllocator>;
+		using Allocator = Allocator<T>;
 		using Span = Span<T>;
 
 		
@@ -92,8 +92,8 @@ namespace Micro
 		constexpr ~HeapCollection() noexcept override
 		{
 			// Invalidate memory, then free
-			AllocatorProxy::ClearMemory(m_Data, m_Size);
-			AllocatorProxy::Dispose(m_Data, m_Capacity);
+			Allocator::ClearMemory(m_Data, m_Size);
+			Allocator::Dispose(m_Data, m_Capacity);
 
 			m_Data = nullptr;
 			m_Size = 0;
@@ -159,7 +159,7 @@ namespace Micro
 		constexpr void Clear() noexcept
 		{
 			// Invalidate data
-			AllocatorProxy::ClearMemory(m_Data, m_Size);
+			Allocator::ClearMemory(m_Data, m_Size);
 			m_Size = 0;
 		}
 
@@ -171,7 +171,7 @@ namespace Micro
 		 */
 
 
-		NODISCARD constexpr operator Span() const noexcept { return AsSpan(); }
+		NODISCARD constexpr explicit operator Span() const noexcept { return AsSpan(); }
 
 		constexpr HeapCollection& operator=(const HeapCollection& other) noexcept
 		{
@@ -238,12 +238,12 @@ namespace Micro
 		
 		constexpr void Allocate(const size_t capacity) noexcept
 		{
-			m_Capacity = AllocatorProxy::Allocate(m_Data, m_Capacity, capacity);
+			m_Capacity = Allocator::Allocate(m_Data, m_Capacity, capacity);
 		}
 
 		constexpr void Reallocate(const size_t capacity) noexcept
 		{
-			m_Capacity = AllocatorProxy::Reallocate(m_Data, m_Capacity, capacity);
+			m_Capacity = Allocator::Reallocate(m_Data, m_Capacity, capacity);
 		}
 
 		/// <summary>
@@ -251,7 +251,7 @@ namespace Micro
 		///	'capacity + (capacity / 2)', but uses the expected capacity when above that calculated value) 
 		/// </summary>
 		/// <param name="expectedCapacity">Expected capacity to allocate with</param>
-		constexpr void HandleReallocation(const size_t expectedCapacity)
+		constexpr void HandleReallocation(const size_t expectedCapacity) noexcept
 		{
 			if (expectedCapacity > m_Capacity)
 				Reallocate(MAX(m_Capacity + (m_Capacity / 2), expectedCapacity));
@@ -423,7 +423,7 @@ namespace Micro
 		 */
 
 
-		NODISCARD constexpr operator Span() const noexcept { return AsSpan(); }
+		NODISCARD constexpr explicit operator Span() const noexcept { return AsSpan(); }
 
 		constexpr StackCollection& operator=(const StackCollection& other) noexcept
 		{

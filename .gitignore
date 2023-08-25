@@ -1,10 +1,10 @@
-bin/
-obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
 /.vs/MicroToolKit
-/.idea/.idea.MicroToolKit/.idea
-/Output
-/MicroLab/intermediate
-/Dependencies/MicroTest/intermediate/Debug-x64
+/.idea
+/output
+/*.sln
+/*.sln.*
+/*.vcxproj
+/*.vcxproj.*

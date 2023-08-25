@@ -6,7 +6,7 @@
 
 namespace Micro
 {
-	template <Hashable TKey, typename TValue>
+	template <typename TKey, typename TValue>
 	struct MapNode final
 	{
 		// Aliases
@@ -90,7 +90,7 @@ namespace Micro
 	};
 
 	template <typename TKey, typename TValue>
-	class Map final : public HashTable<MapNode<TKey, TValue>>
+	class Map final : public HashTable<Tuple<TKey, TValue>>
 	{
 	public:
 		// Aliases
@@ -123,7 +123,7 @@ namespace Micro
 		{
 		}
 
-		explicit Map(const size_t capacity) : Base(capacity)
+		constexpr explicit Map(const size_t capacity) : Base(capacity)
 		{
 		}
 
