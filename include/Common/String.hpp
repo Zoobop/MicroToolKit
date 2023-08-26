@@ -2621,7 +2621,7 @@ namespace Micro
 	/// <returns>Double as a String</returns>
 	NODISCARD inline String ToString(const f64 floatingPoint) noexcept
 	{
-		const Span<char> span = Internal::FloatToString_Internal(floatingPoint, "%Lf");
+		const Span<char> span = Internal::FloatToString_Internal("%Lf", floatingPoint);
 		return String::Create(span.Data(), span.Capacity());
 	}
 
@@ -2632,7 +2632,7 @@ namespace Micro
 	/// <returns>Float as a String</returns>
 	NODISCARD inline String ToString(const f32 floatingPoint) noexcept 
 	{ 
-		const Span<char> span = Internal::FloatToString_Internal(floatingPoint, "%f");
+		const Span<char> span = Internal::FloatToString_Internal("%f", floatingPoint);
 		return String::Create(span.Data(), span.Capacity());
 	}
 }

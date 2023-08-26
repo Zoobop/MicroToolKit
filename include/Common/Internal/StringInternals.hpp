@@ -41,25 +41,30 @@ namespace Micro::Internal
 		return rNext;
 	}
 
-	NODISCARD inline Span<char> FloatToString_Internal(const f64 floatingPoint, const char* fmt, ...) noexcept
-	{
+
 #ifdef _WIN64
-		const i64 length = _scprintf(fmt, floatingPoint);
+	NODISCARD inline Span<char> FloatToString_Internal(const char* fmt, const f64 floatingPoint) noexcept
+	{
+		const u64 length = _scprintf(fmt, floatingPoint);
 		char* buffer = Alloc<char>(length + 1);
 
 		auto _ = sprintf_s(buffer, length + 1, fmt, floatingPoint);
+		return Span{ buffer, buffer + length };
+	}
 #else
-		const i64 size = __gnu_cxx::__numeric_traits<f128>::__max_exponent10 + 20;
+	NODISCARD inline Span<char> FloatToString_Internal(const char* fmt, ...) noexcept
+	{
+		const u64 size = __gnu_cxx::__numeric_traits<f128>::__max_exponent10 + 20;
 		char* buffer = static_cast<char*>(__builtin_alloca(sizeof(char) * size));
 
 		__builtin_va_list args;
 		__builtin_va_start(args, fmt);
 
-		const i64 length = std::vsnprintf(buffer, size, fmt, args);
+		const u64 length = std::vsnprintf(buffer, size, fmt, args);
 
 		__builtin_va_end(args);
-#endif
-		
-		return Span { buffer, buffer + length };
+
+		return Span{ buffer, buffer + length };
 	}
+#endif
 }
