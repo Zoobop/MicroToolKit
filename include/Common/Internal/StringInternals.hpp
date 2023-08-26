@@ -22,7 +22,7 @@ namespace Micro::Internal
 				value /= 1000000000;
 
 				for (int i = 0; i != 9; ++i) {
-					*--_RNext = static_cast<TElem>('0' + chunk % 10);
+					*--rNext = static_cast<TElem>('0' + chunk % 10);
 					chunk /= 10;
 				}
 			}
