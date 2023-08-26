@@ -55,16 +55,19 @@ namespace Micro::Internal
 	NODISCARD inline Span<char> FloatToString_Internal(const char* fmt, ...) noexcept
 	{
 		const u64 size = __gnu_cxx::__numeric_traits<f128>::__max_exponent10 + 20;
-		char* buffer = static_cast<char*>(__builtin_alloca(sizeof(char) * size));
+		char* data = static_cast<char*>(__builtin_alloca(sizeof(char) * size));
 
 		__builtin_va_list args;
 		__builtin_va_start(args, fmt);
 
-		const u64 length = std::vsnprintf(buffer, size, fmt, args);
+		const u64 length = std::vsnprintf(data, size, fmt, args);
 
 		__builtin_va_end(args);
 
-		return Span{ buffer, buffer + length };
+		auto buffer = Alloc<char>(length);
+		Copy(data, length, buffer, length);
+
+		return Span{ buffer, length };
 	}
 #endif
 }
