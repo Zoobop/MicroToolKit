@@ -2,6 +2,9 @@
 #include <concepts>
 
 #include "Core/Core.hpp"
+#include "Core/Typedef.hpp"
+#include "Common/Span.hpp"
+#include "Core/Memory/Memory.hpp"
 
 namespace Micro::Internal
 {
@@ -13,7 +16,7 @@ namespace Micro::Internal
 
 #ifdef _WIN64
 		auto truncatedValue = value;
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else
 
 		constexpr bool isBigUnsigned = sizeof(UType) > 4;
 		if constexpr (isBigUnsigned) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
@@ -22,19 +25,41 @@ namespace Micro::Internal
 				value /= 1000000000;
 
 				for (int i = 0; i != 9; ++i) {
-					*--_RNext = static_cast<TElem>('0' + chunk % 10);
+					*--rNext = static_cast<TElem>('0' + chunk % 10);
 					chunk /= 10;
 				}
 			}
 		}
 
 		auto truncatedValue = static_cast<unsigned long>(value);
-#endif // _WIN64
+#endif
 
 		do {
 			*--rNext = static_cast<TElem>('0' + truncatedValue % 10);
 			truncatedValue /= 10;
 		} while (truncatedValue != 0);
 		return rNext;
+	}
+
+	NODISCARD inline Span<char> FloatToString_Internal(const f64 floatingPoint, const char* fmt, ...) noexcept
+	{
+#ifdef _WIN64
+		const i64 length = _scprintf(fmt, floatingPoint);
+		char* buffer = Alloc<char>(length + 1);
+
+		auto _ = sprintf_s(buffer, length + 1, fmt, floatingPoint);
+#else
+		const i64 size = __gnu_cxx::__numeric_traits<f128>::__max_exponent10 + 20;
+		char* buffer = static_cast<char*>(__builtin_alloca(sizeof(char) * size));
+
+		__builtin_va_list args;
+		__builtin_va_start(args, fmt);
+
+		const i64 length = std::vsnprintf(buffer, size, fmt, args);
+
+		__builtin_va_end(args);
+#endif
+		
+		return Span { buffer, buffer + length };
 	}
 }

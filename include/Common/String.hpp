@@ -2619,12 +2619,10 @@ namespace Micro
 	/// </summary>
 	/// <param name="floatingPoint">Double to convert</param>
 	/// <returns>Double as a String</returns>
-	NODISCARD inline String ToString(const double floatingPoint) noexcept
+	NODISCARD inline String ToString(const f64 floatingPoint) noexcept
 	{
-		const auto size = static_cast<size_t>(_scprintf("%f", floatingPoint));
-		String string('\0', size);
-		auto _ = sprintf_s(string.Data(), size + 1, "%f", floatingPoint);
-		return string;
+		const Span<char> span = Internal::FloatToString_Internal(floatingPoint, "%Lf");
+		return String::Create(span.Data(), span.Capacity());
 	}
 
 	/// <summary>
@@ -2632,5 +2630,9 @@ namespace Micro
 	/// </summary>
 	/// <param name="floatingPoint">Float to convert</param>
 	/// <returns>Float as a String</returns>
-	NODISCARD inline String ToString(const float floatingPoint) noexcept { return ToString(static_cast<double>(floatingPoint)); }
+	NODISCARD inline String ToString(const f32 floatingPoint) noexcept 
+	{ 
+		const Span<char> span = Internal::FloatToString_Internal(floatingPoint, "%f");
+		return String::Create(span.Data(), span.Capacity());
+	}
 }
