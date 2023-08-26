@@ -43,7 +43,7 @@ namespace Micro::Internal
 
 
 #ifdef _WIN64
-	NODISCARD inline Span<char> FloatToString_Internal(const char* fmt, const f64 floatingPoint) noexcept
+	NODISCARD Span<char> FloatToString_Internal(const char* fmt, const std::floating_point auto floatingPoint) noexcept
 	{
 		const u64 length = _scprintf(fmt, floatingPoint);
 		char* buffer = Alloc<char>(length + 1);
@@ -52,22 +52,26 @@ namespace Micro::Internal
 		return Span{ buffer, buffer + length };
 	}
 #else
-	NODISCARD inline Span<char> FloatToString_Internal(const char* fmt, ...) noexcept
+	struct InternalBuffer final
 	{
-		const u64 size = __gnu_cxx::__numeric_traits<f128>::__max_exponent10 + 20;
-		char* data = static_cast<char*>(__builtin_alloca(sizeof(char) * size));
+		char* Data;
+		u64 Length;
 
-		__builtin_va_list args;
-		__builtin_va_start(args, fmt);
+		constexpr InternalBuffer(char* begin, const char* end) noexcept
+			: Length(end - begin)
+		{
+			Data = Alloc<char>(Length + 1);
+			Copy(begin, Length, Data, Length + 1);
+			Data[Length] = 0;
+		}
+	};
 
-		const u64 length = std::vsnprintf(data, size, fmt, args);
-
-		__builtin_va_end(args);
-
-		auto buffer = Alloc<char>(length);
-		Copy(data, length, buffer, length);
-
-		return Span{ buffer, length };
+	template <std::floating_point TFloat>
+	NODISCARD Span<char> FloatToString_Internal(const char* fmt, const TFloat floatingPoint) noexcept
+	{
+		const u64 maxSize = __gnu_cxx::__numeric_traits<TFloat>::__max_exponent10 + 20;
+		const auto buffer = __gnu_cxx::__to_xstring<InternalBuffer, char>(&std::vsnprintf, maxSize, fmt, floatingPoint);
+		return Span{ buffer.Data, buffer.Length };
 	}
 #endif
 }
