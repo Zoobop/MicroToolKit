@@ -17,7 +17,6 @@ namespace Micro
 
 
 		using Base = HeapCollection<T>;
-		using Span = Span<T>;
 
 
 		/*
@@ -51,7 +50,7 @@ namespace Micro
 		{
 		}
 
-		constexpr explicit Stack(const Span& other) : Base(other)
+		constexpr explicit Stack(const Span<T>& other) : Base(other)
 		{
 		}
 
@@ -140,7 +139,7 @@ namespace Micro
 		/// Pushes all the elements from the given span to the stack by copy.
 		/// </summary>
 		/// <param name="span">Span to add to the stack</param>
-		constexpr void PushRange(const Span& span) noexcept
+		constexpr void PushRange(const Span<T>& span) noexcept
 		{
 			if (span.IsEmpty())
 				return;

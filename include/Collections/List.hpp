@@ -21,7 +21,6 @@ namespace Micro
 
 
 		using Base = HeapCollection<T>;
-		using Span = Span<T>;
 
 		
 		/*
@@ -82,7 +81,7 @@ namespace Micro
 		 * \brief Initializes a new instance of the List class by copying the value of the given span.
 		 * \param span Span to copy
 		 */
-		constexpr explicit List(const Span& span) noexcept : Base(span)
+		constexpr explicit List(const Span<T>& span) noexcept : Base(span)
 		{
 		}
 
@@ -203,7 +202,7 @@ namespace Micro
 		/// Adds all the elements from the given span to the list by copy.
 		/// </summary>
 		/// <param name="span">Span to add to the list</param>
-		constexpr void AddRange(const Span& span) noexcept
+		constexpr void AddRange(const Span<T>& span) noexcept
 		{
 			if (span.IsEmpty())
 				return;
@@ -341,7 +340,7 @@ namespace Micro
 			return Result<bool>::Ok(true);
 		}
 
-		constexpr Result<bool> InsertRange(const size_t startIndex, const Span& span) noexcept
+		constexpr Result<bool> InsertRange(const size_t startIndex, const Span<T>& span) noexcept
 		{
 			// Check for valid sequence
 			if (span.IsEmpty())

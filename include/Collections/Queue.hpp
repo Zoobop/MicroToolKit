@@ -17,7 +17,6 @@ namespace Micro
 
 
 		using Base = HeapCollection<T>;
-		using Span = Span<T>;
 
 		
 		/*
@@ -51,7 +50,7 @@ namespace Micro
 		{
 		}
 
-		constexpr explicit Queue(const Span& other) noexcept : Base(other)
+		constexpr explicit Queue(const Span<T>& other) noexcept : Base(other)
 		{
 		}
 
@@ -145,7 +144,7 @@ namespace Micro
 		/// Enqueues all the elements from the given span to the Queue by copy.
 		/// </summary>
 		/// <param name="span">Span to add to the Queue</param>
-		constexpr void EnqueueRange(const Span& span) noexcept
+		constexpr void EnqueueRange(const Span<T>& span) noexcept
 		{
 			if (span.IsEmpty())
 				return;

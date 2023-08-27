@@ -117,7 +117,7 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string.
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator GetEnumerator() override
+		NODISCARD Enumerator<char> GetEnumerator() override
 		{
 			for (size_t i = 0; i < m_Size; i++)
 			{
@@ -130,7 +130,7 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string. (const version)
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator GetEnumerator() const override
+		NODISCARD Enumerator<char> GetEnumerator() const override
 		{
 			for (size_t i = 0; i < m_Size; i++)
 			{
