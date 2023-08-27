@@ -18,7 +18,6 @@ namespace Micro
 		using Type = T;
 		using Iterator = CoroutineIterator<T>;
 		using ConstIterator = ConstCoroutineIterator<T>;
-		using Enumerator = Enumerator<T>;
 
 		
 		/*
@@ -41,8 +40,8 @@ namespace Micro
 		 */
 
 
-		NODISCARD virtual Enumerator GetEnumerator() { return {}; }
-		NODISCARD virtual Enumerator GetEnumerator() const { return {}; }
+		NODISCARD virtual Enumerator<T> GetEnumerator() { return {}; }
+		NODISCARD virtual Enumerator<T> GetEnumerator() const { return {}; }
 
 		NODISCARD constexpr Iterator begin() noexcept { return Iterator(GetEnumerator()); }
 		NODISCARD constexpr Iterator end() noexcept { return Iterator(); }

@@ -15,16 +15,6 @@ namespace Micro
 	public:
 		/*
 		 *  ============================================================
-		 *	|                          Aliases                         |
-		 *  ============================================================
-		 */
-
-
-		using Memory = Memory<T>;
-
-		
-		/*
-		 *  ============================================================
 		 *	|                  Constructors/Destructors                |
 		 *  ============================================================
 		 */
@@ -291,7 +281,7 @@ namespace Micro
 		NODISCARD constexpr static Span Empty() noexcept { return {}; }
 
 	private:
-		Memory m_Data = nullptr;
+		Memory<T> m_Data = nullptr;
 		size_t m_Capacity = 0;
 	};
 
