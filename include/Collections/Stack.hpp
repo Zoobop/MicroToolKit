@@ -176,7 +176,7 @@ namespace Micro
 				return Result<T>::Ok(std::move(item));
 			}
 
-			return Result<T>::Error(InvalidOperationError("Cannot pop from empty Stack!"));
+			return Result<T>::CaptureError(InvalidOperationError("Cannot pop from empty Stack!"));
 		}
 
 		NODISCARD constexpr Result<T&> Peek() const noexcept
@@ -184,7 +184,7 @@ namespace Micro
 			if (!Base::IsEmpty())
 				return Result<T&>::Ok(Base::m_Data[Base::m_Size - 1]);
 
-			return Result<T&>::Error(InvalidOperationError("Cannot peek from empty Stack!"));
+			return Result<T&>::CaptureError(InvalidOperationError("Cannot peek from empty Stack!"));
 		}
 
 		

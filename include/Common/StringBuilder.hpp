@@ -579,7 +579,7 @@ namespace Micro
 		NODISCARD constexpr Result<char&> operator[](const size_t index) noexcept
 		{
 			if (index >= m_Size)
-				return Result<char&>::Error(IndexOutOfRangeError(index));
+				return Result<char&>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<char&>::Ok(m_Data[index]);
 		}
@@ -592,7 +592,7 @@ namespace Micro
 		NODISCARD constexpr Result<char> operator[](const size_t index) const noexcept
 		{
 			if (index >= m_Size)
-				return Result<char>::Error(IndexOutOfRangeError(index));
+				return Result<char>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<char>::Ok(m_Data[index]);
 		}

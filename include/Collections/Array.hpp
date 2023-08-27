@@ -122,7 +122,7 @@ namespace Micro
 		NODISCARD constexpr Result<T&> GetValue(const size_t index) noexcept
 		{
 			if (index >= TSize)
-				return Result<T&>::Error(IndexOutOfRangeError(index));
+				return Result<T&>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<T&>::Ok(Base::m_Data[index]);
 		}
@@ -135,7 +135,7 @@ namespace Micro
 		NODISCARD constexpr Result<const T&> GetValue(const size_t index) const noexcept
 		{
 			if (index >= TSize)
-				return Result<const T&>::Error(IndexOutOfRangeError(index));
+				return Result<const T&>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<const T&>::Ok(Base::m_Data[index]);
 		}

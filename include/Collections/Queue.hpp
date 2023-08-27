@@ -182,7 +182,7 @@ namespace Micro
 				--Base::m_Size;
 				return Result<T>::Ok(std::move(item));
 			}
-			return Result<T>::Error(InvalidOperationError("Cannot dequeue from empty Queue!"));
+			return Result<T>::CaptureError(InvalidOperationError("Cannot dequeue from empty Queue!"));
 		}
 
 		NODISCARD constexpr Result<T&> Peek() const noexcept
@@ -190,7 +190,7 @@ namespace Micro
 			if (!Base::IsEmpty())
 				return Result<T&>::Ok(Base::m_Data[0]);
 
-			return Result<T&>::Error(InvalidOperationError("Cannot peek from empty Queue!"));
+			return Result<T&>::CaptureError(InvalidOperationError("Cannot peek from empty Queue!"));
 		}
 
 

@@ -236,7 +236,7 @@ namespace Micro
 		constexpr Result<bool> Insert(const size_t index, const T& value) noexcept
 		{
 			if (Base::m_Size <= index)
-				return Result<bool>::Error(ArgumentOutOfRangeError{ NAMEOF(index), index });
+				return Result<bool>::CaptureError(ArgumentOutOfRangeError{ NAMEOF(index), index });
 
 			if (Base::m_Capacity <= Base::m_Size + 1)
 				Base::Reallocate(Base::m_Capacity * 2);
@@ -251,7 +251,7 @@ namespace Micro
 		constexpr Result<bool> Insert(const size_t index, T&& value) noexcept
 		{
 			if (Base::m_Size <= index)
-				return Result<bool>::Error(ArgumentOutOfRangeError{ NAMEOF(index), index });
+				return Result<bool>::CaptureError(ArgumentOutOfRangeError{ NAMEOF(index), index });
 
 			if (Base::m_Capacity <= Base::m_Size + 1)
 				Base::Reallocate(Base::m_Capacity * 2);
@@ -267,7 +267,7 @@ namespace Micro
 		constexpr Result<T&> InsertEmplace(const size_t index, Args&& ... args) noexcept
 		{
 			if (Base::m_Size <= index)
-				return Result<T&>::Error(ArgumentOutOfRangeError{ NAMEOF(index), index });
+				return Result<T&>::CaptureError(ArgumentOutOfRangeError{ NAMEOF(index), index });
 
 			if (Base::m_Capacity <= Base::m_Size + 1)
 				Base::Reallocate(Base::m_Capacity * 2);
@@ -287,7 +287,7 @@ namespace Micro
 
 			// Index validation
 			if (Base::m_Size <= startIndex)
-				return Result<bool>::Error(ArgumentOutOfRangeError{ NAMEOF(startIndex), startIndex });
+				return Result<bool>::CaptureError(ArgumentOutOfRangeError{ NAMEOF(startIndex), startIndex });
 
 			// Reallocate, if too small
 			const size_t length = collection.Capacity();
@@ -316,7 +316,7 @@ namespace Micro
 
 			// Index validation
 			if (Base::m_Size <= startIndex)
-				return Result<bool>::Error(ArgumentOutOfRangeError{ NAMEOF(startIndex), startIndex });
+				return Result<bool>::CaptureError(ArgumentOutOfRangeError{ NAMEOF(startIndex), startIndex });
 
 			// Reallocate, if too small
 			const size_t length = collection.Capacity();
@@ -348,7 +348,7 @@ namespace Micro
 
 			// Index validation
 			if (Base::m_Size <= startIndex)
-				return Result<bool>::Error(ArgumentOutOfRangeError{ NAMEOF(startIndex), startIndex });
+				return Result<bool>::CaptureError(ArgumentOutOfRangeError{ NAMEOF(startIndex), startIndex });
 
 			// Reallocate, if too small
 			const size_t length = span.Capacity();
@@ -376,7 +376,7 @@ namespace Micro
 
 			// Index validation
 			if (Base::m_Size <= startIndex)
-				return Result<bool>::Error(ArgumentOutOfRangeError{ NAMEOF(startIndex), startIndex });
+				return Result<bool>::CaptureError(ArgumentOutOfRangeError{ NAMEOF(startIndex), startIndex });
 
 			// Reallocate, if too small
 			const size_t reallocationSize = Base::m_Size + length;
@@ -414,7 +414,7 @@ namespace Micro
 		constexpr Result<bool> RemoveAt(const size_t index) noexcept
 		{
 			if (index >= Base::m_Size)
-				return Result<bool>::Error(ArgumentOutOfRangeError{ NAMEOF(index), index });
+				return Result<bool>::CaptureError(ArgumentOutOfRangeError{ NAMEOF(index), index });
 
 			// Free memory
 			Base::m_Data[index].~T();
@@ -431,7 +431,7 @@ namespace Micro
 		{
 			const size_t length = index + count;
 			if (index >= Base::m_Size || length >= Base::m_Size)
-				return Result<bool>::Error(ArgumentOutOfRangeError{ "Invalid range from {} to {}.", index, length });
+				return Result<bool>::CaptureError(ArgumentOutOfRangeError{ "Invalid range from {} to {}.", index, length });
 
 			// Free memory
 			for (size_t i = index; i < length; i++)
@@ -586,7 +586,7 @@ namespace Micro
 		NODISCARD constexpr Result<T&> operator[](const size_t index) noexcept 
 		{ 
 			if (index >= Base::m_Size)
-				return Result<T&>::Error(IndexOutOfRangeError(index));
+				return Result<T&>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<T&>::Ok(Base::m_Data[index]);
 		}
@@ -599,7 +599,7 @@ namespace Micro
 		NODISCARD constexpr Result<const T&> operator[](const size_t index) const noexcept
 		{
 			if (index >= Base::m_Size)
-				return Result<const T&>::Error(IndexOutOfRangeError(index));
+				return Result<const T&>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<const T&>::Ok(Base::m_Data[index]);
 		}
