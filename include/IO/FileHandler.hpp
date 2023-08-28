@@ -2,20 +2,12 @@
 #include <fstream>
 
 #include "IO/IOHelpers.hpp"
-#include "Common/String.hpp"
 #include "Common/StringBuffer.hpp"
 #include "Common/StringBuilder.hpp"
 #include "Collections/List.hpp"
 
 namespace Micro
 {
-	enum struct FileAccess : uint8_t
-	{
-		Read = 2,
-		Append = 8,
-		Write = 16
-	};
-
 	struct FileInfo final
 	{
 		String contents;
@@ -39,11 +31,11 @@ namespace Micro
 	class FileHandler final
 	{
 	public:
-		FileHandler() = delete;
+		constexpr FileHandler() noexcept = delete;
 
 		NODISCARD static bool Create(const char* path) noexcept
 		{
-			if (std::ofstream out(path); out)
+			if (std::ofstream out(path, std::ios::out); out)
 			{
 				out.close();
 				return true;
@@ -54,7 +46,7 @@ namespace Micro
 
 		NODISCARD static bool Create(const String& path) noexcept
 		{
-			if (std::ofstream out(path.Data()); out)
+			if (std::ofstream out(path.Data(), std::ios::out); out)
 			{
 				out.close();
 				return true;
@@ -63,146 +55,148 @@ namespace Micro
 			return false;
 		}
 
-		NODISCARD static FileInfo GetFileInfo(const char* path)
-		{
-			if (std::ifstream in(path, static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
-			{
-				in.seekg(0, std::ios::end);
-				const StringBuilder contents{static_cast<size_t>(in.tellg())};
-				in.seekg(0, std::ios::beg);
-				in.read(contents.ToCharArray(), static_cast<int64_t>(contents.Length()));
-				in.close();
-				FileInfo fileInfo{path, contents.ToString()};
-				return fileInfo;
-			}
-			throw IOError(path);
-		}
-
-		NODISCARD static FileInfo GetFileInfo(const String& path)
-		{
-			if (std::ifstream in(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
-			{
-				in.seekg(0, std::ios::end);
-				StringBuilder contents(static_cast<size_t>(in.tellg()));
-				in.seekg(0, std::ios::beg);
-				in.read(contents.ToCharArray(), contents.Capacity());
-				in.close();
-
-				//contents.SyncSize();
-				return {path, contents.ToString()};
-			}
-			throw IOError(path.Data());
-		}
-
-		NODISCARD static String ReadAllText(const char* path)
+		NODISCARD static Result<FileInfo> GetFileInfo(const char* path) noexcept
 		{
 			if (std::ifstream in(path, std::ios::in); in)
 			{
 				in.seekg(0, std::ios::end);
-				StringBuilder builder(in.tellg());
+				const StringBuilder contents{static_cast<u32>(in.tellg())};
 				in.seekg(0, std::ios::beg);
 
-				while (!in.eof())
-				{
-					const char character = in.get();
-					builder.Append(character);
-				}
-
+				in.read(contents.ToCharArray(), static_cast<i64>(contents.Length()));
 				in.close();
-				builder.Remove(builder.Length() - 1);
-				return builder.ToString();
+
+				return Result<FileInfo>::Ok({path, contents.ToString()});
 			}
-			throw IOError(path);
+
+			return Result<FileInfo>::CaptureError(IOError(path));
 		}
 
-		NODISCARD static String ReadAllText(const String& path)
+		NODISCARD static Result<FileInfo> GetFileInfo(const String& path) noexcept
 		{
 			if (std::ifstream in(path.Data(), std::ios::in); in)
 			{
 				in.seekg(0, std::ios::end);
-				StringBuilder builder(in.tellg());
+				const StringBuilder contents{ static_cast<u32>(in.tellg()) };
+				in.seekg(0, std::ios::beg);
+
+				in.read(contents.ToCharArray(), static_cast<i64>(contents.Length()));
+				in.close();
+
+				return Result<FileInfo>::Ok({ path, contents.ToString() });
+			}
+			return Result<FileInfo>::CaptureError(IOError(path));
+		}
+
+		NODISCARD static Result<String> ReadAllText(const char* path) noexcept
+		{
+			if (std::ifstream in(path, std::ios::in); in)
+			{
+				in.seekg(0, std::ios::end);
+				StringBuilder contents{ static_cast<u32>(in.tellg()) };
 				in.seekg(0, std::ios::beg);
 
 				while (!in.eof())
 				{
-					const char character = in.get();
-					builder.Append(character);
+					const char character = static_cast<char>(in.get());
+					contents.Append(character);
 				}
 
 				in.close();
-				builder.Remove(builder.Length() - 1);
-				return builder.ToString();
+				contents.Remove(contents.Length() - 1);
+				return Result<String>::Ok({ contents.ToString() });
 			}
-			throw IOError(path.Data());
+
+			return Result<String>::CaptureError(IOError(path));
 		}
 
-		// TODO: Wait for String/StringBuffer/StringBuilder overhaul
-		NODISCARD static List<String> ReadAllLines(const String& path)
+		NODISCARD static Result<String> ReadAllText(const String& path) noexcept
 		{
-			if (std::ifstream in(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
+			if (std::ifstream in(path.Data(), std::ios::in); in)
 			{
 				in.seekg(0, std::ios::end);
-				StringBuilder builder(in.tellg());
+				StringBuilder contents{ static_cast<u32>(in.tellg()) };
 				in.seekg(0, std::ios::beg);
 
-				List<String> fileLines(builder.Capacity());
 				while (!in.eof())
 				{
-					const char character = in.get();
+					const char character = static_cast<char>(in.get());
+					contents.Append(character);
+				}
+
+				in.close();
+				contents.Remove(contents.Length() - 1);
+				return Result<String>::Ok({ contents.ToString() });
+			}
+
+			return Result<String>::CaptureError(IOError(path));
+		}
+
+		NODISCARD static Result<List<String>> ReadAllLines(const String& path) noexcept
+		{
+			if (std::ifstream in(path.Data(), std::ios::in); in)
+			{
+				in.seekg(0, std::ios::end);
+				StringBuilder contents{ static_cast<u32>(in.tellg()) };
+				in.seekg(0, std::ios::beg);
+
+				List<String> fileLines(contents.Capacity());
+				while (!in.eof())
+				{
+					const char character = static_cast<char>(in.get());
 					if (character == '\n')
 					{
-						fileLines.Emplace(builder.ToString());
+						fileLines.Emplace(contents.ToString());
 
-						builder.Clear();
+						contents.Clear();
 						continue;
 					}
 
-					builder.Append(character);
+					contents.Append(character);
 				}
 
 				in.close();
-				builder.Remove(builder.Length() - 1);
-				fileLines.Emplace(builder.ToString());
-				return fileLines;
+				contents.Remove(contents.Length() - 1);
+				fileLines.Emplace(contents.ToString());
+				return Result<List<String>>::Ok(fileLines);
 			}
-			throw IOError(path.Data());
+			return Result<List<String>>::CaptureError(IOError(path));
 		}
 
-		// TODO: Wait for String/StringBuffer/StringBuilder overhaul
-		NODISCARD static List<String> ReadAllLines(const char* path)
+		NODISCARD static Result<List<String>> ReadAllLines(const char* path) noexcept
 		{
-			if (std::ifstream in(path, static_cast<std::ios_base::openmode>(FileAccess::Read)); in)
+			if (std::ifstream in(path, std::ios::in); in)
 			{
 				in.seekg(0, std::ios::end);
-				StringBuilder builder(in.tellg());
+				StringBuilder contents{ static_cast<u32>(in.tellg()) };
 				in.seekg(0, std::ios::beg);
 
-				List<String> fileLines(builder.Capacity());
+				List<String> fileLines(contents.Capacity());
 				while (!in.eof())
 				{
-					const char character = in.get();
+					const char character = static_cast<char>(in.get());
 					if (character == '\n')
 					{
-						fileLines.Emplace(builder.ToString());
+						fileLines.Emplace(contents.ToString());
 
-						builder.Clear();
+						contents.Clear();
 						continue;
 					}
 
-					builder.Append(character);
+					contents.Append(character);
 				}
 
 				in.close();
-				builder.Remove(builder.Length() - 1);
-				fileLines.Emplace(builder.ToString());
-				return fileLines;
+				contents.Remove(contents.Length() - 1);
+				fileLines.Emplace(contents.ToString());
+				return Result<List<String>>::Ok(fileLines);
 			}
-			throw IOError(path);
+			return Result<List<String>>::CaptureError(IOError(path));
 		}
 
 		static void WriteAllText(const char* path, const Streamable auto& contents) noexcept
 		{
-			if (std::ofstream out(path, static_cast<std::ios_base::openmode>(FileAccess::Write)); out)
+			if (std::ofstream out(path, std::ios::out); out)
 			{
 				out << contents;
 				out.close();
@@ -211,7 +205,7 @@ namespace Micro
 
 		static void WriteAllText(const String& path, const Streamable auto& contents) noexcept
 		{
-			if (std::ofstream out(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Write)); out)
+			if (std::ofstream out(path.Data(), std::ios::out); out)
 			{
 				out << contents;
 				out.close();
@@ -221,7 +215,7 @@ namespace Micro
 		template <Streamable T>
 		static void WriteAllLines(const char* path, const Span<T>& contents) noexcept
 		{
-			if (std::ofstream out(path, static_cast<std::ios_base::openmode>(FileAccess::Write)); out)
+			if (std::ofstream out(path, std::ios::out); out)
 			{
 				for (const auto& line : contents)
 					out << line << "\n";
@@ -232,7 +226,7 @@ namespace Micro
 		template <Streamable T>
 		static void WriteAllLines(const String& path, const Span<T>& contents) noexcept
 		{
-			if (std::ofstream out(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Write)); out)
+			if (std::ofstream out(path.Data(), std::ios::out); out)
 			{
 				for (const auto& line : contents)
 					out << line << "\n";
@@ -240,18 +234,18 @@ namespace Micro
 			}
 		}
 
-		static void AppendAllText(const char* path, const Streamable auto& contents)
+		static void AppendAllText(const char* path, const Streamable auto& contents) noexcept
 		{
-			if (std::ofstream out(path, static_cast<std::ios_base::openmode>(FileAccess::Append)); out)
+			if (std::ofstream out(path, std::ios::app); out)
 			{
 				out << contents;
 				out.close();
 			}
 		}
 
-		static void AppendAllText(const String& path, const Streamable auto& contents)
+		static void AppendAllText(const String& path, const Streamable auto& contents) noexcept
 		{
-			if (std::ofstream out(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Append)); out)
+			if (std::ofstream out(path.Data(), std::ios::app); out)
 			{
 				out << contents;
 				out.close();
@@ -259,9 +253,9 @@ namespace Micro
 		}
 
 		template <Streamable T>
-		static void AppendAllLines(const char* path, const Span<T>& contents)
+		static void AppendAllLines(const char* path, const Span<T>& contents) noexcept
 		{
-			if (std::ofstream out(path, static_cast<std::ios_base::openmode>(FileAccess::Append)); out)
+			if (std::ofstream out(path, std::ios::app); out)
 			{
 				for (const auto& line : contents)
 					out << line << "\n";
@@ -270,9 +264,9 @@ namespace Micro
 		}
 
 		template <Streamable T>
-		static void AppendAllLines(const String& path, const Span<T>& contents)
+		static void AppendAllLines(const String& path, const Span<T>& contents) noexcept
 		{
-			if (std::ofstream out(path.Data(), static_cast<std::ios_base::openmode>(FileAccess::Append)); out)
+			if (std::ofstream out(path.Data(), std::ios::app); out)
 			{
 				for (const auto& line : contents)
 					out << line << "\n";
