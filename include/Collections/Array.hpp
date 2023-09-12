@@ -23,8 +23,7 @@ namespace Micro
 
 
 		using Base = StackCollection<T, TSize>;
-		using Span = Span<T>;
-
+		
 
 		/*
 		 *  ============================================================
@@ -82,7 +81,7 @@ namespace Micro
 		 * \brief Initializes a new instance of the Array class by copying the elements of the Span argument.
 		 * \param span Span to copy
 		 */
-		constexpr explicit Array(const Span& span) noexcept : Base(span)
+		constexpr explicit Array(const Span<T>& span) noexcept : Base(span)
 		{
 		}
 
@@ -123,7 +122,7 @@ namespace Micro
 		NODISCARD constexpr Result<T&> GetValue(const size_t index) noexcept
 		{
 			if (index >= TSize)
-				return Result<T&>::Error(IndexOutOfRangeError(index));
+				return Result<T&>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<T&>::Ok(Base::m_Data[index]);
 		}
@@ -136,7 +135,7 @@ namespace Micro
 		NODISCARD constexpr Result<const T&> GetValue(const size_t index) const noexcept
 		{
 			if (index >= TSize)
-				return Result<const T&>::Error(IndexOutOfRangeError(index));
+				return Result<const T&>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<const T&>::Ok(Base::m_Data[index]);
 		}
@@ -203,7 +202,7 @@ namespace Micro
 		/// has more elements than the Array length, only elements up to the Array length with be moved.
 		/// </summary>
 		///	<param name="span">Span to fill Array</param>
-		constexpr void Set(const Span& span)
+		constexpr void Set(const Span<T>& span)
 		{
 			const size_t size = MIN(span.Capacity(), TSize);
 			const T* data = span.Data();

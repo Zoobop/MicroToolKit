@@ -60,16 +60,6 @@ namespace Micro
 	public:
 		/*
 		 *  ============================================================
-		 *	|                          Aliases                         |
-		 *  ============================================================
-		 */
-
-
-		using Memory = Memory<char>;
-
-
-		/*
-		 *  ============================================================
 		 *	|                  Constructors/Destructors                |
 		 *  ============================================================
 		 */
@@ -271,7 +261,7 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string.
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator GetEnumerator() override
+		NODISCARD Enumerator<char> GetEnumerator() override
 		{
 			for (size_t i = 0; i < m_Size; i++)
 			{
@@ -284,7 +274,7 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string. (const version)
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator GetEnumerator() const override
+		NODISCARD Enumerator<char> GetEnumerator() const override
 		{
 			for (size_t i = 0; i < m_Size; i++)
 			{
@@ -2487,7 +2477,7 @@ namespace Micro
 		}
 
 	private:
-		Memory m_Data = nullptr;
+		Memory<char> m_Data = nullptr;
 		size_t m_Size = 0;
 	};
 
@@ -2619,12 +2609,10 @@ namespace Micro
 	/// </summary>
 	/// <param name="floatingPoint">Double to convert</param>
 	/// <returns>Double as a String</returns>
-	NODISCARD inline String ToString(const double floatingPoint) noexcept
+	NODISCARD inline String ToString(const f64 floatingPoint) noexcept
 	{
-		const auto size = static_cast<size_t>(_scprintf("%f", floatingPoint));
-		String string('\0', size);
-		auto _ = sprintf_s(string.Data(), size + 1, "%f", floatingPoint);
-		return string;
+		const Span<char> span = Internal::FloatToString_Internal<f64>("%Lf", floatingPoint);
+		return String::Create(span.Data(), span.Capacity());
 	}
 
 	/// <summary>
@@ -2632,5 +2620,9 @@ namespace Micro
 	/// </summary>
 	/// <param name="floatingPoint">Float to convert</param>
 	/// <returns>Float as a String</returns>
-	NODISCARD inline String ToString(const float floatingPoint) noexcept { return ToString(static_cast<double>(floatingPoint)); }
+	NODISCARD inline String ToString(const f32 floatingPoint) noexcept 
+	{ 
+		const Span<char> span = Internal::FloatToString_Internal<f32>("%f", floatingPoint);
+		return String::Create(span.Data(), span.Capacity());
+	}
 }

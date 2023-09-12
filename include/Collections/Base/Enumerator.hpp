@@ -176,11 +176,9 @@ namespace Micro
 	class CoroutineIterator final
 	{
 	public:
-		using Enumerator = Enumerator<T>;
-
 		constexpr CoroutineIterator() noexcept = default;
 
-		constexpr explicit CoroutineIterator(Enumerator&& enumerator) noexcept
+		constexpr explicit CoroutineIterator(Enumerator<T>&& enumerator) noexcept
 			: m_Enumerator(std::move(enumerator))
 		{
 		}
@@ -224,18 +222,16 @@ namespace Micro
 		}
 
 	private:
-		Enumerator m_Enumerator;
+		Enumerator<T> m_Enumerator;
 	};
 
 	template <typename T>
 	class ConstCoroutineIterator final
 	{
 	public:
-		using Enumerator = Enumerator<T>;
-
 		constexpr ConstCoroutineIterator() noexcept = default;
 
-		constexpr explicit ConstCoroutineIterator(Enumerator&& enumerator) noexcept
+		constexpr explicit ConstCoroutineIterator(Enumerator<T>&& enumerator) noexcept
 			: m_Enumerator(std::move(enumerator))
 		{
 		}
@@ -264,6 +260,6 @@ namespace Micro
 		NODISCARD constexpr bool operator!=(const ConstCoroutineIterator& other) const noexcept { return !(*this == other); }
 
 	private:
-		Enumerator m_Enumerator;
+		Enumerator<T> m_Enumerator;
 	};
 }

@@ -17,7 +17,6 @@ namespace Micro
 
 
 		using Base = HeapCollection<T>;
-		using Span = Span<T>;
 
 
 		/*
@@ -51,7 +50,7 @@ namespace Micro
 		{
 		}
 
-		constexpr explicit Stack(const Span& other) : Base(other)
+		constexpr explicit Stack(const Span<T>& other) : Base(other)
 		{
 		}
 
@@ -140,7 +139,7 @@ namespace Micro
 		/// Pushes all the elements from the given span to the stack by copy.
 		/// </summary>
 		/// <param name="span">Span to add to the stack</param>
-		constexpr void PushRange(const Span& span) noexcept
+		constexpr void PushRange(const Span<T>& span) noexcept
 		{
 			if (span.IsEmpty())
 				return;
@@ -177,7 +176,7 @@ namespace Micro
 				return Result<T>::Ok(std::move(item));
 			}
 
-			return Result<T>::Error(InvalidOperationError("Cannot pop from empty Stack!"));
+			return Result<T>::CaptureError(InvalidOperationError("Cannot pop from empty Stack!"));
 		}
 
 		NODISCARD constexpr Result<T&> Peek() const noexcept
@@ -185,7 +184,7 @@ namespace Micro
 			if (!Base::IsEmpty())
 				return Result<T&>::Ok(Base::m_Data[Base::m_Size - 1]);
 
-			return Result<T&>::Error(InvalidOperationError("Cannot peek from empty Stack!"));
+			return Result<T&>::CaptureError(InvalidOperationError("Cannot peek from empty Stack!"));
 		}
 
 		

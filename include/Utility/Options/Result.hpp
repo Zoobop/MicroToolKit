@@ -16,16 +16,6 @@ namespace Micro
 	private:
 		/*
 		 *  ============================================================
-		 *	|                          Aliases                         |
-		 *  ============================================================
-		 */
-
-
-		using BaseError = Error;
-
-
-		/*
-		 *  ============================================================
 		 *	|                 Constructors/Destructors                 |
 		 *  ============================================================
 		 */
@@ -41,12 +31,12 @@ namespace Micro
 		{
 		}
 
-		constexpr explicit Result(const BaseError& error) noexcept
+		constexpr explicit Result(const Error& error) noexcept
 			: m_Value(), m_Error(error), m_IsValid(false)
 		{
 		}
 
-		constexpr explicit Result(BaseError&& error) noexcept
+		constexpr explicit Result(Error&& error) noexcept
 			: m_Value(), m_Error(std::move(error)), m_IsValid(false)
 		{
 		}
@@ -61,7 +51,7 @@ namespace Micro
 		
 		NODISCARD constexpr T& Value() noexcept { return m_Value; }
 		NODISCARD constexpr const T& Value() const noexcept { return m_Value; }
-		NODISCARD constexpr const BaseError& Error() const noexcept { return m_Error; }
+		NODISCARD constexpr const Error& ErrorHandle() const noexcept { return m_Error; }
 		NODISCARD constexpr bool IsValid() const noexcept { return m_IsValid; }
 
 		
@@ -74,8 +64,8 @@ namespace Micro
 
 		NODISCARD constexpr static Result Ok(const T& value) noexcept { return Result(value); }
 		NODISCARD constexpr static Result Ok(T&& value) noexcept { return Result(std::move(value)); }
-		NODISCARD constexpr static Result Error(const BaseError& error) noexcept { return Result(error); }
-		NODISCARD constexpr static Result Error(BaseError&& error) noexcept { return Result(std::move(error)); }
+		NODISCARD constexpr static Result CaptureError(const Error& error) noexcept { return Result(error); }
+		NODISCARD constexpr static Result CaptureError(Error&& error) noexcept { return Result(std::move(error)); }
 
 		
 		/*
@@ -86,7 +76,7 @@ namespace Micro
 
 
 		NODISCARD constexpr operator T() const noexcept { return m_Value; }
-		NODISCARD constexpr operator BaseError() const noexcept { return m_Error; }
+		NODISCARD constexpr operator Error() const noexcept { return m_Error; }
 
 		friend std::ostream& operator<<(std::ostream& stream, const Result& result) noexcept
 		{
@@ -99,7 +89,7 @@ namespace Micro
 
 	private:
 		T m_Value;
-		BaseError m_Error;
+		Error m_Error;
 		bool m_IsValid;
 	};
 
@@ -108,16 +98,6 @@ namespace Micro
 	class Result<T&> final
 	{
 	private:
-		/*
-		 *  ============================================================
-		 *	|                          Aliases                         |
-		 *  ============================================================
-		 */
-
-
-		using BaseError = Error;
-
-
 		/*
 		 *  ============================================================
 		 *	|                 Constructors/Destructors                 |
@@ -130,12 +110,12 @@ namespace Micro
 		{
 		}
 
-		constexpr explicit Result(const BaseError& error) noexcept
+		constexpr explicit Result(const Error& error) noexcept
 			: m_Value(nullptr), m_Error(error)
 		{
 		}
 
-		constexpr explicit Result(BaseError&& error) noexcept
+		constexpr explicit Result(Error&& error) noexcept
 			: m_Value(nullptr), m_Error(std::move(error))
 		{
 		}
@@ -150,7 +130,7 @@ namespace Micro
 
 		NODISCARD constexpr T& Value() { return *const_cast<T*>(m_Value); }
 		NODISCARD constexpr const T& Value() const { return *m_Value; }
-		NODISCARD constexpr const BaseError& Error() const noexcept { return m_Error; }
+		NODISCARD constexpr const Error& ErrorHandle() const noexcept { return m_Error; }
 		NODISCARD constexpr bool IsValid() const noexcept { return m_Value != nullptr; }
 
 		
@@ -162,8 +142,8 @@ namespace Micro
 
 
 		NODISCARD constexpr static Result Ok(const T& value) noexcept { return Result(value); }
-		NODISCARD constexpr static Result Error(const BaseError& error) noexcept { return Result(error); }
-		NODISCARD constexpr static Result Error(BaseError&& error) noexcept { return Result(std::move(error)); }
+		NODISCARD constexpr static Result CaptureError(const Error& error) noexcept { return Result(error); }
+		NODISCARD constexpr static Result CaptureError(Error&& error) noexcept { return Result(std::move(error)); }
 
 
 		/*
@@ -174,7 +154,7 @@ namespace Micro
 
 
 		NODISCARD constexpr operator T() const { return *m_Value; }
-		NODISCARD constexpr operator BaseError() const noexcept { return m_Error; }
+		NODISCARD constexpr operator Error() const noexcept { return m_Error; }
 
 		friend std::ostream& operator<<(std::ostream& stream, const Result& result) noexcept
 		{
@@ -187,6 +167,6 @@ namespace Micro
 
 	private:
 		const T* m_Value;
-		BaseError m_Error;
+		Error m_Error;
 	};
 }

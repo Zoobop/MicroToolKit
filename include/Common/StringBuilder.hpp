@@ -117,7 +117,7 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string.
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator GetEnumerator() override
+		NODISCARD Enumerator<char> GetEnumerator() override
 		{
 			for (size_t i = 0; i < m_Size; i++)
 			{
@@ -130,7 +130,7 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string. (const version)
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator GetEnumerator() const override
+		NODISCARD Enumerator<char> GetEnumerator() const override
 		{
 			for (size_t i = 0; i < m_Size; i++)
 			{
@@ -579,7 +579,7 @@ namespace Micro
 		NODISCARD constexpr Result<char&> operator[](const size_t index) noexcept
 		{
 			if (index >= m_Size)
-				return Result<char&>::Error(IndexOutOfRangeError(index));
+				return Result<char&>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<char&>::Ok(m_Data[index]);
 		}
@@ -592,7 +592,7 @@ namespace Micro
 		NODISCARD constexpr Result<char> operator[](const size_t index) const noexcept
 		{
 			if (index >= m_Size)
-				return Result<char>::Error(IndexOutOfRangeError(index));
+				return Result<char>::CaptureError(IndexOutOfRangeError(index));
 
 			return Result<char>::Ok(m_Data[index]);
 		}

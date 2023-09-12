@@ -88,19 +88,19 @@ namespace Micro
 	}
 
 	template <typename T>
-	NODISCARD T* StackAlloc(const size_t size)
+	NODISCARD constexpr T* StackAlloc(const size_t size)
 	{
 		return static_cast<T*>(alloca(size * sizeof(T)));
 	}
 
 	template <typename T>
-	NODISCARD T* Alloc(const size_t size)
+	NODISCARD constexpr T* Alloc(const size_t size)
 	{
 		return static_cast<T*>(operator new(size * sizeof(T)));
 	}
 
 	template <typename T>
-	void Delete(T* block, const size_t size)
+	constexpr void Delete(T* block, const size_t size)
 	{
 		::operator delete(block, size * sizeof(T));
 	}

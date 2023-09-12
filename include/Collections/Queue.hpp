@@ -17,7 +17,6 @@ namespace Micro
 
 
 		using Base = HeapCollection<T>;
-		using Span = Span<T>;
 
 		
 		/*
@@ -51,7 +50,7 @@ namespace Micro
 		{
 		}
 
-		constexpr explicit Queue(const Span& other) noexcept : Base(other)
+		constexpr explicit Queue(const Span<T>& other) noexcept : Base(other)
 		{
 		}
 
@@ -145,7 +144,7 @@ namespace Micro
 		/// Enqueues all the elements from the given span to the Queue by copy.
 		/// </summary>
 		/// <param name="span">Span to add to the Queue</param>
-		constexpr void EnqueueRange(const Span& span) noexcept
+		constexpr void EnqueueRange(const Span<T>& span) noexcept
 		{
 			if (span.IsEmpty())
 				return;
@@ -183,7 +182,7 @@ namespace Micro
 				--Base::m_Size;
 				return Result<T>::Ok(std::move(item));
 			}
-			return Result<T>::Error(InvalidOperationError("Cannot dequeue from empty Queue!"));
+			return Result<T>::CaptureError(InvalidOperationError("Cannot dequeue from empty Queue!"));
 		}
 
 		NODISCARD constexpr Result<T&> Peek() const noexcept
@@ -191,7 +190,7 @@ namespace Micro
 			if (!Base::IsEmpty())
 				return Result<T&>::Ok(Base::m_Data[0]);
 
-			return Result<T&>::Error(InvalidOperationError("Cannot peek from empty Queue!"));
+			return Result<T&>::CaptureError(InvalidOperationError("Cannot peek from empty Queue!"));
 		}
 
 

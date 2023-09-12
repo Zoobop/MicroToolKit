@@ -23,7 +23,7 @@ namespace Micro
 		constexpr Error() noexcept = default;
 		constexpr Error(const Error&) noexcept = default;
 		constexpr Error(Error&&) noexcept = default;
-		constexpr ~Error() = default;
+		constexpr ~Error() noexcept = default;
 
 		constexpr explicit Error(const ErrorType type) noexcept
 			: m_Type(type)

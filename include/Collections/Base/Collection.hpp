@@ -10,19 +10,7 @@ namespace Micro
     template <typename T>
 	class HeapCollection : public Enumerable<T>
 	{
-	public:
-		/*
-		 *  ============================================================
-		 *	|                          Aliases                         |
-		 *  ============================================================
-		 */
-
-
-		using Memory = Memory<T>;
-		using Allocator = Allocator<T>;
-		using Span = Span<T>;
-
-		
+	public:		
 		/*
 		 *  ============================================================
 		 *	|                  Constructors/Destructors                |
@@ -63,7 +51,7 @@ namespace Micro
 				new(&m_Data[m_Size++]) T(std::move(const_cast<T&>(elem)));
 		}
 
-		constexpr explicit HeapCollection(const Span& sequence) noexcept
+		constexpr explicit HeapCollection(const Span<T>& sequence) noexcept
 		{
 			const size_t length = sequence.Capacity();
 			if (length == 0)
@@ -92,8 +80,8 @@ namespace Micro
 		constexpr ~HeapCollection() noexcept override
 		{
 			// Invalidate memory, then free
-			Allocator::ClearMemory(m_Data, m_Size);
-			Allocator::Dispose(m_Data, m_Capacity);
+			Allocator<T>::ClearMemory(m_Data, m_Size);
+			Allocator<T>::Dispose(m_Data, m_Capacity);
 
 			m_Data = nullptr;
 			m_Size = 0;
@@ -112,7 +100,7 @@ namespace Micro
 		NODISCARD constexpr const T* Data() const noexcept { return m_Data; }
 		NODISCARD constexpr size_t Size() const noexcept { return m_Size; }
 		NODISCARD constexpr size_t Capacity() const noexcept { return m_Capacity; }
-		NODISCARD constexpr Span AsSpan() const noexcept { return {m_Data, m_Size}; }
+		NODISCARD constexpr Span<T> AsSpan() const noexcept { return {m_Data, m_Size}; }
 
 		/* Enumerators (Iterators) */
 
@@ -159,7 +147,7 @@ namespace Micro
 		constexpr void Clear() noexcept
 		{
 			// Invalidate data
-			Allocator::ClearMemory(m_Data, m_Size);
+			Allocator<T>::ClearMemory(m_Data, m_Size);
 			m_Size = 0;
 		}
 
@@ -171,7 +159,7 @@ namespace Micro
 		 */
 
 
-		NODISCARD constexpr explicit operator Span() const noexcept { return AsSpan(); }
+		NODISCARD constexpr explicit operator Span<T>() const noexcept { return AsSpan(); }
 
 		constexpr HeapCollection& operator=(const HeapCollection& other) noexcept
 		{
@@ -238,12 +226,12 @@ namespace Micro
 		
 		constexpr void Allocate(const size_t capacity) noexcept
 		{
-			m_Capacity = Allocator::Allocate(m_Data, m_Capacity, capacity);
+			m_Capacity = Allocator<T>::Allocate(m_Data, m_Capacity, capacity);
 		}
 
 		constexpr void Reallocate(const size_t capacity) noexcept
 		{
-			m_Capacity = Allocator::Reallocate(m_Data, m_Capacity, capacity);
+			m_Capacity = Allocator<T>::Reallocate(m_Data, m_Capacity, capacity);
 		}
 
 		/// <summary>
@@ -270,7 +258,7 @@ namespace Micro
 		}
 
 	protected:
-		Memory m_Data = nullptr;
+		Memory<T> m_Data = nullptr;
 		size_t m_Size = 0;
 		size_t m_Capacity = 0;
 	};
@@ -280,16 +268,6 @@ namespace Micro
 	class StackCollection : public Enumerable<T>
 	{
 	public:
-		/*
-		 *  ============================================================
-		 *	|                          Aliases                         |
-		 *  ============================================================
-		 */
-
-
-		using Span = Span<T>;
-
-
 		/*
 		 *  ============================================================
 		 *	|                  Constructors/Destructors                |
@@ -323,7 +301,7 @@ namespace Micro
 				new(&m_Data[i]) T(std::move(const_cast<T&>(data[i])));
 		}
 
-		constexpr explicit StackCollection(const Span& sequence) noexcept
+		constexpr explicit StackCollection(const Span<T>& sequence) noexcept
 		{
 			const size_t capacity = sequence.Capacity();
 			if (capacity == 0)
@@ -371,7 +349,7 @@ namespace Micro
 
 		NODISCARD constexpr const T* Data() const noexcept { return m_Data; }
 		NODISCARD constexpr size_t Capacity() const noexcept { return TSize; }
-		NODISCARD constexpr Span AsSpan() const noexcept { return { m_Data, TSize}; }
+		NODISCARD constexpr Span<T> AsSpan() const noexcept { return { m_Data, TSize}; }
 
 		/* Enumerators (Iterators) */
 
@@ -423,7 +401,7 @@ namespace Micro
 		 */
 
 
-		NODISCARD constexpr explicit operator Span() const noexcept { return AsSpan(); }
+		NODISCARD constexpr explicit operator Span<T>() const noexcept { return AsSpan(); }
 
 		constexpr StackCollection& operator=(const StackCollection& other) noexcept
 		{

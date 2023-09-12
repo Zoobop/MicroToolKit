@@ -7,9 +7,7 @@ namespace Micro
 	class Allocator final
 	{
 	public:
-		using Memory = Memory<T>;
-
-		NODISCARD constexpr static size_t Allocate(Memory& data, const size_t currentCapacity, const size_t newCapacity) noexcept
+		NODISCARD constexpr static size_t Allocate(Memory<T>& data, const size_t currentCapacity, const size_t newCapacity) noexcept
 		{
 			// Don't allocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -19,7 +17,7 @@ namespace Micro
 			return newCapacity;
 		}
 
-		NODISCARD constexpr static size_t Reallocate(Memory& data, const size_t currentCapacity, const size_t newCapacity) noexcept
+		NODISCARD constexpr static size_t Reallocate(Memory<T>& data, const size_t currentCapacity, const size_t newCapacity) noexcept
 		{
 			// Don't reallocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -42,13 +40,13 @@ namespace Micro
 			return newCapacity;
 		}
 
-		constexpr static void ClearMemory(Memory& data, const size_t capacity) noexcept
+		constexpr static void ClearMemory(Memory<T>& data, const size_t capacity) noexcept
 		{
 			// Invalidate memory
 			for (size_t i = 0; i < capacity; i++)
 				data[i].~T();
 		}
 
-		constexpr static void Dispose(Memory& data, const size_t capacity) noexcept { Delete(data.Data, capacity); }
+		constexpr static void Dispose(Memory<T>& data, const size_t capacity) noexcept { Delete(data.Data, capacity); }
 	};
 }
