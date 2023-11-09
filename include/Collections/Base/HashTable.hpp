@@ -1,19 +1,19 @@
 #pragma once
+#include "Core/Typedef.hpp"
 #include "Core/Hash.hpp"
 #include "Collections/Base/Internal/HashTableInternal.hpp"
 #include "Collections/Base/Enumerable.hpp"
 
 namespace Micro
 {
-	template <typename T>
+	template <typename T, HashFunction<T> THashFunction>
 	class HashTableAllocator final
 	{
 	public:
 		using Node = Internal::HashNode<T>;
 		using MetaData = Internal::MetaData<Node>;
-		using Memory = Memory<Node>;
 
-		NODISCARD constexpr static size_t Allocate(Memory& data, const size_t currentCapacity, const size_t newCapacity) noexcept
+		NODISCARD constexpr static usize Allocate(Memory<Node>& data, const usize currentCapacity, const usize newCapacity) noexcept
 		{
 			// Don't allocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -23,8 +23,8 @@ namespace Micro
 			return newCapacity;
 		}
 
-		NODISCARD constexpr static size_t Reallocate(Memory& data, MetaData*& metaData, const size_t currentCapacity,
-		                                   const size_t newCapacity) noexcept
+		NODISCARD constexpr static usize Reallocate(Memory<Node>& data, MetaData*& metaData, const usize currentCapacity,
+		                                   const usize newCapacity) noexcept
 		{
 			// Don't reallocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -42,7 +42,7 @@ namespace Micro
 				while (valueNode != nullptr)
 				{
 					// Get new hash of value
-					const size_t hash = Hash(valueNode->GetKey()) % newCapacity;
+					const usize hash = THashFunction(valueNode->GetKey()) % newCapacity;
 
 					// Check if bucket is valid
 					auto bucket = &newBlock[hash];
@@ -88,7 +88,7 @@ namespace Micro
 			return newCapacity;
 		}
 
-		static void ClearMemory(MetaData* metaData) noexcept
+		constexpr static void ClearMemory(MetaData* metaData) noexcept
 		{
 			// Clear meta data
 			if (metaData == nullptr)
@@ -109,49 +109,10 @@ namespace Micro
 			}
 		}
 
-		constexpr static void Dispose(Memory& data, const size_t capacity) noexcept
+		constexpr static void Dispose(Memory<Node>& data, const usize capacity) noexcept
 		{
-			static_assert(capacity > 0);
+			ASSERT(capacity > 0);
 			Delete(data.Data, capacity);
-		}
-
-		static void AddMetaData(MetaData*& metaData, Node* node, const size_t hash) noexcept
-		{
-			// Initial node
-			if (metaData == nullptr)
-			{
-				metaData = Alloc<MetaData>(1);
-				new(metaData) MetaData(node, hash);
-				return;
-			}
-
-			// Subsequent nodes...
-			auto metaDataNode = metaData;
-			while (metaDataNode->Next != nullptr)
-				metaDataNode = metaDataNode->Next;
-
-			auto newNode = Alloc<MetaData>(1);
-			new(newNode) MetaData(node, hash);
-
-			metaDataNode->Next = newNode;
-		}
-
-		static void RemoveMetaData(MetaData*& metaData, Node* node) noexcept
-		{
-			// Initial node
-			if (metaData == nullptr)
-				return;
-
-			// Search for existing node
-			if (metaData->BucketReference != node)
-				return;
-
-			// Remove bucket
-			auto head = metaData;
-			metaData = metaData->Next;
-
-			head->Invalidate();
-			delete head;
 		}
 
 	private:
@@ -173,8 +134,10 @@ namespace Micro
 		}
 	};
 
-
 	template <typename T>
+	using HashFunction = usize(*)(const T&);
+
+	template <typename T, HashFunction<T> THashFunction = Micro::Hash>
 	class HashTable : public Enumerable<T>
 	{
 	public:
@@ -187,8 +150,7 @@ namespace Micro
 
 		using Node = Internal::HashNode<T>;
 		using MetaData = Internal::MetaData<Node>;
-		using Memory = Memory<Node>;
-		using Allocator = HashTableAllocator<T>;
+		using Allocator = HashTableAllocator<T, THashFunction>;
 
 		
 		/*
@@ -221,7 +183,7 @@ namespace Micro
 
 		constexpr explicit HashTable(std::initializer_list<T>&& initializerList) noexcept
 		{
-			const size_t length = initializerList.size();
+			const usize length = initializerList.size();
 			if (length == 0)
 				return;
 
@@ -231,7 +193,7 @@ namespace Micro
 				Insert(std::move(const_cast<T&>(e)));
 		}
 
-		constexpr explicit HashTable(const size_t capacity) noexcept { Allocate(capacity); }
+		constexpr explicit HashTable(const usize capacity) noexcept { Allocate(capacity); }
 
 		constexpr ~HashTable() noexcept override
 		{
@@ -252,7 +214,15 @@ namespace Micro
 		 */
 
 
-		constexpr void SetLoadFactor(const double_t loadFactor) noexcept { m_LoadFactor = loadFactor; }
+		constexpr void Rehash(const f32 loadFactor) noexcept 
+		{
+			ASSERT(loadFactor > 0);
+			if (m_LoadFactor == loadFactor)
+				return;
+
+			// Clamp value
+			m_LoadFactor = loadFactor > 1 ? 1 : loadFactor;
+		}
 
 		constexpr void Clear() noexcept
 		{
@@ -271,15 +241,15 @@ namespace Micro
 
 		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0; }
 		NODISCARD constexpr const MetaData* Data() const noexcept { return m_MetaData; }
-		NODISCARD constexpr size_t Size() const noexcept { return m_Size; }
-		NODISCARD constexpr size_t Capacity() const noexcept { return m_Capacity; }
-		NODISCARD constexpr double_t LoadFactor() const noexcept { return m_LoadFactor; }
+		NODISCARD constexpr usize Size() const noexcept { return m_Size; }
+		NODISCARD constexpr usize Capacity() const noexcept { return m_Capacity; }
+		NODISCARD constexpr f32 LoadFactor() const noexcept { return m_LoadFactor; }
 
 		/* Enumerators (Iterators) */
 
 		NODISCARD Enumerator<T> GetEnumerator() override
 		{
-			for (size_t i = 0; i < m_Size; i++)
+			for (usize i = 0; i < m_Size; i++)
 			{
 				auto& element = m_Data[i];
 				co_yield element;
@@ -288,7 +258,7 @@ namespace Micro
 
 		NODISCARD Enumerator<T> GetEnumerator() const override
 		{
-			for (size_t i = 0; i < m_Size; i++)
+			for (usize i = 0; i < m_Size; i++)
 			{
 				const auto& element = m_Data[i];
 				co_yield element;
@@ -342,7 +312,7 @@ namespace Micro
 		{
 			stream << "[";
 
-			size_t counter = 0;
+			usize counter = 0;
 			auto metaDataNode = hashTable.m_MetaData;
 			while (metaDataNode != nullptr)
 			{
@@ -365,12 +335,12 @@ namespace Micro
 		}
 
 	protected:
-		constexpr void Allocate(const size_t capacity) noexcept
+		constexpr void Allocate(const usize capacity) noexcept
 		{
 			m_Capacity = Allocator::Allocate(m_Data, m_Capacity, capacity);
 		}
 
-		constexpr void Reallocate(const size_t capacity) noexcept
+		constexpr void Reallocate(const usize capacity) noexcept
 		{
 			m_Capacity = Allocator::Reallocate(m_Data, m_MetaData, m_Capacity, capacity);
 		}
@@ -379,7 +349,7 @@ namespace Micro
 		{
 			// TODO: Refactor
 			auto data = other.m_Data;
-			for (size_t i = 0; i < other.m_Capacity; i++)
+			for (usize i = 0; i < other.m_Capacity; i++)
 			{
 				if (data[i].IsValid())
 				{
@@ -410,7 +380,7 @@ namespace Micro
 		//		Reallocate(m_Capacity * 2);
 
 		//	// Get hash value
-		//	const size_t hash = Hash(key) % m_Capacity;
+		//	const usize hash = Hash(key) % m_Capacity;
 		//	++m_Size;
 
 		//	// Check if bucket is valid
@@ -448,7 +418,7 @@ namespace Micro
 		//		Reallocate(m_Capacity * 2);
 
 		//	// Get hash value
-		//	const size_t hash = Hash(key) % m_Capacity;
+		//	const usize hash = Hash(key) % m_Capacity;
 		//	++m_Size;
 
 		//	// Check if bucket is valid
@@ -486,7 +456,7 @@ namespace Micro
 		//		Reallocate(m_Capacity * 2);
 
 		//	// Get hash value
-		//	const size_t hash = Hash(tuple.Component1) % m_Capacity;
+		//	const usize hash = Hash(tuple.Component1) % m_Capacity;
 		//	++m_Size;
 
 		//	// Check if bucket is valid
@@ -524,7 +494,7 @@ namespace Micro
 		//		Reallocate(m_Capacity * 2);
 
 		//	// Get hash value
-		//	const size_t hash = Hash(tuple.Component1) % m_Capacity;
+		//	const usize hash = Hash(tuple.Component1) % m_Capacity;
 		//	++m_Size;
 
 		//	// Check if bucket is valid
@@ -558,7 +528,7 @@ namespace Micro
 		//bool Erase(const KeyType& key)
 		//{
 		//	// Get hash value
-		//	const size_t hash = Hash(key) % m_Capacity;
+		//	const usize hash = Hash(key) % m_Capacity;
 
 		//	// Check if bucket is valid
 		//	auto bucket = &m_Data[hash];
@@ -621,7 +591,7 @@ namespace Micro
 		//bool Erase(const KeyValuePair& tuple)
 		//{
 		//	// Get hash value
-		//	const size_t hash = Hash(tuple.Component1) % m_Capacity;
+		//	const usize hash = Hash(tuple.Component1) % m_Capacity;
 
 		//	// Check if bucket is valid
 		//	auto bucket = &m_Data[hash];
@@ -683,27 +653,56 @@ namespace Micro
 
 		NODISCARD constexpr bool IsWithinThreshold() const noexcept
 		{
-			return (static_cast<double_t>(m_Size) / static_cast<double_t>(m_Capacity)) < m_LoadFactor;
+			return (static_cast<usize>(m_Size) / static_cast<usize>(m_Capacity)) < m_LoadFactor;
 		}
 
-		void AddMetaData(Node* node, const size_t hash)
+		constexpr void AddMetaData(Node* node, const usize hash) noexcept
 		{
-			Allocator::AddMetaData(m_MetaData, node, hash);
+			// Initial node
+			if (m_MetaData == nullptr)
+			{
+				m_MetaData = Alloc<MetaData>(1);
+				new(m_MetaData) MetaData(node, hash);
+				return;
+			}
+
+			// Subsequent nodes...
+			auto metaDataNode = m_MetaData;
+			while (metaDataNode->Next != nullptr)
+				metaDataNode = metaDataNode->Next;
+
+			auto newNode = Alloc<MetaData>(1);
+			new(newNode) MetaData(node, hash);
+
+			metaDataNode->Next = newNode;
 		}
 
-		void RemoveMetaData(Node* node)
+		constexpr void RemoveMetaData(Node* node) noexcept
 		{
-			Allocator::RemoveMetaData(m_MetaData, node);
+			// Initial node
+			if (m_MetaData == nullptr)
+				return;
+
+			// Search for existing node
+			if (metaData->BucketReference != node)
+				return;
+
+			// Remove bucket
+			auto head = m_MetaData;
+			m_MetaData = metaData->Next;
+
+			head->Invalidate();
+			delete head;
 		}
 
 	protected:
-		Memory m_Data = nullptr;
+		Memory<Node> m_Data = nullptr;
 		MetaData* m_MetaData = nullptr;
-		size_t m_Size = 0;
-		size_t m_Capacity = 0;
-		double_t m_LoadFactor = 0.80;
+		usize m_Size = 0;
+		usize m_Capacity = 0;
+		f32 m_LoadFactor = 0.8f;
 
 	private:
-		constexpr static size_t DefaultCapacity = 25;
+		constexpr static usize DefaultCapacity = 25;
 	};
 }

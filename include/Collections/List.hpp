@@ -224,7 +224,7 @@ namespace Micro
 		constexpr void AddRange(std::convertible_to<T> auto... elements) noexcept
 		{
 			constexpr size_t argumentCount = sizeof ...(elements);
-			static_assert(argumentCount != 0, "Cannot call 'AddRange' without any arguments!");
+			ASSERT_MSG(argumentCount != 0, "Cannot call 'AddRange' without any arguments!");
 
 			const size_t length = Base::m_Size + argumentCount;
 			Base::HandleReallocation(length);
@@ -372,7 +372,7 @@ namespace Micro
 		constexpr Result<bool> InsertRange(const size_t startIndex, std::convertible_to<T> auto... elements) noexcept
 		{
 			constexpr size_t length = sizeof ...(elements);
-			static_assert(length != 0, "Cannot call 'InsertRange' without any arguments!");
+			ASSERT_MSG(length != 0, "Cannot call 'InsertRange' without any arguments!");
 
 			// Index validation
 			if (Base::m_Size <= startIndex)

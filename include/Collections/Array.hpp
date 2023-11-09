@@ -119,7 +119,7 @@ namespace Micro
 		/// </summary>
 		/// <param name="index">Index to pull value</param>
 		/// <returns>Value at index, or invalid result</returns>
-		NODISCARD constexpr Result<T&> GetValue(const size_t index) noexcept
+		NODISCARD constexpr Result<T&> At(const size_t index) noexcept
 		{
 			if (index >= TSize)
 				return Result<T&>::CaptureError(IndexOutOfRangeError(index));
@@ -132,7 +132,7 @@ namespace Micro
 		/// </summary>
 		/// <param name="index">Index to pull value</param>
 		/// <returns>Value at index, or invalid result</returns>
-		NODISCARD constexpr Result<const T&> GetValue(const size_t index) const noexcept
+		NODISCARD constexpr Result<const T&> At(const size_t index) const noexcept
 		{
 			if (index >= TSize)
 				return Result<const T&>::CaptureError(IndexOutOfRangeError(index));
@@ -336,14 +336,14 @@ namespace Micro
 		/// </summary>
 		/// <param name="index">Index of element</param>
 		/// <returns>Reference to the element at index, or empty result if invalid</returns>
-		NODISCARD constexpr Result<T&> operator[](const size_t index) noexcept { return GetValue(index); }
+		NODISCARD constexpr Result<T&> operator[](const size_t index) noexcept { return At(index); }
 
 		/// <summary>
 		/// Gets the element at the given index, or an empty result if invalid. (const version)
 		/// </summary>
 		/// <param name="index">Index of element</param>
 		/// <returns>Reference to the element at index, or empty result if invalid</returns>
-		NODISCARD constexpr Result<const T&> operator[](const size_t index) const noexcept { return GetValue(index); }
+		NODISCARD constexpr Result<const T&> operator[](const size_t index) const noexcept { return At(index); }
 
 		/// <summary>
 		/// Copies the elements from the given Array.

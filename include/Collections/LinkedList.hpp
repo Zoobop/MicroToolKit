@@ -1,18 +1,17 @@
 #pragma once
 
 #include "Collections/Base/NodeChain.hpp"
+#include "Utility/Node.hpp"
 
 namespace Micro
 {
 	template <typename T>
-	class LinkedList final : public NodeChain<T, DoubleNode<T>>
+	class LinkedList final : public NodeChain<T, DoubleNode>
 	{
 	public:
 		// Aliases
-		using Base = NodeChain<T, DoubleNode<T>>;
+		using Base = NodeChain<T, DoubleNode>;
 		using Node = DoubleNode<T>;
-
-		friend Base;
 
 		// Constructors/Destructors
 		constexpr LinkedList() noexcept : Base()
@@ -47,7 +46,7 @@ namespace Micro
 		constexpr ~LinkedList() noexcept override = default;
 
 		// Utility
-		void PushBack(const T& value)
+		constexpr void PushBack(const T& value) noexcept
 		{
 			// Check head validity
 			if (!Base::IsNodeValid(Base::m_Head))
@@ -74,7 +73,7 @@ namespace Micro
 			++Base::m_Size;
 		}
 
-		void PushBack(T&& value)
+		constexpr void PushBack(T&& value) noexcept
 		{
 			// Check head validity
 			if (!Base::IsNodeValid(Base::m_Head))
@@ -101,7 +100,7 @@ namespace Micro
 			++Base::m_Size;
 		}
 
-		void PushFront(const T& value)
+		constexpr void PushFront(const T& value) noexcept
 		{
 			// Check head validity
 			if (!Base::IsNodeValid(Base::m_Head))
@@ -129,7 +128,7 @@ namespace Micro
 			++Base::m_Size;
 		}
 
-		void PushFront(T&& value)
+		constexpr void PushFront(T&& value) noexcept
 		{
 			// Check head validity
 			if (!Base::IsNodeValid(Base::m_Head))
@@ -157,7 +156,7 @@ namespace Micro
 			++Base::m_Size;
 		}
 
-		NODISCARD T PopBack()
+		NODISCARD constexpr Result<T> PopBack() noexcept
 		{
 			if (!Base::IsEmpty())
 			{
@@ -193,7 +192,7 @@ namespace Micro
 			throw InvalidOperationError("Linked LinkedList is empty.");
 		}
 
-		NODISCARD T PopFront()
+		NODISCARD constexpr Result<T> PopFront() noexcept
 		{
 			if (!Base::IsEmpty())
 			{
@@ -230,7 +229,7 @@ namespace Micro
 			throw InvalidOperationError("Linked LinkedList is empty.");
 		}
 
-		bool Remove(const T& value)
+		constexpr bool Remove(const T& value) noexcept
 		{
 			// Check if empty
 			if (Base::IsEmpty())
@@ -278,32 +277,32 @@ namespace Micro
 			return false;
 		}
 
-		NODISCARD T& At(const size_t index)
+		NODISCARD constexpr Result<T&> At(const usize index) noexcept
 		{
 			if (index >= Base::m_Size)
 				throw IndexOutOfRangeError(index);
 
 			auto node = Base::m_Head;
-			for (size_t i = 0; i < index; i++)
+			for (usize i = 0; i < index; i++)
 				node = node->Next;
 
 			return node->Value;
 		}
 
-		NODISCARD const T& At(const size_t index) const
+		NODISCARD constexpr Result<const T&> At(const usize index) const noexcept
 		{
 			if (index >= Base::m_Size)
 				throw IndexOutOfRangeError(index);
 
 			auto node = Base::m_Head;
-			for (size_t i = 0; i < index; i++)
+			for (usize i = 0; i < index; i++)
 				node = node->Next;
 
 			return node->Value;
 		}
 
 		// Operator Overloads
-		LinkedList& operator=(const LinkedList& other)
+		constexpr LinkedList& operator=(const LinkedList& other) noexcept
 		{
 			// Validation
 			if (this == &other)
@@ -323,7 +322,7 @@ namespace Micro
 			return *this;
 		}
 
-		LinkedList& operator=(LinkedList&& other) noexcept
+		constexpr LinkedList& operator=(LinkedList&& other) noexcept
 		{
 			// Validation
 			if (this == &other)
@@ -348,6 +347,6 @@ namespace Micro
 		}
 
 	private:
-		static constexpr size_t c_DefaultCapacity = 4;
+		static constexpr usize c_DefaultCapacity = 4;
 	};
 }

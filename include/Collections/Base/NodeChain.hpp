@@ -1,25 +1,33 @@
 #pragma once
-#include "Iterator.hpp"
 #include "Core/Core.hpp"
-
+#include "Core/Typedef.hpp"
 #include "Core/Errors/Error.hpp"
 
 namespace Micro
 {
-	template <typename T, typename TNode>
-	class NodeChain
+	template <typename T, template <typename> typename TNode>
+	class NodeChain : public Enumerable<T>
 	{
 	public:
-		// Aliases
-		using Node = TNode;
-		using Allocator = typename Node::Allocator;
-		using Iterator = SegmentedIterator<T, Node>;
-		using ConstIterator = const Iterator;
+		/*
+		 *  ============================================================
+		 *	|                          Aliases                         |
+		 *  ============================================================
+		 */
+		
 
-		// Constructors/Destructor
+		using Node = TNode<T>;
+		using Allocator = typename Node::Allocator;
+
+
+		/*
+		 *  ============================================================
+		 *	|                 Constructor/Destructors                  |
+		 *  ============================================================
+		 */
 		constexpr NodeChain() noexcept = default;
 
-		NodeChain(const NodeChain& other)
+		constexpr NodeChain(const NodeChain& other) noexcept
 		{
 			if (!IsNodeValid(other.m_Head))
 				return;
@@ -29,7 +37,7 @@ namespace Micro
 			CopyFrom(other);
 		}
 
-		NodeChain(NodeChain&& other) noexcept
+		constexpr NodeChain(NodeChain&& other) noexcept
 			: m_Head(other.m_Head), m_Tail(other.m_Tail), m_Size(other.m_Size)
 		{
 			other.m_Head = nullptr;
@@ -37,9 +45,9 @@ namespace Micro
 			other.m_Size = 0;
 		}
 
-		NodeChain(std::initializer_list<T>&& initializerList) noexcept
+		constexpr NodeChain(std::initializer_list<T>&& initializerList) noexcept
 		{
-			const size_t length = initializerList.size();
+			const usize length = initializerList.size();
 			if (length == 0)
 				return;
 
@@ -62,10 +70,10 @@ namespace Micro
 			}
 		}
 
-		explicit NodeChain(std::convertible_to<T> auto... elements) noexcept
+		constexpr explicit NodeChain(std::convertible_to<T> auto... elements) noexcept
 		{
 			// Get number of elements (arg count)
-			const size_t length = sizeof ...(elements);
+			const usize length = sizeof ...(elements);
 			m_Size = length;
 
 			Allocate(length);
@@ -84,14 +92,21 @@ namespace Micro
 			}
 		}
 
-		virtual ~NodeChain()
+		constexpr ~NodeChain() noexcept override
 		{
 			// Invalidate memory, then free
 			Clear();
 		}
 
-		// Utility
-		virtual void Clear()
+
+		/*
+		 *  ============================================================
+		 *	|                         Utility                          |
+		 *  ============================================================
+		 */
+
+
+		constexpr void Clear() noexcept
 		{
 			// Invalidate data
 			Allocator::Dispose(m_Head);
@@ -100,29 +115,60 @@ namespace Micro
 			m_Size = 0;
 		}
 
-		NODISCARD virtual bool Contains(const T& value) const
+		NODISCARD constexpr bool Contains(const T& value) const noexcept
 		{
 			auto node = m_Head;
-			for (size_t i = 0; i < m_Size; i++, node = node->Next)
+			for (usize i = 0; i < m_Size; i++, node = node->Next)
 				if (node->Value == value)
 					return true;
 
 			return false;
 		}
 
-		// Accessors
+
+		/*
+		 *  ============================================================
+		 *	|                        Accessors                         |
+		 *  ============================================================
+		 */
+
+
 		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0; }
 		NODISCARD constexpr const Node* Head() const noexcept { return m_Head; }
 		NODISCARD constexpr const Node* Tail() const noexcept { return m_Tail; }
-		NODISCARD constexpr size_t Size() const noexcept { return m_Size; }
+		NODISCARD constexpr usize Size() const noexcept { return m_Size; }
 
-		// Iterators
-		NODISCARD constexpr Iterator begin() { return Iterator(m_Head); }
-		NODISCARD constexpr Iterator end() { return Iterator(nullptr); }
-		NODISCARD constexpr ConstIterator cbegin() const { return begin(); }
-		NODISCARD constexpr ConstIterator cend() const { return end(); }
+		/* Enumerators (Iterators) */
 
-		NodeChain& operator=(const NodeChain& other)
+		NODISCARD Enumerator<T> GetEnumerator() noexcept override
+		{
+			auto node = m_Head;
+			while (node != nullptr)
+			{
+				auto& value = node.Value();
+				co_yield value;
+			}
+		}
+
+		NODISCARD Enumerator<T> GetEnumerator() const noexcept override
+		{
+			auto node = m_Head;
+			while (node != nullptr)
+			{
+				const auto& value = node.Value();
+				co_yield value;
+			}
+		}
+
+
+		/*
+		 *  ============================================================
+		 *	|                    Operator Overloads                    |
+		 *  ============================================================
+		 */
+
+
+		constexpr NodeChain& operator=(const NodeChain& other) noexcept
 		{
 			// Validation
 			if (this == &other)
@@ -143,7 +189,7 @@ namespace Micro
 			return *this;
 		}
 
-		NodeChain& operator=(NodeChain&& other) noexcept
+		constexpr NodeChain& operator=(NodeChain&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
@@ -159,7 +205,7 @@ namespace Micro
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const NodeChain& current)
+		friend std::ostream& operator<<(std::ostream& stream, const NodeChain& current) noexcept
 		{
 			stream << "[";
 			auto node = current.m_Head;
@@ -177,17 +223,24 @@ namespace Micro
 		}
 
 	protected:
-		void Allocate(const size_t capacity) noexcept
+		/*
+		 *  ============================================================
+		 *	|                      Internal Helpers                    |
+		 *  ============================================================
+		 */
+
+
+		constexpr void Allocate(const usize capacity) noexcept
 		{
 			m_Size = Allocator::Allocate(m_Head, capacity);
 		}
 
-		void Reallocate(const size_t capacity) noexcept
+		constexpr void Reallocate(const usize capacity) noexcept
 		{
 			m_Size = Allocator::Reallocate(m_Head, m_Tail, m_Size, capacity);
 		}
 
-		void CopyFrom(const NodeChain& other)
+		constexpr void CopyFrom(const NodeChain& other) noexcept
 		{
 			auto node = m_Head;
 			for (auto iter = other.m_Head; IsNodeValid(iter); iter = iter->Next)
@@ -201,7 +254,14 @@ namespace Micro
 			}
 		}
 
-		// Static
+		
+		/*
+		 *  ============================================================
+		 *	|                          Static                          |
+		 *  ============================================================
+		 */
+
+
 		NODISCARD constexpr static bool IsNodeValid(const Node* node) noexcept
 		{
 			return Allocator::IsNodeValid(node);
@@ -243,6 +303,6 @@ namespace Micro
 	protected:
 		Node* m_Head = nullptr;
 		Node* m_Tail = nullptr;
-		size_t m_Size = 0;
+		usize m_Size = 0;
 	};
 }

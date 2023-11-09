@@ -8,4 +8,5 @@ riderModule.iml
 /*.sln.*
 /*.vcxproj
 /*.vcxproj.*
-/.vs
+/.vscode
+/.dev

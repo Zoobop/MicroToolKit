@@ -8,35 +8,35 @@
 namespace Micro
 {
 	template <typename T>
-	constexpr bool Copy(T* source, const size_t sourceSize, T* destination, const size_t destinationSize) noexcept
+	constexpr bool Copy(T* source, const usize sourceSize, T* destination, const usize destinationSize) noexcept
 	{
 		if (destinationSize < sourceSize)
 			return false;
 
-		for (size_t i = 0; i < sourceSize; i++)
+		for (usize i = 0; i < sourceSize; i++)
 			destination[i] = source[i];
 
 		return true;
 	}
 
 	template <typename T>
-	constexpr bool Move(T* source, const size_t sourceSize, T* destination, const size_t destinationSize) noexcept
+	constexpr bool Move(T* source, const usize sourceSize, T* destination, const usize destinationSize) noexcept
 	{
 		if (destinationSize < sourceSize)
 			return false;
 
-		for (size_t i = 0; i < sourceSize; i++)
+		for (usize i = 0; i < sourceSize; i++)
 			destination[i] = std::move(source[i]);
 
 		return true;
 	}
 
 	template <typename T>
-	constexpr void ShiftRight(T* data, const size_t size, const size_t startIndex, const size_t amount = 1)
+	constexpr void ShiftRight(T* data, const usize size, const usize startIndex, const usize amount = 1)
 	{
-		for (size_t i = size; i > startIndex; i--)
+		for (usize i = size; i > startIndex; i--)
 		{
-			const size_t offset = (i - 1) + amount;
+			const usize offset = (i - 1) + amount;
 			auto temp = std::move(data[i - 1]);
 			data[i - 1] = std::move(data[offset]);
 			data[offset] = std::move(temp);
@@ -44,22 +44,22 @@ namespace Micro
 	}
 
 	template <typename T>
-	constexpr void ShiftLeft(T* data, const size_t size, const size_t startIndex, const size_t amount = 1)
+	constexpr void ShiftLeft(T* data, const usize size, const usize startIndex, const usize amount = 1)
 	{
-		const size_t length = size - startIndex;
-		for (size_t i = 0; i < length; i++)
+		const usize length = size - startIndex;
+		for (usize i = 0; i < length; i++)
 		{
-			const size_t offset = i + startIndex - amount;
-			const size_t index = i + startIndex;
+			const usize offset = i + startIndex - amount;
+			const usize index = i + startIndex;
 			auto temp = std::move(data[index]);
 			data[index] = std::move(data[offset]);
 			data[offset] = std::move(temp);
 		}
 	}
 
-	NODISCARD constexpr size_t GetLength(const char* str) noexcept
+	NODISCARD constexpr usize GetLength(const char* str) noexcept
 	{
-		size_t size = 0;
+		usize size = 0;
         if (str == nullptr)
             return size;
 
@@ -88,19 +88,19 @@ namespace Micro
 	}
 
 	template <typename T>
-	NODISCARD constexpr T* StackAlloc(const size_t size)
+	NODISCARD constexpr T* StackAlloc(const usize size)
 	{
 		return static_cast<T*>(alloca(size * sizeof(T)));
 	}
 
 	template <typename T>
-	NODISCARD constexpr T* Alloc(const size_t size)
+	NODISCARD constexpr T* Alloc(const usize size)
 	{
 		return static_cast<T*>(operator new(size * sizeof(T)));
 	}
 
 	template <typename T>
-	constexpr void Delete(T* block, const size_t size)
+	constexpr void Delete(T* block, const usize size)
 	{
 		::operator delete(block, size * sizeof(T));
 	}
@@ -170,8 +170,8 @@ namespace Micro
 		}
 
 		NODISCARD constexpr operator T*() const noexcept { return Data; }
-		NODISCARD constexpr T& operator[](const size_t index) { return Data[index]; }
-		NODISCARD constexpr const T& operator[](const size_t index) const { return Data[index]; }
+		NODISCARD constexpr T& operator[](const usize index) { return Data[index]; }
+		NODISCARD constexpr const T& operator[](const usize index) const { return Data[index]; }
 
 		T* Data;
 		MemStatus Status;

@@ -7,7 +7,7 @@ namespace Micro
 	class Allocator final
 	{
 	public:
-		NODISCARD constexpr static size_t Allocate(Memory<T>& data, const size_t currentCapacity, const size_t newCapacity) noexcept
+		NODISCARD constexpr static usize Allocate(Memory<T>& data, const usize currentCapacity, const usize newCapacity) noexcept
 		{
 			// Don't allocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -17,7 +17,7 @@ namespace Micro
 			return newCapacity;
 		}
 
-		NODISCARD constexpr static size_t Reallocate(Memory<T>& data, const size_t currentCapacity, const size_t newCapacity) noexcept
+		NODISCARD constexpr static usize Reallocate(Memory<T>& data, const usize currentCapacity, const usize newCapacity) noexcept
 		{
 			// Don't reallocate if same capacity
 			if (currentCapacity == newCapacity)
@@ -27,7 +27,7 @@ namespace Micro
 			T* newBlock = Alloc<T>(newCapacity);
 
 			// Move memory to new block and free old block
-			for (size_t i = 0; i < currentCapacity; i++)
+			for (usize i = 0; i < currentCapacity; i++)
 			{
 				newBlock[i] = std::move(data[i]);
 				data[i].~T();
@@ -40,13 +40,13 @@ namespace Micro
 			return newCapacity;
 		}
 
-		constexpr static void ClearMemory(Memory<T>& data, const size_t capacity) noexcept
+		constexpr static void ClearMemory(Memory<T>& data, const usize capacity) noexcept
 		{
 			// Invalidate memory
-			for (size_t i = 0; i < capacity; i++)
+			for (usize i = 0; i < capacity; i++)
 				data[i].~T();
 		}
 
-		constexpr static void Dispose(Memory<T>& data, const size_t capacity) noexcept { Delete(data.Data, capacity); }
+		constexpr static void Dispose(Memory<T>& data, const usize capacity) noexcept { Delete(data.Data, capacity); }
 	};
 }
