@@ -471,6 +471,20 @@ namespace Micro
 			return count;
 		}
 
+		NODISCARD constexpr Result<T&> At(const usize index) noexcept {
+			if (index >= Base::m_Size)
+				return Result<T&>::CaptureError(IndexOutOfRangeError(index));
+
+			return Result<T&>::Ok(Base::m_Data[index]);
+		}
+
+		NODISCARD constexpr Result<const T&> At(const usize index) const noexcept {
+			if (index >= Base::m_Size)
+				return Result<const T&>::CaptureError(IndexOutOfRangeError(index));
+
+			return Result<const T&>::Ok(Base::m_Data[index]);
+		}
+
 		NODISCARD constexpr Optional<size_t> IndexOf(const T& value) const noexcept { return Micro::IndexOf(this->AsSpan(), value); }
 
 		NODISCARD constexpr Optional<size_t> LastIndexOf(const T& value) const noexcept { return Micro::LastIndexOf(this->AsSpan(), value); }
@@ -567,6 +581,23 @@ namespace Micro
 					list.Emplace(elem);
 			}
 
+			return list;
+		}
+
+
+		/*
+		 *  ============================================================
+		 *	|                          Static                          |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr static List FromSpan(Span<T>& span) noexcept
+		{
+			List list{};
+			list.m_Capacity = span.Capacity();
+			list.m_Size = span.Capacity();
+			list.m_Data = Span<T>::TakeMemory(span);
 			return list;
 		}
 

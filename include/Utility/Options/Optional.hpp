@@ -133,6 +133,8 @@ namespace Micro
 
 
 		NODISCARD constexpr operator T() const { return *m_Value; }
+		NODISCARD constexpr operator T&() const { return *m_Value; }
+		NODISCARD constexpr operator T&() { return *const_cast<T*>(m_Value); }
 
 		constexpr friend bool operator==(const Optional& left, const Optional& right) noexcept
 		{

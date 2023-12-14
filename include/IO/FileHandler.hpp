@@ -274,4 +274,6 @@ namespace Micro
 			}
 		}
 	};
+
+	using File = FileHandler;
 }

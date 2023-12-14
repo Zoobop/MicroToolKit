@@ -32,17 +32,17 @@ namespace Micro
 		{
 		}
 
-		constexpr Span(const T* data, const size_t size) noexcept
+		constexpr Span(const T* data, const usize size) noexcept
 			: m_Data(const_cast<T*>(data)), m_Capacity(size)
 		{
 		}
 
-		constexpr Span(T* data, const size_t size) noexcept
+		constexpr Span(T* data, const usize size) noexcept
 			: m_Data(data), m_Capacity(size)
 		{
 		}
 
-		template <size_t TSize>
+		template <usize TSize>
 		constexpr explicit Span(const T (&data)[TSize]) noexcept
 			: m_Data(data), m_Capacity(TSize)
 		{
@@ -63,16 +63,16 @@ namespace Micro
 		 */
 
 
-		NODISCARD constexpr size_t Capacity() const noexcept { return m_Capacity; }
+		NODISCARD constexpr usize Capacity() const noexcept { return m_Capacity; }
 		NODISCARD constexpr const T* Data() const noexcept { return m_Data; }
 		NODISCARD constexpr T* Data() noexcept { return m_Data; }
 		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Data == nullptr; }
-
+		
 		/* Enumerators (Iterators) */
 
 		NODISCARD Enumerator<T> GetEnumerator() override
 		{
-			for (size_t i = 0; i < m_Capacity; i++)
+			for (usize i = 0; i < m_Capacity; i++)
 			{
 				auto& element = m_Data[i];
 				co_yield element;
@@ -81,7 +81,7 @@ namespace Micro
 
 		NODISCARD Enumerator<T> GetEnumerator() const override
 		{
-			for (size_t i = 0; i < m_Capacity; i++)
+			for (usize i = 0; i < m_Capacity; i++)
 			{
 				const auto& element = m_Data[i];
 				co_yield element;
@@ -96,7 +96,7 @@ namespace Micro
 		 */
 
 
-		NODISCARD constexpr Span Slice(const size_t start) const noexcept
+		NODISCARD constexpr Span Slice(const usize start) const noexcept
 		{
 			if (start >= m_Capacity)
 				return Empty();
@@ -104,7 +104,7 @@ namespace Micro
 			return { m_Data + start, m_Data + m_Capacity };
 		}
 
-		NODISCARD constexpr Span Slice(const size_t start, const size_t length) const noexcept
+		NODISCARD constexpr Span Slice(const usize start, const usize length) const noexcept
 		{
 			if (start + length >= m_Capacity)
 				return Empty();
@@ -122,7 +122,7 @@ namespace Micro
 			if (m_Capacity != span.Capacity())
 				return false;
 
-			for (size_t i = 0; i < m_Capacity; i++)
+			for (usize i = 0; i < m_Capacity; i++)
 			{
 				if (m_Data[i] != span[i])
 					return false;
@@ -133,45 +133,45 @@ namespace Micro
 
 		NODISCARD constexpr bool Contains(const T& element) const noexcept
 		{
-			for (size_t i = 0; i < m_Capacity; i++)
+			for (usize i = 0; i < m_Capacity; i++)
 				if (m_Data[i] == element)
 					return true;
 			return false;
 		}
 
-		NODISCARD constexpr Optional<size_t> IndexOf(const T& element) const noexcept
+		NODISCARD constexpr Optional<usize> IndexOf(const T& element) const noexcept
 		{
-			for (size_t i = 0; i < m_Capacity; ++i)
+			for (usize i = 0; i < m_Capacity; ++i)
 				if (m_Data[i] == element)
-					return Optional<size_t>(i);
+					return Optional<usize>(i);
 
-			return Optional<size_t>::Empty();
+			return Optional<usize>::Empty();
 		}
 
-		NODISCARD constexpr Optional<size_t> LastIndexOf(const T& element) const noexcept
+		NODISCARD constexpr Optional<usize> LastIndexOf(const T& element) const noexcept
 		{
-			for (size_t i = 0; i < m_Capacity; ++i)
+			for (usize i = 0; i < m_Capacity; ++i)
 			{
-				const size_t offset = m_Capacity - 1 - i;
+				const usize offset = m_Capacity - 1 - i;
 				if (m_Data[offset] == element)
-					return Optional<size_t>(offset);
+					return Optional<usize>(offset);
 			}
 
-			return Optional<size_t>::Empty();
+			return Optional<usize>::Empty();
 		}
 
 		NODISCARD constexpr bool Exists(const Predicate<T>& predicate) const noexcept
 		{
-			for (size_t i = 0; i < m_Capacity; ++i)
+			for (usize i = 0; i < m_Capacity; ++i)
 				if (predicate(m_Data[i]))
 					return true;
 			return false;
 		}
 
-		NODISCARD constexpr uint64_t CountBy(const Predicate<T>& predicate) const noexcept
+		NODISCARD constexpr usize Count(const Predicate<T>& predicate) const noexcept
 		{
-			uint64_t count = 0;
-			for (size_t i = 0; i < m_Capacity; ++i)
+			usize count = 0;
+			for (usize i = 0; i < m_Capacity; ++i)
 				if (predicate(m_Data[i]))
 					++count;
 			return count;
@@ -179,17 +179,17 @@ namespace Micro
 
 		constexpr void Reverse() noexcept
 		{
-			const size_t length = m_Capacity / 2;
-			for (size_t i = 0; i < length; ++i)
+			const usize length = m_Capacity / 2;
+			for (usize i = 0; i < length; ++i)
 			{
-				const size_t swapIndex = m_Capacity - i - 1;
+				const usize swapIndex = m_Capacity - i - 1;
 				const auto temp = std::move(m_Data[i]);
 				m_Data[i] = m_Data[swapIndex];
 				m_Data[swapIndex] = temp;
 			}
 		}
 
-		constexpr bool Swap(const size_t index1, const size_t index2) noexcept
+		constexpr bool Swap(const usize index1, const usize index2) noexcept
 		{
 			if (index1 >= m_Capacity || index2 >= m_Capacity || index1 == index2)
 				return false;
@@ -203,12 +203,59 @@ namespace Micro
 
 		/*
 		 *  ============================================================
+		 *	|                           LINQ                           |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr Optional<T&> First() noexcept { return operator[](0); }
+
+		NODISCARD constexpr Optional<const T&> First() const noexcept { return operator[](0); }
+
+		NODISCARD constexpr Optional<T&> Last() noexcept { return operator[](m_Capacity - 1); }
+
+		NODISCARD constexpr Optional<const T&> Last() const noexcept { return operator[](m_Capacity - 1); }
+
+		NODISCARD constexpr bool Any() const noexcept { return m_Data != nullptr && m_Capacity > 0; }
+
+		NODISCARD constexpr bool Any(const Predicate<T>& predicate) const noexcept
+		{
+			for (usize i = 0; i < m_Capacity; ++i)
+			{
+				const auto& element = m_Data[i];
+				if (predicate(element))
+					return true;
+			}
+
+			return false;
+		}
+
+		NODISCARD constexpr bool All(const Predicate<T>& predicate) const noexcept
+		{
+			for (usize i = 0; i < m_Capacity; ++i)
+			{
+				const auto& element = m_Data[i];
+				if (!predicate(element))
+					return false;
+			}
+
+			return true;
+		}
+
+
+		/*
+		 *  ============================================================
 		 *	|                    Operator Overloads                    |
 		 *  ============================================================
 		 */
 
 
-		NODISCARD Optional<T&> operator[](const size_t index) noexcept
+		/// <summary>
+		/// Gets the element at the given index, or an empty result if invalid.
+		/// </summary>
+		/// <param name="index">Index of element</param>
+		/// <returns>Reference to the element at index, or empty result if invalid</returns>
+		NODISCARD constexpr Optional<T&> operator[](const usize index) noexcept
 		{
 			if (index >= m_Capacity)
 				return Optional<T&>::Empty();
@@ -216,7 +263,12 @@ namespace Micro
 			return Optional<T&>(m_Data[index]);
 		}
 
-		NODISCARD Optional<const T&> operator[](const size_t index) const noexcept
+		/// <summary>
+		/// Gets the element at the given index, or an empty result if invalid. (const version)
+		/// </summary>
+		/// <param name="index">Index of element</param>
+		/// <returns>Reference to the element at index, or empty result if invalid</returns>
+		NODISCARD constexpr Optional<const T&> operator[](const usize index) const noexcept
 		{
 			if (index >= m_Capacity)
 				return Optional<const T&>::Empty();
@@ -255,7 +307,7 @@ namespace Micro
 		friend std::ostream& operator<<(std::ostream& stream, const Span& current) noexcept
 		{
 			stream << "[";
-			for (size_t i = 0; i < current.m_Capacity; ++i)
+			for (usize i = 0; i < current.m_Capacity; ++i)
 			{
 				stream << current.m_Data[i];
 
@@ -274,6 +326,14 @@ namespace Micro
 		 */
 
 
+		NODISCARD constexpr static Memory<T> TakeMemory(Span& span) noexcept
+		{
+			auto memory = span.m_Data;
+			span.m_Data = nullptr;
+			span.m_Capacity = 0;
+			return memory;
+		}
+
 		/// <summary>
 		/// Creates an empty Span.
 		/// </summary>
@@ -282,7 +342,7 @@ namespace Micro
 
 	private:
 		Memory<T> m_Data = nullptr;
-		size_t m_Capacity = 0;
+		usize m_Capacity = 0;
 	};
 
 
@@ -297,9 +357,9 @@ namespace Micro
 	/// Hashes the Span to produce a unique hash code.
 	/// </summary>
 	/// <param name="object">Span to hash</param>
-	/// <returns>Hash code as a 'size_t'</returns>
+	/// <returns>Hash code as a 'usize'</returns>
 	template <typename T>
-	NODISCARD size_t Hash(const Span<T>& object) noexcept
+	NODISCARD usize Hash(const Span<T>& object) noexcept
 	{
 		return typeid(T).hash_code() + typeid(Span<T>).hash_code() + object.Capacity();
 	}
@@ -311,7 +371,7 @@ namespace Micro
 	NODISCARD constexpr bool Contains(const Span<T>& span, const T& element) noexcept { return span.Contains(element); }
 
 	template <typename T>
-	NODISCARD constexpr Optional<size_t> IndexOf(const Span<T>& span, const T& element) noexcept { return span.IndexOf(element); }
+	NODISCARD constexpr Optional<usize> IndexOf(const Span<T>& span, const T& element) noexcept { return span.IndexOf(element); }
 
 	/// <summary>
 	/// Tries to find the last index of the given element.
@@ -320,17 +380,17 @@ namespace Micro
 	/// <param name="element">Element to find</param>
 	/// <returns>Last index of the element in the Span, or an invalid result if not found</returns>
 	template <typename T>
-	NODISCARD constexpr Optional<size_t> LastIndexOf(const Span<T>& span, const T& element) noexcept { return span.LastIndexOf(element); }
+	NODISCARD constexpr Optional<usize> LastIndexOf(const Span<T>& span, const T& element) noexcept { return span.LastIndexOf(element); }
 
 	template <typename T>
 	NODISCARD constexpr bool Exists(const Span<T>& span, const Predicate<T>& predicate) noexcept { return span.Exists(predicate); }
 
 	template <typename T>
-	NODISCARD constexpr uint64_t CountBy(const Span<T>& span, const Predicate<T>& predicate) noexcept { return span.CountBy(predicate); }
+	NODISCARD constexpr usize Count(const Span<T>& span, const Predicate<T>& predicate) noexcept { return span.Count(predicate); }
 
 	template <typename T>
 	constexpr void Reverse(Span<T>& span) noexcept { span.Reverse(); }
 
 	template <typename T>
-	constexpr bool Swap(Span<T>& span, const size_t index1, const size_t index2) noexcept { return span.Swap(index1, index2); }
+	constexpr bool Swap(Span<T>& span, const usize index1, const usize index2) noexcept { return span.Swap(index1, index2); }
 }

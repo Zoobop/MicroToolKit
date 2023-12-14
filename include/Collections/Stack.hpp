@@ -1,4 +1,6 @@
 #pragma once
+#include <format>
+#include <sstream>
 
 #include "Collections/Base/Collection.hpp"
 #include "Utility/Options/Result.hpp"
@@ -242,3 +244,16 @@ namespace Micro
 		static constexpr size_t DefaultCapacity = 16;
 	};
 }
+
+template <typename T>
+struct std::formatter<Micro::Stack<T>> {
+	constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    auto format(const Micro::Stack<T>& obj, std::format_context& ctx) const {
+		std::stringstream stream{};
+		stream << obj;
+        return std::format_to(ctx.out(), "{}", stream.str().c_str());
+    }
+};

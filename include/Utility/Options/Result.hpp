@@ -154,6 +154,8 @@ namespace Micro
 
 
 		NODISCARD constexpr operator T() const { return *m_Value; }
+		NODISCARD constexpr operator T&() { return *const_cast<T*>(m_Value); }
+		NODISCARD constexpr operator T&() const { return *m_Value; }
 		NODISCARD constexpr operator Error() const noexcept { return m_Error; }
 
 		friend std::ostream& operator<<(std::ostream& stream, const Result& result) noexcept

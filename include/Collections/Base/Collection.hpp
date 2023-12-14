@@ -159,7 +159,7 @@ namespace Micro
 		 */
 
 
-		NODISCARD constexpr explicit operator Span<T>() const noexcept { return AsSpan(); }
+		NODISCARD constexpr operator Span<T>() const noexcept { return AsSpan(); }
 
 		constexpr HeapCollection& operator=(const HeapCollection& other) noexcept
 		{

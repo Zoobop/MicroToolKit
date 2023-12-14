@@ -1,5 +1,6 @@
 #pragma once
 #include <sstream>
+#include <format>
 
 #include "Core/Core.hpp"
 #include "String.hpp"
@@ -12,8 +13,8 @@ namespace Micro
 		// Constructor/Destructor
 		constexpr Guid() noexcept
 		{
-			constexpr size_t length = 36;
-			for (size_t i = 0; i < length; i++)
+			constexpr usize length = 36;
+			for (usize i = 0; i < length; i++)
 				m_Guid[i] = '0';
 			
 			Format();
@@ -24,8 +25,8 @@ namespace Micro
 
 		constexpr explicit Guid(const char (&guid)[37]) noexcept
 		{
-			constexpr size_t length = 36;
-			for (size_t i = 0; i < length; i++)
+			constexpr usize length = 36;
+			for (usize i = 0; i < length; i++)
 				m_Guid[i] = guid[i];
 		}
 
@@ -49,6 +50,7 @@ namespace Micro
 
 		// Static
 		NODISCARD constexpr static Guid Empty() noexcept { return {}; }
+		
 		NODISCARD static Guid NewGuid() noexcept
 		{
 			return Empty().GenerateHex();
@@ -57,12 +59,12 @@ namespace Micro
 	private:
 		NODISCARD Guid& GenerateHex() noexcept
 		{
-			constexpr size_t length = 18;
-			size_t index = 0;
-			for (size_t i = 0; i < length; i++) {
-				const uint8_t character = Random::RandByte();
+			constexpr usize length = 18;
+			usize index = 0;
+			for (usize i = 0; i < length; i++) {
+				const u8 character = Random::RandByte();
 				std::stringstream hexstream;
-				hexstream << std::hex << static_cast<int32_t>(character);
+				hexstream << std::hex << static_cast<i32>(character);
 				auto hex = hexstream.view();
 				if (hex.length() < 2)
 					m_Guid[index++] = '0';
@@ -89,13 +91,24 @@ namespace Micro
 	};
 
 	template <>
-	NODISCARD inline size_t Hash(const Guid& guid) noexcept 
+	NODISCARD inline usize Hash(const Guid& guid) noexcept 
 	{
 		const auto data = guid.Data();
 		auto hash = 0;
-		for (size_t i = 0; i < 36; i++)
+		for (usize i = 0; i < 36; i++)
 			hash += data[i];
 
 		return typeid(Guid).hash_code() + hash; 
 	}
 }
+
+template <>
+struct std::formatter<Micro::Guid> {
+	constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    auto format(const Micro::Guid& obj, std::format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}", obj.Data());
+    }
+};

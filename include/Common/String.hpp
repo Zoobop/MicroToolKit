@@ -1,4 +1,6 @@
 #pragma once
+#include <format>
+
 #include "Core/Hash.hpp"
 #include "Collections/Base/Enumerable.hpp"
 #include "Utility/Options/Optional.hpp"
@@ -2626,3 +2628,15 @@ namespace Micro
 		return String::Create(span.Data(), span.Capacity());
 	}
 }
+
+
+template <>
+struct std::formatter<Micro::String> {
+	constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    auto format(const Micro::String& obj, std::format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}", obj.Data());
+    }
+};
