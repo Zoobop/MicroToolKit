@@ -67,10 +67,10 @@ namespace Micro
 		NODISCARD constexpr const T* Data() const noexcept { return m_Data; }
 		NODISCARD constexpr T* Data() noexcept { return m_Data; }
 		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Data == nullptr; }
-		
+
 		/* Enumerators (Iterators) */
 
-		NODISCARD Enumerator<T> GetEnumerator() override
+		NODISCARD Enumerator<T> GetEnumerator() noexcept override
 		{
 			for (usize i = 0; i < m_Capacity; i++)
 			{
@@ -79,7 +79,7 @@ namespace Micro
 			}
 		}
 
-		NODISCARD Enumerator<T> GetEnumerator() const override
+		NODISCARD Enumerator<T> GetEnumerator() const noexcept override
 		{
 			for (usize i = 0; i < m_Capacity; i++)
 			{

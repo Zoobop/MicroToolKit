@@ -55,6 +55,18 @@ namespace Micro
 		}
 
 		/**
+		 * \brief Initializes a new instance of the StringBuilder class by copying the value of the raw string argument
+		 *		  into the underlying buffer.
+		 * \param string Raw string value to copy
+		 */
+		constexpr StringBuilder(const char* string) noexcept
+		{
+			const usize length = GetLength(string);
+			Allocate(MAX(length, DefaultCapacity));
+			InternalCopy(string, length);
+		}
+
+		/**
 		 * \brief Initializes a new instance of the StringBuilder class with the underlying buffer allocated to the
 		 *		  given capacity.
 		 * \param capacity Capacity to initialize the underlying buffer with
@@ -117,9 +129,9 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string.
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator<char> GetEnumerator() override
+		NODISCARD Enumerator<char> GetEnumerator() noexcept override
 		{
-			for (size_t i = 0; i < m_Size; i++)
+			for (usize i = 0; i < m_Size; i++)
 			{
 				auto& element = m_Data[i];
 				co_yield element;
@@ -130,9 +142,9 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string. (const version)
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator<char> GetEnumerator() const override
+		NODISCARD Enumerator<char> GetEnumerator() const noexcept override
 		{
-			for (size_t i = 0; i < m_Size; i++)
+			for (usize i = 0; i < m_Size; i++)
 			{
 				const auto& element = m_Data[i];
 				co_yield element;

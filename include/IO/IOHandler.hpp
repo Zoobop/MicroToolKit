@@ -52,9 +52,15 @@ namespace Micro
 		template <Streamable... T>
 		static void WriteLine(const char* content, T ... args)
 		{
-			std::cout << std::vformat(
+			if constexpr (sizeof ...(args) > 0)
+			{
+				std::cout << std::vformat(
 					content, std::make_format_args(std::forward<T>(std::move(args))...)) <<
-				"\n";
+					"\n";
+				return;
+			}
+
+			std::cout << content << '\n';
 		}
 
 		static void Write(const bool boolean) noexcept
@@ -70,7 +76,13 @@ namespace Micro
 		template <Streamable... Args>
 		static void Write(const char* content, Args... args)
 		{
-			std::cout << std::vformat(content, std::make_format_args(std::forward<Args>(std::move(args))...));
+			if constexpr (sizeof ...(args) > 0)
+			{
+				std::cout << std::vformat(content, std::make_format_args(std::forward<Args>(std::move(args))...));
+				return;
+			}
+
+			std::cout << content;
 		}
 	};
 

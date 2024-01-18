@@ -154,6 +154,7 @@ namespace Micro
 				return *this;
 
 			Data = other.Data;
+			Status = other.Status;
 
 			return *this;
 		}
@@ -164,6 +165,7 @@ namespace Micro
 				return *this;
 
 			Data = other.Data;
+			Status = other.Status;
 
 			other.Invalidate();
 			return *this;

@@ -125,14 +125,13 @@ namespace Micro
 		/// <returns>Character array of type 'const char*'.</returns>
 		NODISCARD constexpr const char* Data() const noexcept { return m_Data; }
 
-
 		/* Enumerators (Iterators) */
 
 		/// <summary>
 		/// Gets the Enumerator that enumerates over the characters in the string.
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator<char> GetEnumerator() override
+		NODISCARD Enumerator<char> GetEnumerator() noexcept override
 		{
 			for (usize i = 0; i < m_Size; i++)
 			{
@@ -145,7 +144,7 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string. (const version)
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator<char> GetEnumerator() const override
+		NODISCARD Enumerator<char> GetEnumerator() const noexcept override
 		{
 			for (usize i = 0; i < m_Size; i++)
 			{
@@ -186,7 +185,7 @@ namespace Micro
 			if (start + length > m_Size)
 				return Optional<StringBuffer>::Empty();
 
-			return Optional<StringBuffer>({ m_Data + start, m_Data + m_Size });
+			return Optional<StringBuffer>({ m_Data + start, m_Data + start + length });
 		}
 
 		/// <summary>
@@ -602,7 +601,7 @@ namespace Micro
 
 			for (usize i = 0; i < m_Size; ++i)
 			{
-				if (m_Data[i] == string[0])
+				if (m_Data[i] == string.operator[](0))
 				{
 					usize index = i;
 					usize count = 0;
@@ -1469,3 +1468,17 @@ namespace Micro
 		return typeid(StringBuffer).hash_code() + size + hash;
 	}
 }
+
+template <>
+struct std::formatter<Micro::StringBuffer>
+{
+	constexpr auto parse(std::format_parse_context& ctx)
+	{
+		return ctx.begin();
+	}
+
+	auto format(const Micro::StringBuffer& obj, std::format_context& ctx) const
+	{
+		return std::format_to(ctx.out(), "{}", obj.Data());
+	}
+};

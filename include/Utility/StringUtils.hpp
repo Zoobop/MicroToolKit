@@ -1,4 +1,6 @@
 #pragma once
+#include <ranges>
+
 #include "Collections/List.hpp"
 #include "Common/StringBuffer.hpp"
 #include "Common/StringBuilder.hpp"
@@ -15,10 +17,12 @@ namespace Micro
 		if (string.IsEmpty())
 			return true;
 
+		constexpr char whitespace[] = "\t\r\b\n \0";
+
 		for (size_t i = 0; i < string.Length(); i++)
 		{
 			const char character = string[i];
-			if (character != '\n' && character != '\t' && character != '\r' && character != '\b' && character != ' ')
+			if (!std::ranges::any_of(whitespace, [character](const char c) { return c == character; }))
 				return false;
 		}
 

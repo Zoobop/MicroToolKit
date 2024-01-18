@@ -31,6 +31,12 @@ namespace Micro
 		}
 
 		template <size_t TSize, typename... Args>
+		constexpr explicit Error(const char(&message)[TSize], Args... args) noexcept
+			: m_Type(ErrorType::Base), m_Message(GetFormattedMessage(message, std::forward<Args>(std::move(args))...))
+		{
+		}
+
+		template <size_t TSize, typename... Args>
 		constexpr explicit Error(const ErrorType type, const char(&message)[TSize], Args... args) noexcept
 			: m_Type(type), m_Message(GetFormattedMessage(message, std::forward<Args>(std::move(args))...))
 		{
@@ -41,6 +47,12 @@ namespace Micro
 
 		constexpr Error& operator=(const Error&) noexcept = default;
 		constexpr Error& operator=(Error&&) noexcept = default;
+
+		friend std::ostream& operator<<(std::ostream& stream, const Error& error) noexcept
+		{
+			stream << error.Message();
+			return stream;
+		}
 
 	private:
 		template <size_t TSize, typename ... Args>

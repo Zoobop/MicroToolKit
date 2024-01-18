@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <ostream>
 
 namespace Micro
@@ -106,8 +107,8 @@ namespace Micro
 		}
 	};
 
-	template <typename... T>
-	NODISCARD constexpr auto MakeTuple(T... values) noexcept
+	template <typename T>
+	NODISCARD constexpr auto MakeTuple(std::convertible_to<T> auto... values) noexcept
 	{
 		return Tuple<T...>{std::forward<T>(std::move(values))...};
 	}

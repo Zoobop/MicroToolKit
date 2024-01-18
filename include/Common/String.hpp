@@ -85,6 +85,9 @@ namespace Micro
 		 */
 		constexpr String(const String& string) noexcept
 		{
+			if (string.IsEmpty())
+				return;
+
 			Allocate(string.m_Size);
 
 			InternalCopy(string.m_Data, string.m_Size);
@@ -137,6 +140,8 @@ namespace Micro
 		constexpr String(const char character, const size_t count) noexcept
 		{
 			Allocate(count);
+			if (count == 0) 
+				return;
 
 			for (size_t i = 0; i < count; i++)
 				m_Data[i] = character;
@@ -195,7 +200,7 @@ namespace Micro
 		constexpr explicit String(const char character) noexcept
 		{
 			Allocate(1);
-			m_Data[0] = character;
+			m_Data.operator[](0) = character;
 		}
 
 		/**
@@ -256,14 +261,13 @@ namespace Micro
 		/// <returns>Character array of type 'char*'.</returns>
 		NODISCARD constexpr char* Data() noexcept { return m_Data; }
 
-
 		/* Enumerators (Iterators) */
 
 		/// <summary>
 		/// Gets the Enumerator that enumerates over the characters in the string.
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator<char> GetEnumerator() override
+		NODISCARD Enumerator<char> GetEnumerator() noexcept override
 		{
 			for (size_t i = 0; i < m_Size; i++)
 			{
@@ -276,7 +280,7 @@ namespace Micro
 		/// Gets the Enumerator that enumerates over the characters in the string. (const version)
 		/// </summary>
 		/// <returns>Enumerator to enumerate over characters</returns>
-		NODISCARD Enumerator<char> GetEnumerator() const override
+		NODISCARD Enumerator<char> GetEnumerator() const noexcept override
 		{
 			for (size_t i = 0; i < m_Size; i++)
 			{
@@ -413,7 +417,7 @@ namespace Micro
 			if (m_Data == nullptr)
 			{
 				Allocate(1);
-				m_Data[0] = character;
+				m_Data.operator[](0) = character;
 			}
 			else
 			{
@@ -1017,7 +1021,7 @@ namespace Micro
 		/// <returns>True, if equal</returns>
 		NODISCARD constexpr bool Equals(const char character) const noexcept
 		{
-			return m_Data[0] == character;
+			return m_Data.operator[](0) == character;
 		}
 
 		/// <summary>
@@ -1106,7 +1110,7 @@ namespace Micro
 
 			for (size_t i = 0; i < m_Size; ++i)
 			{
-				if (m_Data[i] == string[0])
+				if (m_Data[i] == string.operator[](0))
 				{
 					size_t index = i;
 					size_t count = 0;
@@ -1673,7 +1677,7 @@ namespace Micro
 			if (m_Size == 0)
 				return false;
 
-			return m_Data[0] == character;
+			return m_Data.operator[](0) == character;
 		}
 
 		/// <summary>
@@ -1798,8 +1802,9 @@ namespace Micro
 		{
 			String string;
 			string.m_Data = const_cast<char*>(data);
-			string.m_Size = length;
-			string.m_Data[length] = 0;
+			const usize size = length - 1;
+			string.m_Size = size;
+			string.m_Data[size] = 0;
 			return string;
 		}
 
@@ -1906,10 +1911,7 @@ namespace Micro
 		/// <returns>Reference of this instance</returns>
 		constexpr String& operator=(const CharSequence auto& string) noexcept
 		{
-			if (this == &string)
-				return *this;
-
-			const size_t length = string.Size();
+			const size_t length = string.Length();
 			if (!m_Data.IsValidMemory())
 			{
 				Allocate(length);
@@ -1990,7 +1992,7 @@ namespace Micro
 					Reallocate(1);
 			}
 
-			m_Data[0] = character;
+			m_Data.operator[](0) = character;
 			m_Data[m_Size] = 0;
 			return *this;
 		}
@@ -2631,12 +2633,15 @@ namespace Micro
 
 
 template <>
-struct std::formatter<Micro::String> {
-	constexpr auto parse(std::format_parse_context& ctx) {
+struct std::formatter<Micro::String> 
+{
+	constexpr auto parse(std::format_parse_context& ctx) 
+	{
         return ctx.begin();
     }
 
-    auto format(const Micro::String& obj, std::format_context& ctx) const {
+    auto format(const Micro::String& obj, std::format_context& ctx) const 
+	{
         return std::format_to(ctx.out(), "{}", obj.Data());
     }
 };

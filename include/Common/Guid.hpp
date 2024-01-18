@@ -34,6 +34,7 @@ namespace Micro
 
 		// Utility
 		NODISCARD constexpr String ToString() const noexcept { return m_Guid; }
+		NODISCARD constexpr char* Data() noexcept { return m_Guid; }
 		NODISCARD constexpr const char* Data() const noexcept { return m_Guid; }
 
 		// Operator Overloads

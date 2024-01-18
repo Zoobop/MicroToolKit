@@ -42,7 +42,7 @@ namespace Micro::Internal
 	}
 
 
-#ifdef _WIN64
+#if defined(_WIN64) || defined(WIN32)
 	NODISCARD Span<char> FloatToString_Internal(const char* fmt, const std::floating_point auto floatingPoint) noexcept
 	{
 		const u64 length = _scprintf(fmt, floatingPoint);
