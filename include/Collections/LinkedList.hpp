@@ -2,6 +2,7 @@
 
 #include "Collections/Base/NodeChain.hpp"
 #include "Utility/Node.hpp"
+#include "Utility/Options/Result.hpp"
 
 namespace Micro
 {
@@ -18,7 +19,7 @@ namespace Micro
 		{
 		}
 
-		constexpr LinkedList(const LinkedList& other) : Base(other)
+		constexpr LinkedList(const LinkedList& other) noexcept : Base(other)
 		{
 		}
 
@@ -26,7 +27,7 @@ namespace Micro
 		{
 		}
 
-		constexpr LinkedList(const Base& other) : Base(other)
+		constexpr LinkedList(const Base& other) noexcept : Base(other)
 		{
 		}
 
@@ -174,7 +175,7 @@ namespace Micro
 					Base::m_Tail = nullptr;
 
 					--Base::m_Size;
-					return std::move(value);
+					return Result<T>::Ok(std::move(value));
 				}
 
 				auto prev = poppedNode->Prev;
@@ -186,10 +187,10 @@ namespace Micro
 				Base::m_Tail = prev;
 
 				--Base::m_Size;
-				return std::move(value);
+				return Result<T>::Ok(std::move(value));
 			}
 
-			throw InvalidOperationError("Linked LinkedList is empty.");
+			return Result<T>::CaptureError(InvalidOperationError{ "Linked LinkedList is empty." });
 		}
 
 		NODISCARD constexpr Result<T> PopFront() noexcept
@@ -210,7 +211,7 @@ namespace Micro
 					Base::m_Tail = nullptr;
 
 					--Base::m_Size;
-					return std::move(value);
+					return Result<T>::Ok(std::move(value));
 				}
 
 				// Remove references and free memory
@@ -223,10 +224,10 @@ namespace Micro
 				Base::m_Head = next;
 				--Base::m_Size;
 
-				return std::move(value);
+				return Result<T>::Ok(std::move(value));
 			}
 
-			throw InvalidOperationError("Linked LinkedList is empty.");
+			return Result<T>::CaptureError(InvalidOperationError{ "Linked LinkedList is empty." });
 		}
 
 		constexpr bool Remove(const T& value) noexcept
@@ -280,25 +281,25 @@ namespace Micro
 		NODISCARD constexpr Result<T&> At(const usize index) noexcept
 		{
 			if (index >= Base::m_Size)
-				throw IndexOutOfRangeError(index);
+				return Result<T&>::CaptureError(IndexOutOfRangeError(index));
 
 			auto node = Base::m_Head;
 			for (usize i = 0; i < index; i++)
 				node = node->Next;
 
-			return node->Value;
+			return Result<T&>::Ok(node->Value);
 		}
 
 		NODISCARD constexpr Result<const T&> At(const usize index) const noexcept
 		{
 			if (index >= Base::m_Size)
-				throw IndexOutOfRangeError(index);
+				return Result<const T&>::CaptureError(IndexOutOfRangeError(index));
 
-			auto node = Base::m_Head;
+			auto node = const_cast<Node*>(Base::m_Head);
 			for (usize i = 0; i < index; i++)
 				node = node->Next;
 
-			return node->Value;
+			return Result<const T&>::Ok(node->Value);
 		}
 
 		// Operator Overloads
@@ -347,6 +348,6 @@ namespace Micro
 		}
 
 	private:
-		static constexpr usize c_DefaultCapacity = 4;
+		static constexpr usize DefaultCapacity = 4;
 	};
 }

@@ -1,144 +1,17 @@
 #pragma once
 #include "Core/Typedef.hpp"
 #include "Core/Hash.hpp"
-#include "Collections/Base/Internal/HashTableInternal.hpp"
 #include "Collections/Base/Enumerable.hpp"
+#include "Utility/Node.hpp"
+#include "Utility/Tuple.hpp"
 
 namespace Micro
 {
-	template <typename T, HashFunction<T> THashFunction>
-	class HashTableAllocator final
-	{
-	public:
-		using Node = Internal::HashNode<T>;
-		using MetaData = Internal::MetaData<Node>;
-
-		NODISCARD constexpr static usize Allocate(Memory<Node>& data, const usize currentCapacity, const usize newCapacity) noexcept
-		{
-			// Don't allocate if same capacity
-			if (currentCapacity == newCapacity)
-				return currentCapacity;
-
-			data = Alloc<Node>(newCapacity);
-			return newCapacity;
-		}
-
-		NODISCARD constexpr static usize Reallocate(Memory<Node>& data, MetaData*& metaData, const usize currentCapacity,
-		                                   const usize newCapacity) noexcept
-		{
-			// Don't reallocate if same capacity
-			if (currentCapacity == newCapacity)
-				return currentCapacity;
-
-			// Allocate (without constructor call)
-			Node* newBlock = Alloc<Node>(newCapacity);
-			MetaData* newMetaData = nullptr;
-
-			// Re-hash using meta data
-			auto metaNode = metaData;
-			while (metaNode != nullptr)
-			{
-				auto valueNode = metaNode->BucketReference;
-				while (valueNode != nullptr)
-				{
-					// Get new hash of value
-					const usize hash = THashFunction(valueNode->GetKey()) % newCapacity;
-
-					// Check if bucket is valid
-					auto bucket = &newBlock[hash];
-					if (bucket->IsValid())
-					{
-						// Get to the end of the chain
-						auto node = bucket;
-						while (node->Next != nullptr)
-							node = node->Next;
-
-						// Create new node
-						auto newNode = Alloc<Node>(1);
-						new(newNode) Node(std::move(valueNode->Value));
-
-						node->Next = newNode;
-
-						// Update meta data with new pointer reference
-						AddMetaData(newMetaData, newNode, hash);
-					}
-					else
-					{
-						// Move value into new block
-						new(&newBlock[hash]) Node(std::move(valueNode->Value));
-
-						// Update meta data with new pointer reference
-						AddMetaData(newMetaData, &newBlock[hash], hash);
-					}
-
-					valueNode = valueNode->Next;
-				}
-
-				metaNode = metaNode->Next;
-			}
-
-			// Invalidate memory
-			ClearMemory(metaData);
-
-			// Free invalid memory
-			Dispose(data, currentCapacity);
-
-			data = newBlock;
-			metaData = newMetaData;
-			return newCapacity;
-		}
-
-		constexpr static void ClearMemory(MetaData* metaData) noexcept
-		{
-			// Clear meta data
-			if (metaData == nullptr)
-				return;
-
-			auto metaDataIter = metaData;
-			while (metaDataIter != nullptr)
-			{
-				// Delete children nodes
-				DeleteNodeChildren(metaDataIter->BucketReference);
-
-				// Free bucket head
-				auto next = metaDataIter->Next;
-				metaDataIter->BucketReference->Dispose();
-				metaDataIter->Invalidate();
-
-				metaDataIter = next;
-			}
-		}
-
-		constexpr static void Dispose(Memory<Node>& data, const usize capacity) noexcept
-		{
-			ASSERT(capacity > 0);
-			Delete(data.Data, capacity);
-		}
-
-	private:
-		constexpr static void DeleteNodeChildren(Node* head) noexcept
-		{
-			// Clear node chain
-			auto node = head->Next;
-			while (node != nullptr)
-			{
-				auto next = node->Next;
-
-				node->Invalidate();
-				delete node;
-
-				node = next;
-			}
-
-			head->Next = nullptr;
-		}
-	};
-
 	template <typename T>
 	using HashFunction = usize(*)(const T&);
 
-	template <typename T, HashFunction<T> THashFunction = Micro::Hash>
-	class HashTable : public Enumerable<T>
+	template <typename TKey>
+	class SetBase : public Enumerable<TKey>
 	{
 	public:
 		/*
@@ -148,11 +21,9 @@ namespace Micro
 		 */
 
 
-		using Node = Internal::HashNode<T>;
-		using MetaData = Internal::MetaData<Node>;
-		using Allocator = HashTableAllocator<T, THashFunction>;
+		using Node = HashNode<TKey>;
 
-		
+
 		/*
 		 *  ============================================================
 		 *	|                  Constructors/Destructors                |
@@ -160,28 +31,27 @@ namespace Micro
 		 */
 
 
-		constexpr HashTable() noexcept { Allocate(DefaultCapacity);	}
+		constexpr SetBase() noexcept { Allocate(DefaultCapacity); }
 
-		constexpr HashTable(const HashTable& hashTable) noexcept
+		constexpr SetBase(const SetBase& hashTable) noexcept
 			: m_LoadFactor(hashTable.m_LoadFactor)
 		{
 			Allocate(hashTable.m_Capacity);
 			CopyFrom(hashTable);
 		}
 
-		constexpr HashTable(HashTable&& hashTable) noexcept
-			: m_Data(std::move(hashTable.m_Data)), m_MetaData(hashTable.m_MetaData), m_Size(hashTable.m_Size),
-			  m_Capacity(hashTable.m_Capacity),
-			  m_LoadFactor(hashTable.m_LoadFactor)
+		constexpr SetBase(SetBase&& hashTable) noexcept
+			: m_Data(std::move(hashTable.m_Data)), m_Size(hashTable.m_Size),
+			m_Capacity(hashTable.m_Capacity),
+			m_LoadFactor(hashTable.m_LoadFactor)
 		{
 			hashTable.m_Data = nullptr;
-			hashTable.m_MetaData = nullptr;
 			hashTable.m_Size = 0;
 			hashTable.m_Capacity = 0;
 			hashTable.m_LoadFactor = 0;
 		}
 
-		constexpr explicit HashTable(std::initializer_list<T>&& initializerList) noexcept
+		constexpr SetBase(std::initializer_list<TKey>&& initializerList) noexcept
 		{
 			const usize length = initializerList.size();
 			if (length == 0)
@@ -190,18 +60,18 @@ namespace Micro
 			Allocate(MAX(length, DefaultCapacity));
 
 			for (auto& e : initializerList)
-				Insert(std::move(const_cast<T&>(e)));
+				Insert(std::move(const_cast<TKey&>(e)));
 		}
 
-		constexpr explicit HashTable(const usize capacity) noexcept { Allocate(capacity); }
+		constexpr explicit SetBase(const usize capacity) noexcept { Allocate(capacity); }
 
-		constexpr ~HashTable() noexcept override
+		constexpr ~SetBase() noexcept override
 		{
-			Allocator::ClearMemory(m_MetaData);
-			Allocator::Dispose(m_Data, m_Capacity);
+			Clear();
+
+			delete[] m_Data.Data;
+
 			m_Data = nullptr;
-			m_MetaData = nullptr;
-			m_Size = 0;
 			m_Capacity = 0;
 			m_LoadFactor = 0;
 		}
@@ -214,20 +84,33 @@ namespace Micro
 		 */
 
 
-		constexpr void Rehash(const f32 loadFactor) noexcept 
+		constexpr void Rehash(const f32 loadFactor) noexcept
 		{
-			ASSERT(loadFactor > 0);
-			if (m_LoadFactor == loadFactor)
+			if (loadFactor <= 0)
+				return;
+
+			if (m_LoadFactor - loadFactor < std::numeric_limits<f32>::epsilon())
 				return;
 
 			// Clamp value
-			m_LoadFactor = loadFactor > 1 ? 1 : loadFactor;
+			m_LoadFactor = MIN(loadFactor, 1.f);
+
+			if (!IsWithinThreshold())
+				Reallocate(m_Capacity * 2);
 		}
 
 		constexpr void Clear() noexcept
 		{
-			Allocator::ClearMemory(m_MetaData);
-			m_MetaData = nullptr;
+			if (IsEmpty())
+				return;
+
+			for (usize i = 0; i < m_Capacity; i++)
+			{
+				Node* bucket = &m_Data[i];
+
+				DeleteBucket(bucket);
+			}
+
 			m_Size = 0;
 		}
 
@@ -239,33 +122,49 @@ namespace Micro
 		 */
 
 
-		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0; }
-		NODISCARD constexpr const MetaData* Data() const noexcept { return m_MetaData; }
+		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0 || m_Data == nullptr; }
+		NODISCARD constexpr const Node* Data() const noexcept { return m_Data; }
 		NODISCARD constexpr usize Size() const noexcept { return m_Size; }
 		NODISCARD constexpr usize Capacity() const noexcept { return m_Capacity; }
 		NODISCARD constexpr f32 LoadFactor() const noexcept { return m_LoadFactor; }
 
 		/* Enumerators (Iterators) */
 
-		NODISCARD Enumerator<T> GetEnumerator() override
+		NODISCARD Enumerator<TKey> GetEnumerator() noexcept override
 		{
-			for (usize i = 0; i < m_Size; i++)
+			for (usize i = 0; i < m_Capacity; i++)
 			{
-				auto& element = m_Data[i];
-				co_yield element;
+				Node* bucket = &m_Data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				Node* node = bucket;
+				while (node && node->IsValid())
+				{
+					co_yield node->Value;
+					node = node->Next;
+				}
 			}
 		}
 
-		NODISCARD Enumerator<T> GetEnumerator() const override
+		NODISCARD Enumerator<TKey> GetEnumerator() const noexcept override
 		{
-			for (usize i = 0; i < m_Size; i++)
+			for (usize i = 0; i < m_Capacity; i++)
 			{
-				const auto& element = m_Data[i];
-				co_yield element;
+				const Node* bucket = &m_Data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				Node* node = const_cast<Node*>(bucket);
+				while (node && node->IsValid())
+				{
+					co_yield node->Value;
+					node = node->Next;
+				}
 			}
 		}
 
-		
+
 		/*
 		 *  ============================================================
 		 *	|                    Operator Overloads                    |
@@ -273,34 +172,38 @@ namespace Micro
 		 */
 
 
-		constexpr HashTable& operator=(const HashTable& other) noexcept
+		constexpr SetBase& operator=(const SetBase& other) noexcept
 		{
 			if (this == &other)
 				return *this;
 
 			if (!IsEmpty())
+			{
 				Clear();
+				Reallocate(other.m_Capacity);
+			}
+			else
+			{
+				Allocate(other.m_Capacity);
+			}
 
 			CopyFrom(other);
 			return *this;
 		}
 
-		constexpr HashTable& operator=(HashTable&& other) noexcept
+		constexpr SetBase& operator=(SetBase&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
 
-			if (!IsEmpty())
-				Clear();
+			Clear();
 
 			m_Data = other.m_Data;
-			m_MetaData = other.m_MetaData;
 			m_Size = other.m_Size;
 			m_Capacity = other.m_Capacity;
 			m_LoadFactor = other.m_LoadFactor;
 
 			other.m_Data = nullptr;
-			other.m_MetaData = nullptr;
 			other.m_Size = 0;
 			other.m_Capacity = 0;
 			other.m_LoadFactor = 0;
@@ -308,26 +211,33 @@ namespace Micro
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const HashTable& hashTable) noexcept
+		friend std::ostream& operator<<(std::ostream& stream, const SetBase& hashTable) noexcept
 		{
 			stream << "[";
 
-			usize counter = 0;
-			auto metaDataNode = hashTable.m_MetaData;
-			while (metaDataNode != nullptr)
+			const auto data = hashTable.Data();
+			const usize capacity = hashTable.Capacity();
+			const usize size = hashTable.Size();
+			for (usize i = 0, count = 0; i < capacity && count < size; i++)
 			{
-				auto node = metaDataNode->BucketReference;
-				while (node != nullptr)
+				const auto bucket = &data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				stream << bucket->Value;
+
+				if (++count < size)
+					stream << ", ";
+
+				auto node = bucket->Next;
+				while (node && node->IsValid())
 				{
 					stream << node->Value;
 					node = node->Next;
-					counter++;
 
-					if (counter < hashTable.m_Size)
+					if (++count < size)
 						stream << ", ";
 				}
-
-				metaDataNode = metaDataNode->Next;
 			}
 
 			stream << "]";
@@ -335,372 +245,807 @@ namespace Micro
 		}
 
 	protected:
+		/*
+		 *  ============================================================
+		 *	|                      Internal Helpers                    |
+		 *  ============================================================
+		 */
+
+
 		constexpr void Allocate(const usize capacity) noexcept
 		{
-			m_Capacity = Allocator::Allocate(m_Data, m_Capacity, capacity);
+			// Don't allocate if same capacity
+			if (m_Capacity == capacity)
+				return;
+
+			m_Data = new Node[capacity];
+			m_Capacity = capacity;
 		}
 
 		constexpr void Reallocate(const usize capacity) noexcept
 		{
-			m_Capacity = Allocator::Reallocate(m_Data, m_MetaData, m_Capacity, capacity);
-		}
+			// Don't reallocate if same capacity
+			if (m_Capacity == capacity)
+				return;
 
-		constexpr void CopyFrom(const HashTable& other) noexcept
-		{
-			// TODO: Refactor
-			auto data = other.m_Data;
-			for (usize i = 0; i < other.m_Capacity; i++)
+			// Allocate new block
+			auto oldBlock = m_Data;
+			const usize oldCapacity = m_Capacity;
+
+			m_Data = new Node[capacity];
+			m_Capacity = capacity;
+			m_Size = 0;
+
+			// Loop through all buckets and re-hash
+			for (usize i = 0; i < oldCapacity; i++)
 			{
-				if (data[i].IsValid())
+				Node* bucket = &oldBlock[i];
+				if (!bucket->IsValid())
+					continue;
+
+				// Insert bucket head value, then linked nodes
+				Insert(std::move(bucket->Value));
+
+				Node* node = bucket->Next;
+				while (node && node->IsValid())
 				{
-					m_Data[i] = data[i];
-					
-					// Update meta data
+					Insert(std::move(node->Value));
+					node = node->Next;
 				}
 			}
 
-			//auto metaData = other.m_MetaData;
-			//while (metaData != nullptr)
-			//{
-			//	auto node = metaData->BucketReference;
-			//	while (node != nullptr)
-			//	{
-			//		Insert(node->Value);
-			//		node = node->Next;
-			//	}
+			// Delete the old block
+			for (usize i = 0; i < oldCapacity; i++)
+			{
+				Node* bucket = &oldBlock[i];
+				if (!bucket->IsValid())
+					continue;
 
-			//	metaData = metaData->Next;
-			//}
+				// Delete all in bucket
+				DeleteBucket(bucket);
+			}
+
+			delete[] oldBlock;
 		}
 
-		//bool Insert(const T& key)
-		//{
-		//	// Reallocate if necessary
-		//	if (!IsWithinThreshold())
-		//		Reallocate(m_Capacity * 2);
+		constexpr void CopyFrom(const SetBase& other) noexcept
+		{
+			m_Size = 0;
+			m_LoadFactor = other.m_LoadFactor;
 
-		//	// Get hash value
-		//	const usize hash = Hash(key) % m_Capacity;
-		//	++m_Size;
+			auto data = other.m_Data;
+			for (usize i = 0; i < other.m_Capacity; i++)
+			{
+				Node* bucket = &data[i];
+				if (!bucket->IsValid())
+					continue;
 
-		//	// Check if bucket is valid
-		//	auto bucket = &m_Data[hash];
-		//	if (bucket->IsValid())
-		//	{
-		//		// Get to the end of the chain (check for existing value)
-		//		auto node = bucket;
-		//		while (node->Next != nullptr)
-		//		{
-		//			if (node->GetKey() == key)
-		//				return false;
+				Insert(bucket->Value);
 
-		//			node = node->Next;
-		//		}
+				Node* node = bucket->Next;
+				while (node && node->IsValid())
+				{
+					Insert(node->Value);
+					node = node->Next;
+				}
+			}
 
-		//		// Create new node
-		//		auto newNode = Alloc<Node>(1);
-		//		new(newNode) Node(key);
+		}
 
-		//		node->Next = newNode;
-		//		return true;
-		//	}
+		constexpr bool Insert(const TKey& key) noexcept
+		{
+			// Reallocate if necessary
+			if (!IsWithinThreshold())
+				Reallocate(m_Capacity * 2);
 
-		//	// Emplace value
-		//	new(&m_Data[hash]) Node(key);
-		//	AddMetaData(&m_Data[hash], hash);
-		//	return true;
-		//}
+			// Get hash value
+			const usize hash = Micro::Hash(key) % m_Capacity;
 
-		//bool Insert(KeyType&& key)
-		//{
-		//	// Reallocate if necessary
-		//	if (!IsWithinThreshold())
-		//		Reallocate(m_Capacity * 2);
+			// Check if bucket is valid
+			auto bucket = &m_Data[hash];
+			if (bucket->IsValid())
+			{
+				// Check bucket value for duplicate
+				if (bucket->Value == key)
+					return false;
 
-		//	// Get hash value
-		//	const usize hash = Hash(key) % m_Capacity;
-		//	++m_Size;
+				// Get to the end of the chain (check for existing value)
+				auto node = bucket;
+				while (node->Next)
+				{
+					if (node->Value == key)
+						return false;
 
-		//	// Check if bucket is valid
-		//	auto bucket = &m_Data[hash];
-		//	if (bucket->IsValid())
-		//	{
-		//		// Get to the end of the chain (check for existing value)
-		//		auto node = bucket;
-		//		while (node->Next != nullptr)
-		//		{
-		//			if (node->GetKey() == key)
-		//				return false;
+					node = node->Next;
+				}
 
-		//			node = node->Next;
-		//		}
+				// Create new node
+				++m_Size;
+				node->Next = new Node{ key };
+				return true;
+			}
 
-		//		// Create new node
-		//		auto newNode = Alloc<Node>(1);
-		//		new(newNode) Node(std::move(key));
+			// Emplace value
+			++m_Size;
+			new(&m_Data[hash]) Node{ key };
+			return true;
+		}
 
-		//		node->Next = newNode;
-		//		return true;
-		//	}
+		constexpr bool Insert(TKey&& key) noexcept
+		{
+			// Reallocate if necessary
+			if (!IsWithinThreshold())
+				Reallocate(m_Capacity * 2);
 
-		//	// Emplace value
-		//	new(&m_Data[hash]) Node(std::move(key));
-		//	AddMetaData(&m_Data[hash], hash);
-		//	return true;
-		//}
+			// Get hash value
+			const usize hash = Micro::Hash(key) % m_Capacity;
 
-		//bool Insert(const KeyValuePair& tuple)
-		//{
-		//	// Reallocate if necessary
-		//	if (!IsWithinThreshold())
-		//		Reallocate(m_Capacity * 2);
+			// Check if bucket is valid
+			auto bucket = &m_Data[hash];
+			if (bucket->IsValid())
+			{
+				// Check bucket value for duplicate
+				if (bucket->Value == key)
+					return false;
 
-		//	// Get hash value
-		//	const usize hash = Hash(tuple.Component1) % m_Capacity;
-		//	++m_Size;
+				// Get to the end of the chain (check for existing value)
+				auto node = bucket;
+				while (node->Next != nullptr)
+				{
+					if (node->Value == key)
+						return false;
 
-		//	// Check if bucket is valid
-		//	auto bucket = &m_Data[hash];
-		//	if (bucket->IsValid())
-		//	{
-		//		// Get to the end of the chain (check for existing value)
-		//		auto node = bucket;
-		//		while (node->Next != nullptr)
-		//		{
-		//			if (node->GetKey() == tuple.Component1)
-		//				return false;
+					node = node->Next;
+				}
 
-		//			node = node->Next;
-		//		}
+				// Create new node
+				++m_Size;
+				node->Next = new Node{ std::move(key) };
+				return true;
+			}
 
-		//		// Create new node
-		//		auto newNode = Alloc<Node>(1);
-		//		new(newNode) Node(tuple);
+			// Emplace value
+			++m_Size;
+			new(&m_Data[hash]) Node{ std::move(key) };
+			return true;
+		}
 
-		//		node->Next = newNode;
-		//		return true;
-		//	}
+		constexpr bool Erase(const TKey& key) noexcept
+		{
+			// Get hash value
+			const usize hash = Micro::Hash(key) % m_Capacity;
 
-		//	// Emplace value
-		//	new(&m_Data[hash]) Node(tuple);
-		//	AddMetaData(&m_Data[hash], hash);
-		//	return true;
-		//}
+			// Check if bucket is valid
+			auto bucket = &m_Data[hash];
+			if (bucket->IsValid())
+			{
+				// Search for node with existing value
+				if (bucket->Value == key)
+				{
+					// Dispose and shift nodes down (if applicable)
+					if (bucket->Next != nullptr)
+					{
+						auto prev = bucket;
+						auto node = prev->Next;
+						while (node->Next != nullptr)
+						{
+							prev->Value = std::move(node->Value);
 
-		//bool Insert(KeyValuePair&& tuple)
-		//{
-		//	// Reallocate if necessary
-		//	if (!IsWithinThreshold())
-		//		Reallocate(m_Capacity * 2);
+							prev = node;
+							node = node->Next;
+						}
 
-		//	// Get hash value
-		//	const usize hash = Hash(tuple.Component1) % m_Capacity;
-		//	++m_Size;
+						// Clean up tail references
+						prev->Next = nullptr;
+						delete node;
+					}
+					else
+					{
+						bucket->Dispose();
+					}
 
-		//	// Check if bucket is valid
-		//	auto bucket = &m_Data[hash];
-		//	if (bucket->IsValid())
-		//	{
-		//		// Get to the end of the chain (check for existing value)
-		//		auto node = bucket;
-		//		while (node->Next != nullptr)
-		//		{
-		//			if (node->GetKey() == tuple.Component1)
-		//				return false;
+					--m_Size;
+					return true;
+				}
 
-		//			node = node->Next;
-		//		}
+				auto node = bucket;
+				while (node->Next)
+				{
+					auto next = node->Next;
+					if (next->Value == key)
+					{
+						// Move next pointer
+						node->Next = next->Next;
 
-		//		// Create new node
-		//		auto newNode = Alloc<Node>(1);
-		//		new(newNode) Node(std::move(tuple));
+						// Remove node
+						next->Next = nullptr;
+						delete next;
 
-		//		node->Next = newNode;
-		//		return true;
-		//	}
+						--m_Size;
+						return true;
+					}
 
-		//	// Emplace value
-		//	new(&m_Data[hash]) Node(std::move(tuple));
-		//	AddMetaData(&m_Data[hash], hash);
-		//	return true;
-		//}
+					node = next;
+				}
+			}
 
-		//bool Erase(const KeyType& key)
-		//{
-		//	// Get hash value
-		//	const usize hash = Hash(key) % m_Capacity;
-
-		//	// Check if bucket is valid
-		//	auto bucket = &m_Data[hash];
-		//	if (bucket->IsValid())
-		//	{
-		//		// Search for node with existing value
-		//		if (bucket->GetKey() == key)
-		//		{
-		//			// Dispose and shift nodes down (if applicable)
-		//			bucket->Dispose();
-
-		//			if (bucket->Next != nullptr)
-		//			{
-		//				auto prev = bucket;
-		//				auto node = prev->Next;
-		//				while (node->Next != nullptr)
-		//				{
-		//					prev->Value = std::move(node->Value);
-
-		//					prev = node;
-		//					node = node->Next;
-		//				}
-
-		//				// Clean up tail references
-		//				prev->Next = nullptr;
-		//				delete node;
-		//			}
-
-		//			RemoveMetaData(bucket);
-
-		//			--m_Size;
-		//			return true;
-		//		}
-
-		//		auto node = bucket;
-		//		while (node->Next != nullptr)
-		//		{
-		//			auto next = node->Next;
-		//			if (next->GetKey() == key)
-		//			{
-		//				// Move next pointer
-		//				node->Next = next->Next;
-
-		//				// Remove node
-		//				next->Invalidate();
-
-		//				delete next;
-
-		//				--m_Size;
-		//				return true;
-		//			}
-
-		//			node = next;
-		//		}
-		//	}
-
-		//	return false;
-		//}
-
-		//bool Erase(const KeyValuePair& tuple)
-		//{
-		//	// Get hash value
-		//	const usize hash = Hash(tuple.Component1) % m_Capacity;
-
-		//	// Check if bucket is valid
-		//	auto bucket = &m_Data[hash];
-		//	if (bucket->IsValid())
-		//	{
-		//		// Search for node with existing value
-		//		if (bucket->GetKey() == tuple.Component1)
-		//		{
-		//			// Dispose and shift nodes down (if applicable)
-		//			bucket->Dispose();
-
-		//			if (bucket->Next != nullptr)
-		//			{
-		//				auto prev = bucket;
-		//				auto node = prev->Next;
-		//				while (node->Next != nullptr)
-		//				{
-		//					prev->Value = std::move(node->Value);
-
-		//					prev = node;
-		//					node = node->Next;
-		//				}
-
-		//				// Clean up tail references
-		//				prev->Next = nullptr;
-		//				delete node;
-		//			}
-
-		//			RemoveMetaData(bucket);
-
-		//			--m_Size;
-		//			return true;
-		//		}
-
-		//		auto node = bucket;
-		//		while (node->Next != nullptr)
-		//		{
-		//			auto next = node->Next;
-		//			if (next->GetKey() == tuple.Component1)
-		//			{
-		//				// Move next pointer
-		//				node->Next = next->Next;
-
-		//				// Remove node
-		//				next->Invalidate();
-
-		//				delete next;
-
-		//				--m_Size;
-		//				return true;
-		//			}
-
-		//			node = next;
-		//		}
-		//	}
-
-		//	return false;
-		//}
+			return false;
+		}
 
 		NODISCARD constexpr bool IsWithinThreshold() const noexcept
 		{
-			return (static_cast<usize>(m_Size) / static_cast<usize>(m_Capacity)) < m_LoadFactor;
+			return (static_cast<f64>(m_Size) / static_cast<f64>(m_Capacity)) < m_LoadFactor;
 		}
 
-		constexpr void AddMetaData(Node* node, const usize hash) noexcept
+	private:
+		constexpr static void DeleteBucket(Node* head) noexcept
 		{
-			// Initial node
-			if (m_MetaData == nullptr)
+			// Clear node chain
+			auto node = head->Next;
+			while (node != nullptr)
 			{
-				m_MetaData = Alloc<MetaData>(1);
-				new(m_MetaData) MetaData(node, hash);
-				return;
+				auto next = node->Next;
+
+				node->Next = nullptr;
+				delete node;
+
+				node = next;
 			}
 
-			// Subsequent nodes...
-			auto metaDataNode = m_MetaData;
-			while (metaDataNode->Next != nullptr)
-				metaDataNode = metaDataNode->Next;
-
-			auto newNode = Alloc<MetaData>(1);
-			new(newNode) MetaData(node, hash);
-
-			metaDataNode->Next = newNode;
-		}
-
-		constexpr void RemoveMetaData(Node* node) noexcept
-		{
-			// Initial node
-			if (m_MetaData == nullptr)
-				return;
-
-			// Search for existing node
-			if (metaData->BucketReference != node)
-				return;
-
-			// Remove bucket
-			auto head = m_MetaData;
-			m_MetaData = metaData->Next;
-
-			head->Invalidate();
-			delete head;
+			head->Dispose();
 		}
 
 	protected:
 		Memory<Node> m_Data = nullptr;
-		MetaData* m_MetaData = nullptr;
 		usize m_Size = 0;
 		usize m_Capacity = 0;
-		f32 m_LoadFactor = 0.8f;
+		f32 m_LoadFactor = 0.9f;
+
+	private:
+		constexpr static usize DefaultCapacity = 25;
+	};
+
+	template <typename TKey, typename TValue>
+	struct KeyValuePair final
+	{
+		TKey Key;
+		TValue Value;
+
+		constexpr KeyValuePair() noexcept = default;
+
+		constexpr KeyValuePair(const KeyValuePair& keyValuePair) noexcept
+			: Key(keyValuePair.Key), Value(keyValuePair.Value)
+		{
+		}
+
+		constexpr KeyValuePair(KeyValuePair&& keyValuePair) noexcept
+			: Key(std::move(keyValuePair.Key)), Value(std::move(keyValuePair.Value))
+		{
+		}
+
+		constexpr KeyValuePair(const TKey& key, const TValue& value) noexcept
+			: Key(key), Value(value)
+		{
+		}
+
+		constexpr KeyValuePair(const TKey& key, TValue&& value) noexcept
+			: Key(key), Value(std::move(value))
+		{
+		}
+
+		constexpr KeyValuePair(TKey&& key, const TValue& value) noexcept
+			: Key(std::move(key)), Value(value)
+		{
+		}
+
+		constexpr KeyValuePair(TKey&& key, TValue&& value) noexcept
+			: Key(std::move(key)), Value(std::move(value))
+		{
+		}
+
+		constexpr ~KeyValuePair() noexcept = default;
+
+		constexpr KeyValuePair& operator=(const KeyValuePair&) noexcept = default;
+		constexpr KeyValuePair& operator=(KeyValuePair&&) noexcept = default;
+
+		friend std::ostream& operator<<(std::ostream& stream, const KeyValuePair& keyValuePair) noexcept
+		{
+			stream << "{ " << keyValuePair.Key << " : " << keyValuePair.Value << " }";
+			return stream;
+		}
+	};
+
+	template <typename TKey, typename TValue>
+	class MapBase : public Enumerable<KeyValuePair<TKey, TValue>>
+	{
+	public:
+		/*
+		 *  ============================================================
+		 *	|                          Aliases                         |
+		 *  ============================================================
+		 */
+
+
+		using Pair = KeyValuePair<TKey, TValue>;
+		using Node = HashNode<Pair>;
+
+
+		/*
+		 *  ============================================================
+		 *	|                  Constructors/Destructors                |
+		 *  ============================================================
+		 */
+
+
+		constexpr MapBase() noexcept { Allocate(DefaultCapacity); }
+
+		constexpr MapBase(const MapBase& hashTable) noexcept
+			: m_LoadFactor(hashTable.m_LoadFactor)
+		{
+			Allocate(hashTable.m_Capacity);
+			CopyFrom(hashTable);
+		}
+
+		constexpr MapBase(MapBase&& hashTable) noexcept
+			: m_Data(std::move(hashTable.m_Data)), m_Size(hashTable.m_Size),
+			m_Capacity(hashTable.m_Capacity),
+			m_LoadFactor(hashTable.m_LoadFactor)
+		{
+			hashTable.m_Data = nullptr;
+			hashTable.m_Size = 0;
+			hashTable.m_Capacity = 0;
+			hashTable.m_LoadFactor = 0;
+		}
+
+		constexpr MapBase(std::initializer_list<Pair>&& initializerList) noexcept
+		{
+			const usize length = initializerList.size();
+			if (length == 0)
+				return;
+
+			Allocate(MAX(length, DefaultCapacity));
+
+			for (auto& e : initializerList)
+				Insert(std::move(const_cast<Pair&>(e)));
+		}
+
+		constexpr explicit MapBase(const usize capacity) noexcept { Allocate(capacity); }
+
+		constexpr ~MapBase() noexcept override
+		{
+			Clear();
+
+			delete[] m_Data.Data;
+
+			m_Data = nullptr;
+			m_Capacity = 0;
+			m_LoadFactor = 0;
+		}
+
+
+		/*
+		 *  ============================================================
+		 *	|                         Utility                          |
+		 *  ============================================================
+		 */
+
+
+		constexpr void Rehash(const f32 loadFactor) noexcept
+		{
+			if (loadFactor <= 0)
+				return;
+
+			if (m_LoadFactor - loadFactor < std::numeric_limits<f32>::epsilon())
+				return;
+
+			// Clamp value
+			m_LoadFactor = MIN(loadFactor, 1.f);
+
+			if (!IsWithinThreshold())
+				Reallocate(m_Capacity * 2);
+		}
+
+		constexpr void Clear() noexcept
+		{
+			if (IsEmpty())
+				return;
+
+			for (usize i = 0; i < m_Capacity; i++)
+			{
+				Node* bucket = &m_Data[i];
+
+				DeleteBucket(bucket);
+			}
+
+			m_Size = 0;
+		}
+
+
+		/*
+		 *  ============================================================
+		 *	|                         Accessors                        |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr bool IsEmpty() const noexcept { return m_Size == 0 || m_Data == nullptr; }
+		NODISCARD constexpr const Node* Data() const noexcept { return m_Data; }
+		NODISCARD constexpr usize Size() const noexcept { return m_Size; }
+		NODISCARD constexpr usize Capacity() const noexcept { return m_Capacity; }
+		NODISCARD constexpr f32 LoadFactor() const noexcept { return m_LoadFactor; }
+
+		/* Enumerators (Iterators) */
+
+		NODISCARD Enumerator<Pair> GetEnumerator() noexcept override
+		{
+			for (usize i = 0; i < m_Capacity; i++)
+			{
+				Node* bucket = &m_Data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				Node* node = bucket;
+				while (node && node->IsValid())
+				{
+					co_yield node->Value;
+					node = node->Next;
+				}
+			}
+		}
+
+		NODISCARD Enumerator<Pair> GetEnumerator() const noexcept override
+		{
+			for (usize i = 0; i < m_Capacity; i++)
+			{
+				const Node* bucket = &m_Data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				Node* node = const_cast<Node*>(bucket);
+				while (node && node->IsValid())
+				{
+					co_yield node->Value;
+					node = node->Next;
+				}
+			}
+		}
+
+
+		/*
+		 *  ============================================================
+		 *	|                    Operator Overloads                    |
+		 *  ============================================================
+		 */
+
+
+		constexpr MapBase& operator=(const MapBase& other) noexcept
+		{
+			if (this == &other)
+				return *this;
+
+			if (!IsEmpty())
+			{
+				Clear();
+				Reallocate(other.m_Capacity);
+			}
+			else
+			{
+				Allocate(other.m_Capacity);
+			}
+
+			CopyFrom(other);
+			return *this;
+		}
+
+		constexpr MapBase& operator=(MapBase&& other) noexcept
+		{
+			if (this == &other)
+				return *this;
+
+			Clear();
+
+			m_Data = other.m_Data;
+			m_Size = other.m_Size;
+			m_Capacity = other.m_Capacity;
+			m_LoadFactor = other.m_LoadFactor;
+
+			other.m_Data = nullptr;
+			other.m_Size = 0;
+			other.m_Capacity = 0;
+			other.m_LoadFactor = 0;
+
+			return *this;
+		}
+
+		friend std::ostream& operator<<(std::ostream& stream, const MapBase& hashTable) noexcept
+		{
+			stream << "[";
+
+			const auto data = hashTable.Data();
+			const usize capacity = hashTable.Capacity();
+			const usize size = hashTable.Size();
+			for (usize i = 0, count = 0; i < capacity && count < size; i++)
+			{
+				const auto bucket = &data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				stream << bucket->Value;
+
+				if (++count < size)
+					stream << ", ";
+
+				auto node = bucket->Next;
+				while (node && node->IsValid())
+				{
+					stream << node->Value;
+					node = node->Next;
+
+					if (++count < size)
+						stream << ", ";
+				}
+			}
+
+			stream << "]";
+			return stream;
+		}
+
+	protected:
+		/*
+		 *  ============================================================
+		 *	|                      Internal Helpers                    |
+		 *  ============================================================
+		 */
+
+
+		constexpr void Allocate(const usize capacity) noexcept
+		{
+			// Don't allocate if same capacity
+			if (m_Capacity == capacity)
+				return;
+
+			m_Data = new Node[capacity];
+			m_Capacity = capacity;
+		}
+
+		constexpr void Reallocate(const usize capacity) noexcept
+		{
+			// Don't reallocate if same capacity
+			if (m_Capacity == capacity)
+				return;
+
+			// Allocate new block
+			auto oldBlock = m_Data;
+			const usize oldCapacity = m_Capacity;
+
+			m_Data = new Node[capacity];
+			m_Capacity = capacity;
+			m_Size = 0;
+
+			// Loop through all buckets and re-hash
+			for (usize i = 0; i < oldCapacity; i++)
+			{
+				Node* bucket = &oldBlock[i];
+				if (!bucket->IsValid())
+					continue;
+
+				// Insert bucket head value, then linked nodes
+				Insert(std::move(bucket->Value));
+
+				Node* node = bucket->Next;
+				while (node && node->IsValid())
+				{
+					Insert(std::move(node->Value));
+					node = node->Next;
+				}
+			}
+
+			// Delete the old block
+			for (usize i = 0; i < oldCapacity; i++)
+			{
+				Node* bucket = &oldBlock[i];
+				if (!bucket->IsValid())
+					continue;
+
+				// Delete all in bucket
+				DeleteBucket(bucket);
+			}
+
+			delete[] oldBlock;
+		}
+
+		constexpr void CopyFrom(const MapBase& other) noexcept
+		{
+			m_Size = 0;
+			m_LoadFactor = other.m_LoadFactor;
+
+			auto data = other.m_Data;
+			for (usize i = 0; i < other.m_Capacity; i++)
+			{
+				Node* bucket = &data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				Insert(bucket->Value);
+
+				Node* node = bucket->Next;
+				while (node && node->IsValid())
+				{
+					Insert(node->Value);
+					node = node->Next;
+				}
+			}
+
+		}
+
+		constexpr bool Insert(const Pair& keyValuePair) noexcept
+		{
+			// Reallocate if necessary
+			if (!IsWithinThreshold())
+				Reallocate(m_Capacity * 2);
+
+			// Get hash value
+			const usize hash = Micro::Hash(keyValuePair.Key) % m_Capacity;
+
+			// Check if bucket is valid
+			auto bucket = &m_Data[hash];
+			if (bucket->IsValid())
+			{
+				// Check bucket value for duplicate
+				if (bucket->Value.Key == keyValuePair.Key)
+					return false;
+
+				// Get to the end of the chain (check for existing value)
+				auto node = bucket;
+				while (node->Next != nullptr)
+				{
+					if (node->Value.Value == keyValuePair.Value)
+						return false;
+
+					node = node->Next;
+				}
+
+				// Create new node
+				++m_Size;
+				node->Next = new Node{ keyValuePair };
+				return true;
+			}
+
+			// Emplace value
+			++m_Size;
+			new(&m_Data[hash]) Node{ keyValuePair };
+			return true;
+		}
+
+		constexpr bool Insert(Pair&& keyValuePair) noexcept
+		{
+			// Reallocate if necessary
+			if (!IsWithinThreshold())
+				Reallocate(m_Capacity * 2);
+
+			// Get hash value
+			const usize hash = Micro::Hash(keyValuePair.Key) % m_Capacity;
+
+			// Check if bucket is valid
+			auto bucket = &m_Data[hash];
+			if (bucket->IsValid())
+			{
+				// Check bucket value for duplicate
+				if (bucket->Value.Key == keyValuePair.Key)
+					return false;
+
+				// Get to the end of the chain (check for existing value)
+				auto node = bucket;
+				while (node->Next != nullptr)
+				{
+					if (node->Value.Value == keyValuePair.Value)
+						return false;
+
+					node = node->Next;
+				}
+
+				// Create new node
+				++m_Size;
+				node->Next = new Node{ std::move(keyValuePair) };
+				return true;
+			}
+
+			// Emplace value
+			++m_Size;
+			new(&m_Data[hash]) Node{ std::move(keyValuePair) };
+			return true;
+		}
+
+		constexpr bool Erase(const TKey& key) noexcept
+		{
+			// Get hash value
+			const usize hash = Micro::Hash(key) % m_Capacity;
+
+			// Check if bucket is valid
+			auto bucket = &m_Data[hash];
+			if (bucket->IsValid())
+			{
+				// Search for node with existing value
+				if (bucket->Value.Key == key)
+				{
+					// Dispose and shift nodes down (if applicable)
+					if (bucket->Next)
+					{
+						auto prev = bucket;
+						auto node = prev->Next;
+						while (node->Next != nullptr)
+						{
+							prev->Value = std::move(node->Value);
+
+							prev = node;
+							node = node->Next;
+						}
+
+						// Clean up tail references
+						prev->Next = nullptr;
+						delete node;
+					}
+					else
+					{
+						bucket->Dispose();
+					}
+
+					--m_Size;
+					return true;
+				}
+
+				auto node = bucket;
+				while (node->Next)
+				{
+					auto next = node->Next;
+					if (next->Value.Key == key)
+					{
+						// Move next pointer
+						node->Next = next->Next;
+
+						// Remove node
+						next->Next = nullptr;
+						delete next;
+
+						--m_Size;
+						return true;
+					}
+
+					node = next;
+				}
+			}
+
+			return false;
+		}
+
+		NODISCARD constexpr bool IsWithinThreshold() const noexcept
+		{
+			return (static_cast<f64>(m_Size) / static_cast<f64>(m_Capacity)) < m_LoadFactor;
+		}
+
+	private:
+		constexpr static void DeleteBucket(Node* head) noexcept
+		{
+			// Clear node chain
+			auto node = head->Next;
+			while (node != nullptr)
+			{
+				auto next = node->Next;
+
+				node->Next = nullptr;
+				delete node;
+
+				node = next;
+			}
+
+			head->Dispose();
+		}
+
+	protected:
+		Memory<Node> m_Data = nullptr;
+		usize m_Size = 0;
+		usize m_Capacity = 0;
+		f32 m_LoadFactor = 0.9f;
 
 	private:
 		constexpr static usize DefaultCapacity = 25;

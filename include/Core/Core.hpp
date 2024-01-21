@@ -28,7 +28,7 @@
 #define NODISCARD	[[nodiscard]]
 #define NORETURN	[[noreturn]]
 
-#ifdef DEBUG
+#if defined(_DEBUG)
 #define ASSERT(expression)                  static_assert(expression)
 #define ASSERT_MSG(expression, message)     static_assert(expression, message)
 #else

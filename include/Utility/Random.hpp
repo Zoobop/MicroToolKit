@@ -2,6 +2,7 @@
 #include <random>
 
 #include "Core/Core.hpp"
+#include "Core/Typedef.hpp"
 
 namespace Micro
 {
@@ -26,7 +27,7 @@ namespace Micro
 			std::mt19937 gen(rd());
 
 			std::uniform_int_distribution dist(0, 255);
-			return static_cast<uint8_t>(dist(gen));
+			return static_cast<u8>(dist(gen));
 		}
 
 		NODISCARD static auto RandInt(const std::signed_integral auto start, const std::signed_integral auto stop,

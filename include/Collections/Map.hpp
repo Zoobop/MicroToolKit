@@ -1,109 +1,37 @@
 #pragma once
-
-#include "Utility/Tuple.hpp"
-#include "Core/Memory/Memory.hpp"
 #include "Collections/Base/HashTable.hpp"
+#include "Utility/Options/Result.hpp"
 
 namespace Micro
 {
 	template <typename TKey, typename TValue>
-	struct MapNode final
-	{
-		// Aliases
-		using KeyType = TKey;
-		using ValueType = TValue;
-		using IteratorType = Tuple<TKey, TValue>;
-		using KeyValuePair = IteratorType;
-
-		// Fields
-		KeyValuePair Value;
-		MapNode* Next = nullptr;
-		MemStatus Status = MemStatus::Invalid;
-
-		// Constructors
-		constexpr MapNode() noexcept = default;
-
-		constexpr MapNode(const MapNode& other) noexcept
-			: Value(other.Value), Next(other.Next), Status(other.Status)
-		{
-		}
-
-		constexpr MapNode(MapNode&& other) noexcept
-			: Value(std::move(other.Value)), Next(other.Next), Status(other.Status)
-		{
-			other.Invalidate();
-		}
-
-		explicit constexpr MapNode(const KeyValuePair& value) noexcept
-			: Value(value), Status(MemStatus::Valid)
-		{
-		}
-
-		explicit constexpr MapNode(KeyValuePair&& value) noexcept
-			: Value(std::move(value)), Status(MemStatus::Valid)
-		{
-		}
-
-		constexpr ~MapNode() noexcept { Invalidate(); }
-
-		// Utility
-		constexpr void Invalidate() noexcept
-		{
-			Next = nullptr;
-			Status = MemStatus::Invalid;
-		}
-
-		constexpr void Dispose() noexcept
-		{
-			Value.~KeyValuePair();
-		}
-
-		NODISCARD constexpr TKey& GetKey() noexcept { return Value.Component1; }
-		NODISCARD constexpr TValue& GetValue() noexcept { return Value.Component2; }
-		NODISCARD constexpr IteratorType& GetIteratorValue() noexcept { return Value; }
-		NODISCARD constexpr bool IsValid() const noexcept { return Status == MemStatus::Valid; }
-
-		// Operator Overloads
-		MapNode& operator=(const MapNode& other) noexcept
-		{
-			if (this == &other)
-				return *this;
-
-			Value = other.Value;
-			Next = other.Next;
-			Status = other.Status;
-
-			return *this;
-		}
-
-		MapNode& operator=(MapNode&& other) noexcept
-		{
-			if (this == &other)
-				return *this;
-
-			Value = std::move(other.Value);
-			Next = other.Next;
-			Status = other.Status;
-
-			return *this;
-		}
-	};
-
-	template <typename TKey, typename TValue>
-	class Map final : public HashTable<Tuple<TKey, TValue>>
+	class Map final : public MapBase<TKey, TValue>
 	{
 	public:
-		// Aliases
-		using Node = MapNode<TKey, TValue>;
-		using Base = HashTable<Node>;
-		using KeyValuePair = Tuple<TKey, TValue>;
+		/*
+		 *  ============================================================
+		 *	|                          Aliases                         |
+		 *  ============================================================
+		 */
 
-		// Constructors/Destructor
+
+		using Pair = KeyValuePair<TKey, TValue>;
+		using Base = MapBase<TKey, TValue>;
+		using Node = HashNode<Pair>;
+
+		
+		/*
+		 *  ============================================================
+		 *	|                  Constructors/Destructors                |
+		 *  ============================================================
+		 */
+
+
 		constexpr Map() noexcept : Base()
 		{
 		}
 
-		constexpr Map(const Map& other) : Base(other)
+		constexpr Map(const Map& other) noexcept : Base(other)
 		{
 		}
 
@@ -111,7 +39,7 @@ namespace Micro
 		{
 		}
 
-		constexpr Map(const Base& other) : Base(other)
+		constexpr Map(const Base& other) noexcept : Base(other)
 		{
 		}
 
@@ -119,195 +47,264 @@ namespace Micro
 		{
 		}
 
-		constexpr Map(std::initializer_list<KeyValuePair>&& initializerList) noexcept : Base(std::move(initializerList))
+		constexpr Map(std::initializer_list<Pair>&& initializerList) noexcept : Base(std::move(initializerList))
 		{
 		}
 
-		constexpr explicit Map(const size_t capacity) : Base(capacity)
+		constexpr explicit Map(const usize capacity) noexcept : Base(capacity)
 		{
 		}
 
 		constexpr ~Map() noexcept override = default;
 
-		// Utility
-		bool Add(const TKey& key, const TValue& value) noexcept
+
+		/*
+		 *  ============================================================
+		 *	|                         Utility                          |
+		 *  ============================================================
+		 */
+
+
+		constexpr bool Add(const TKey& key, const TValue& value) noexcept { return Base::Insert({ key, value }); }
+
+		constexpr bool Add(TKey&& key, TValue&& value) noexcept { return Base::Insert({ std::move(key), std::move(value) }); }
+
+		constexpr bool Add(const Pair& pair) noexcept { return Base::Insert(pair); }
+
+		constexpr bool Add(Pair&& pair) noexcept { return Base::Insert(std::move(pair)); }
+
+		constexpr void AddRange(std::convertible_to<Pair> auto... elements) noexcept
 		{
-			return Base::Insert({ key, value });
+			ASSERT_MSG(sizeof ...(elements) != 0, "Cannot call 'AddRange' without any arguments!");
+
+			for (auto values = { static_cast<Pair>(std::move(elements))... }; auto&& item : values)
+				Add(std::move(item));
 		}
 
-		bool Add(TKey&& key, TValue&& value) noexcept
-		{
-			return Base::Insert({std::move(key), std::move(value)});
-		}
+		constexpr bool Remove(const TKey& key) noexcept { return Base::Erase(key); }
 
-		bool Add(const KeyValuePair& pair) noexcept
-		{
-			return Base::Insert(pair);
-		}
-
-		bool Add(KeyValuePair&& pair) noexcept
-		{
-			return Base::Insert(std::move(pair));
-		}
-
-		bool Remove(const TKey& key) noexcept
-		{
-			return Base::Erase(key);
-		}
-
-		NODISCARD const KeyValuePair& Find(const TKey& key) const
+		NODISCARD constexpr Result<const Pair&> Find(const TKey& key) const noexcept
 		{
 			// Gets the hashed value of the key
-			const size_t hash = Hash(key) % Base::m_Capacity;
+			const usize hash = Micro::Hash(key) % Base::m_Capacity;
 
 			// Search bucket for matching key
-			auto bucket = &Base::m_Data[hash];
-			while (bucket != nullptr && bucket->IsValid())
+			auto node = const_cast<Node*>(&Base::m_Data[hash]);
+			while (node && node->IsValid())
 			{
-				if (bucket->Value.Component1 == key)
-					return bucket->Value;
+				if (node->Value.Key == key)
+					return Result<const Pair&>::Ok(node->Value);
 
-				bucket = bucket->Next;
+				node = node->Next;
 			}
 
-			// Throw exception if key is not found (key hashes to valid index but is not present)
-			throw KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key));
+			// Return error if key is not found (key hashes to valid index but is not present)
+			return Result<const Pair&>::CaptureError(KeyNotFoundError{ "Key could not be found in the Map.", NAMEOF(key) });
 		}
 
-		NODISCARD KeyValuePair& Find(const TKey& key)
+		NODISCARD constexpr Result<Pair&> Find(const TKey& key) noexcept
 		{
 			// Gets the hashed value of the key
-			const size_t hash = Hash(key) % Base::m_Capacity;
+			const usize hash = Micro::Hash(key) % Base::m_Capacity;
 
 			// Search bucket for matching key
-			auto bucket = &Base::m_Data[hash];
-			while (bucket != nullptr && bucket->IsValid())
+			auto node = const_cast<Node*>(&Base::m_Data[hash]);
+			while (node && node->IsValid())
 			{
-				if (bucket->GetKey() == key)
-					return bucket->Value;
+				if (node->Value.Key == key)
+					return Result<Pair&>::Ok(node->Value);
 
-				bucket = bucket->Next;
+				node = node->Next;
 			}
 
-			// Throw exception if key is not found (key hashes to valid index but is not present)
-			throw KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key));
+			// Return error if key is not found (key hashes to valid index but is not present)
+			return Result<Pair&>::CaptureError(KeyNotFoundError{ "Key could not be found in the Map.", NAMEOF(key) });
 		}
 
-		NODISCARD Optional<KeyValuePair> Find(const Predicate<const TKey&> predicate) const noexcept
+		NODISCARD constexpr Result<const Pair&> Find(const Predicate<TKey>& predicate) const noexcept
 		{
-			auto metaData = Base::m_MetaData;
-			while (metaData != nullptr)
+			// Search bucket for key matching the predicate
+			for (usize i = 0; i < Base::m_Capacity; i++)
 			{
-				// Search bucket for matching key
-				auto bucket = metaData->BucketReference;
-				while (bucket != nullptr && bucket->IsValid())
+				// Check if bucket is valid
+				auto bucket = &Base::m_Data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				// Loop through bucket for matching value
+				auto node = const_cast<Node*>(bucket);
+				while (node && node->IsValid())
 				{
-					if (predicate(bucket->Value.Component1))
-						return RefResult(bucket->Value);
+					if (predicate(node->Value.Key))
+						return Result<const Pair&>::Ok(node->Value);
 
-					bucket = bucket->Next;
+					node = node->Next;
 				}
 			}
 
-			return Optional<KeyValuePair>::Empty();
+			// Return error if key is not found (key hashes to valid index but is not present)
+			return Result<const Pair&>::CaptureError(KeyNotFoundError{ "Key could not be found in the Map.", NAMEOF(key) });
 		}
 
-		NODISCARD bool ContainsKey(const TKey& key) const noexcept
+		NODISCARD constexpr Result<Pair&> Find(const Predicate<TKey>& predicate) noexcept
+		{
+			// Search bucket for key matching the predicate
+			for (usize i = 0; i < Base::m_Capacity; i++)
+			{
+				// Check if bucket is valid
+				auto bucket = &Base::m_Data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				// Loop through bucket for matching value
+				auto node = bucket;
+				while (node && node->IsValid())
+				{
+					if (predicate(node->Value.Key))
+						return Result<Pair&>::Ok(node->Value);
+
+					node = node->Next;
+				}
+			}
+
+			// Return error if key is not found (key hashes to valid index but is not present)
+			return Result<Pair&>::CaptureError(KeyNotFoundError{ "Key could not be found in the Map.", NAMEOF(key) });
+		}
+
+		NODISCARD constexpr bool ContainsKey(const TKey& key) const noexcept
 		{
 			// Get hash of bucket
-			auto bucket = &Base::m_Data[Hash(key) % Base::m_Capacity];
+			auto bucket = &Base::m_Data[Micro::Hash(key) % Base::m_Capacity];
 			if (!bucket->IsValid())
 				return false;
 
 			// Loop through bucket for matching value
-			while (bucket != nullptr)
+			auto node = const_cast<Node*>(bucket);
+			while (node && node->IsValid())
 			{
-				if (bucket->Value.Component1 == key)
+				if (node->Value.Key == key)
 					return true;
 
-				bucket = bucket->Next;
+				node = node->Next;
 			}
 
 			return false;
 		}
 
-		NODISCARD bool ContainsValue(const TValue& value) const noexcept
+		NODISCARD constexpr bool ContainsValue(const TValue& value) const noexcept
 		{
-			auto metaData = Base::m_MetaData;
-			while (metaData != nullptr)
+			for (usize i = 0; i < Base::m_Capacity; i++)
 			{
-				auto bucket = metaData->BucketReference;
-				while (bucket != nullptr && bucket->IsValid())
+				// Check if bucket is valid
+				auto bucket = &Base::m_Data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				// Loop through bucket for matching value
+				auto node = bucket;
+				while (node && node->IsValid())
 				{
-					if (bucket->GetValue() == value)
+					if (node->Value.Value == value)
 						return true;
 
-					bucket = bucket->Next;
+					node = node->Next;
 				}
-
-				metaData = metaData->Next;
 			}
+
 			return false;
 		}
 
-		NODISCARD bool TryGetValue(const TKey& key, TValue& out) noexcept
+		NODISCARD constexpr bool TryGetValue(const TKey& key, TValue& out) noexcept
 		{
 			// Get hash of bucket
-			auto bucket = &Base::m_Data[Hash(key) % Base::m_Capacity];
+			auto bucket = &Base::m_Data[Micro::Hash(key) % Base::m_Capacity];
 			if (!bucket->IsValid())
 				return false;
 
 			// Loop through bucket for matching value
-			while (bucket != nullptr)
+			auto node = bucket;
+			while (node && node->IsValid())
 			{
-				if (bucket->GetKey() == key)
+				if (node->Value.Key == key)
 				{
-					out = bucket->GetValue();
+					out = node->Value.Value;
 					return true;
 				}
 
-				bucket = bucket->Next;
+				node = node->Next;
 			}
 
 			return false;
 		}
 
-		// Operator Overloads
-		NODISCARD const TValue& operator[](const TKey& key) const
+		NODISCARD constexpr Result<const TValue&> At(const TKey& key) const noexcept
 		{
-			const size_t hash = Hash(key) % Base::m_Capacity;
-			const auto& pair = Base::m_Data[hash];
+			const usize hash = Micro::Hash(key) % Base::m_Capacity;
+			const auto& bucket = &Base::m_Data[hash];
 
-			if (!pair.IsValid())
-				throw KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key));
+			if (!bucket->IsValid())
+				return Result<const TValue&>::CaptureError(KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key)));
 
-			return pair.Value.Component2;
+			// Loop through bucket for matching key
+			auto node = const_cast<Node*>(bucket);
+			while (node && node->IsValid())
+			{
+				if (node->Value.Key == key)
+				{
+					return Result<const TValue&>::Ok(node->Value.Value);
+				}
+
+				node = node->Next;
+			}
+
+			return Result<const TValue&>::CaptureError(KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key)));
 		}
 
-		NODISCARD TValue& operator[](const TKey& key)
+		NODISCARD constexpr Result<TValue&> At(const TKey& key) noexcept
 		{
-			const size_t hash = Hash(key) % Base::m_Capacity;
-			auto& pair = Base::m_Data[hash];
+			const usize hash = Micro::Hash(key) % Base::m_Capacity;
+			const auto& bucket = &Base::m_Data[hash];
 
-			if (!pair.IsValid())
-				throw KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key));
+			if (!bucket->IsValid())
+				return Result<TValue&>::CaptureError(KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key)));
 
-			return pair.Value.Component2;
+			// Loop through bucket for matching key
+			auto node = bucket;
+			while (node && node->IsValid())
+			{
+				if (node->Value.Key == key)
+				{
+					return Result<TValue&>::Ok(node->Value.Value);
+				}
+
+				node = node->Next;
+			}
+
+			return Result<TValue&>::CaptureError(KeyNotFoundError("Key could not be found in the Map.", NAMEOF(key)));
 		}
 
-		Map& operator=(const Map& other)
+		
+		/*
+		 *  ============================================================
+		 *	|                    Operator Overloads                    |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr Result<const TValue&> operator[](const TKey& key) const noexcept { return At(key); }
+		NODISCARD constexpr Result<TValue&> operator[](const TKey& key) noexcept { return At(key); }
+
+		constexpr Map& operator=(const Map& other) noexcept
 		{
 			if (this == &other)
 				return *this;
 
 			Base::Clear();
-
 			Base::CopyFrom(other);
-
 			return *this;
 		}
 
-		Map& operator=(Map&& other) noexcept
+		constexpr Map& operator=(Map&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
@@ -315,13 +312,11 @@ namespace Micro
 			Base::Clear();
 
 			Base::m_Data = other.m_Data;
-			Base::m_MetaData = other.m_MetaData;
 			Base::m_Capacity = other.m_Capacity;
 			Base::m_Size = other.m_Size;
 			Base::m_LoadFactor = other.m_LoadFactor;
 
 			other.m_Data = nullptr;
-			other.m_MetaData = nullptr;
 			other.m_Capacity = 0;
 			other.m_Size = 0;
 			other.m_LoadFactor = 0;

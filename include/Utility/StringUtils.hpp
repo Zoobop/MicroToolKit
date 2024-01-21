@@ -19,7 +19,7 @@ namespace Micro
 
 		constexpr char whitespace[] = "\t\r\b\n \0";
 
-		for (size_t i = 0; i < string.Length(); i++)
+		for (usize i = 0; i < string.Length(); i++)
 		{
 			const char character = string[i];
 			if (!std::ranges::any_of(whitespace, [character](const char c) { return c == character; }))
@@ -31,10 +31,10 @@ namespace Micro
 
 	NODISCARD constexpr String Concat(const CharSequence auto& ... charSequences) noexcept
 	{
-		constexpr size_t paramSizes = sizeof ...(charSequences);
+		constexpr usize paramSizes = sizeof ...(charSequences);
 		static_assert(paramSizes > 0);
 
-		constexpr size_t defaultSize = 32 * paramSizes;
+		constexpr usize defaultSize = 32 * paramSizes;
 		StringBuilder builder(defaultSize);
 
 		auto params = {std::forward<decltype(charSequences)>(charSequences)...};
@@ -47,7 +47,7 @@ namespace Micro
 	template <StringConvertible T>
 	NODISCARD constexpr String Join(const char character, const Span<T>& sequence) noexcept
 	{
-		constexpr size_t defaultSize = 64;
+		constexpr usize defaultSize = 64;
 
 		StringBuilder builder(defaultSize);
 
@@ -57,10 +57,10 @@ namespace Micro
 		return builder.ToString();
 	}
 
-	template <StringConvertible T, size_t TSize>
+	template <StringConvertible T, usize TSize>
 	NODISCARD constexpr String Join(const char (&string)[TSize], const Span<T>& sequence) noexcept
 	{
-		constexpr size_t defaultSize = 64;
+		constexpr usize defaultSize = 64;
 
 		StringBuilder builder(defaultSize);
 
@@ -73,7 +73,7 @@ namespace Micro
 	template <StringConvertible T>
 	NODISCARD constexpr String Join(const CharSequence auto& string, const Span<T>& sequence) noexcept
 	{
-		constexpr size_t defaultSize = 64;
+		constexpr usize defaultSize = 64;
 
 		StringBuilder builder(defaultSize);
 
@@ -83,20 +83,20 @@ namespace Micro
 		return builder.ToString();
 	}
 
-	NODISCARD constexpr size_t Count(const CharSequence auto& string, const char character) noexcept
+	NODISCARD constexpr usize Count(const CharSequence auto& string, const char character) noexcept
 	{
-		size_t count = 0;
-		for (size_t i = 0; i < string.Length(); ++i)
+		usize count = 0;
+		for (usize i = 0; i < string.Length(); ++i)
 			if (string[i] == character)
 				count++;
 
 		return count;
 	}
 
-	NODISCARD constexpr size_t Count(const CharSequence auto& string, const Predicate<char>& predicate) noexcept
+	NODISCARD constexpr usize Count(const CharSequence auto& string, const Predicate<char>& predicate) noexcept
 	{
-		size_t count = 0;
-		for (size_t i = 0; i < string.Length(); ++i)
+		usize count = 0;
+		for (usize i = 0; i < string.Length(); ++i)
 			if (predicate(string[i]))
 				count++;
 
@@ -105,17 +105,17 @@ namespace Micro
 
 	NODISCARD constexpr List<String> Split(const CharSequence auto& string, const char delimiter = ' ') noexcept
 	{
-		const size_t length = string.Length();
+		const usize length = string.Length();
 		List<String> list(length);
 
 		StringBuffer buffer(string);
-		size_t headIndex = 0;
-		for (size_t i = 0; i < length; i++)
+		usize headIndex = 0;
+		for (usize i = 0; i < length; i++)
 		{
 			if (string[i] != delimiter)
 				continue;
 
-			const size_t stringLength = i - headIndex;
+			const usize stringLength = i - headIndex;
 			list.Emplace(buffer.Slice(0, stringLength).Value().ToString());
 
 			buffer = buffer.Slice(stringLength + 1);

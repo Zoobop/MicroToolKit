@@ -104,7 +104,7 @@ namespace Micro
 
 		/* Enumerators (Iterators) */
 
-		NODISCARD Enumerator<T> GetEnumerator() override
+		NODISCARD Enumerator<T> GetEnumerator() noexcept override
 		{
 			for (usize i = 0; i < m_Size; i++)
 			{
@@ -113,7 +113,7 @@ namespace Micro
 			}
 		}
 
-		NODISCARD Enumerator<T> GetEnumerator() const override
+		NODISCARD Enumerator<T> GetEnumerator() const noexcept override
 		{
 			for (usize i = 0; i < m_Size; i++)
 			{
@@ -353,7 +353,7 @@ namespace Micro
 
 		/* Enumerators (Iterators) */
 
-		NODISCARD Enumerator<T> GetEnumerator() override
+		NODISCARD Enumerator<T> GetEnumerator() noexcept override
 		{
 			for (usize i = 0; i < TSize; i++)
 			{
@@ -362,7 +362,7 @@ namespace Micro
 			}
 		}
 
-		NODISCARD Enumerator<T> GetEnumerator() const override
+		NODISCARD Enumerator<T> GetEnumerator() const noexcept override
 		{
 			for (usize i = 0; i < TSize; i++)
 			{

@@ -229,4 +229,33 @@ namespace Micro
 
 		NODISCARD constexpr bool IsValid() const noexcept { return Status == MemStatus::Valid; }
 	};
+
+	template <typename T>
+	struct HashNode final
+	{
+		T Value;
+		HashNode* Next = nullptr;
+		MemStatus Status = MemStatus::Invalid;
+
+		constexpr HashNode() noexcept = default;
+
+		constexpr explicit HashNode(const T& value) noexcept
+			: Value(value), Status(MemStatus::Valid)
+		{
+		}
+
+		constexpr explicit HashNode(T&& value) noexcept
+			: Value(std::move(value)), Status(MemStatus::Valid)
+		{
+		}
+
+		NODISCARD constexpr bool IsValid() const noexcept { return Status == MemStatus::Valid; }
+
+		NODISCARD constexpr void Dispose() noexcept
+		{
+			Value.~T();
+			Next = nullptr;
+			Status = MemStatus::Invalid;
+		}
+	};
 }

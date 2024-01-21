@@ -11,7 +11,7 @@ namespace Micro
 	 * \tparam T Type of elements in array
 	 * \tparam TSize Stack-allocated size of the array
 	 */
-	template <typename T, size_t TSize>
+	template <typename T, usize TSize>
 	class Array final : public StackCollection<T, TSize>
 	{
 	public:
@@ -119,7 +119,7 @@ namespace Micro
 		/// </summary>
 		/// <param name="index">Index to pull value</param>
 		/// <returns>Value at index, or invalid result</returns>
-		NODISCARD constexpr Result<T&> At(const size_t index) noexcept
+		NODISCARD constexpr Result<T&> At(const usize index) noexcept
 		{
 			if (index >= TSize)
 				return Result<T&>::CaptureError(IndexOutOfRangeError(index));
@@ -132,7 +132,7 @@ namespace Micro
 		/// </summary>
 		/// <param name="index">Index to pull value</param>
 		/// <returns>Value at index, or invalid result</returns>
-		NODISCARD constexpr Result<const T&> At(const size_t index) const noexcept
+		NODISCARD constexpr Result<const T&> At(const usize index) const noexcept
 		{
 			if (index >= TSize)
 				return Result<const T&>::CaptureError(IndexOutOfRangeError(index));
@@ -146,7 +146,7 @@ namespace Micro
 		/// <param name="index"></param>
 		/// <param name="value"></param>
 		/// <returns>True, if set</returns>
-		constexpr bool SetValue(const size_t index, const T& value) noexcept
+		constexpr bool SetValue(const usize index, const T& value) noexcept
 		{
 			if (index >= TSize)
 				return false;
@@ -161,7 +161,7 @@ namespace Micro
 		/// <param name="index"></param>
 		/// <param name="value"></param>
 		/// <returns>True, if set</returns>
-		constexpr bool SetValue(const size_t index, T&& value) noexcept
+		constexpr bool SetValue(const usize index, T&& value) noexcept
 		{
 			if (index >= TSize)
 				return false;
@@ -176,7 +176,7 @@ namespace Micro
 		///	<param name="value">Value to fill Array</param>
 		constexpr void Fill(const T& value) noexcept
 		{
-			for (size_t i = 0; i < TSize; i++)
+			for (usize i = 0; i < TSize; i++)
 				Base::m_Data[i] = value;
 		}
 
@@ -187,13 +187,13 @@ namespace Micro
 		///	<param name="initializerList">Initializer list to fill Array</param>
 		constexpr void Set(std::initializer_list<T>&& initializerList) noexcept
 		{
-			const size_t capacity = initializerList.size();
+			const usize capacity = initializerList.size();
 			if (capacity == 0)
 				return;
 
-			const size_t length = MIN(capacity, TSize);
+			const usize length = MIN(capacity, TSize);
 			const auto data = initializerList.begin();
-			for (size_t i = 0; i < length; i++)
+			for (usize i = 0; i < length; i++)
 				Base::m_Data[i] = std::move(const_cast<T&>(data[i]));
 		}
 
@@ -204,9 +204,9 @@ namespace Micro
 		///	<param name="span">Span to fill Array</param>
 		constexpr void Set(const Span<T>& span)
 		{
-			const size_t size = MIN(span.Capacity(), TSize);
+			const usize size = MIN(span.Capacity(), TSize);
 			const T* data = span.Data();
-			for (size_t i = 0; i < size; i++)
+			for (usize i = 0; i < size; i++)
 				Base::m_Data[i] = data[i];
 		}
 
@@ -217,8 +217,8 @@ namespace Micro
 		///	<param name="array">Default array to fill Array</param>
 		constexpr void Set(const T(&array)[TSize]) noexcept
 		{
-			constexpr size_t size = TSize;
-			for (size_t i = 0; i < size; i++)
+			constexpr usize size = TSize;
+			for (usize i = 0; i < size; i++)
 				Base::m_Data[i] = array[i];
 		}
 
@@ -229,7 +229,7 @@ namespace Micro
 		///	<param name="elements">Parameter pack to fill Array</param>
 		constexpr void Set(std::convertible_to<T> auto... elements) noexcept
 		{
-			size_t index = 0;
+			usize index = 0;
 
 			auto values = {elements...};
 			for (auto& elem : values)
@@ -247,7 +247,7 @@ namespace Micro
 		///	<param name="array">Array to swap with</param>
 		constexpr void Swap(Array& array) noexcept
 		{
-			for (size_t i = 0; i < TSize; i++)
+			for (usize i = 0; i < TSize; i++)
 			{
 				auto temp = std::move(Base::m_Data[i]);
 				Base::m_Data[i] = std::move(array.m_Data[i]);
@@ -261,8 +261,8 @@ namespace Micro
 		constexpr void Reverse() noexcept
 		{
 			auto span = Base::AsSpan();
-			constexpr size_t length = TSize / 2;
-			for (size_t left = 0, right = TSize - 1; left < length; left++, --right)
+			constexpr usize length = TSize / 2;
+			for (usize left = 0, right = TSize - 1; left < length; left++, --right)
 				Micro::Swap(span, left, right);
 		}
 
@@ -271,13 +271,13 @@ namespace Micro
 		/// </summary>
 		/// <param name="value">Value to find</param>
 		/// <returns>The first index of the value, or an invalid result</returns>
-		NODISCARD constexpr Optional<size_t> IndexOf(const T& value) const noexcept
+		NODISCARD constexpr Optional<usize> IndexOf(const T& value) const noexcept
 		{
-			for (size_t i = 0; i < TSize; ++i)
+			for (usize i = 0; i < TSize; ++i)
 				if (Base::m_Data[i] == value)
-					return Optional<size_t>(i);
+					return Optional<usize>(i);
 
-			return Optional<size_t>::Empty();
+			return Optional<usize>::Empty();
 		}
 
 		/// <summary>
@@ -285,16 +285,16 @@ namespace Micro
 		/// </summary>
 		/// <param name="value">Value to find</param>
 		/// <returns>The last index of the value, or an invalid result</returns>
-		NODISCARD constexpr Optional<size_t> LastIndexOf(const T& value) const noexcept
+		NODISCARD constexpr Optional<usize> LastIndexOf(const T& value) const noexcept
 		{
-			for (size_t i = 0; i < TSize; ++i)
+			for (usize i = 0; i < TSize; ++i)
 			{
-				const size_t offset = TSize - 1 - i;
+				const usize offset = TSize - 1 - i;
 				if (Base::m_Data[offset] == value)
-					return Optional<size_t>(offset);
+					return Optional<usize>(offset);
 			}
 
-			return Optional<size_t>::Empty();
+			return Optional<usize>::Empty();
 		}
 
 		/// <summary>
@@ -304,7 +304,7 @@ namespace Micro
 		/// <returns>True, if found</returns>
 		NODISCARD constexpr bool Exists(const Predicate<T>& predicate) const noexcept
 		{
-			for (size_t i = 0; i < TSize; i++)
+			for (usize i = 0; i < TSize; i++)
 				if (predicate(Base::m_Data[i]))
 					return true;
 			return false;
@@ -317,7 +317,7 @@ namespace Micro
 		/// <returns>True, if all elements pass condition</returns>
 		NODISCARD constexpr bool TrueForAll(const Predicate<T>& predicate) const noexcept
 		{
-			for (size_t i = 0; i < TSize; i++)
+			for (usize i = 0; i < TSize; i++)
 				if (!predicate(Base::m_Data[i]))
 					return false;
 			return true;
@@ -336,14 +336,14 @@ namespace Micro
 		/// </summary>
 		/// <param name="index">Index of element</param>
 		/// <returns>Reference to the element at index, or empty result if invalid</returns>
-		NODISCARD constexpr Result<T&> operator[](const size_t index) noexcept { return At(index); }
+		NODISCARD constexpr Result<T&> operator[](const usize index) noexcept { return At(index); }
 
 		/// <summary>
 		/// Gets the element at the given index, or an empty result if invalid. (const version)
 		/// </summary>
 		/// <param name="index">Index of element</param>
 		/// <returns>Reference to the element at index, or empty result if invalid</returns>
-		NODISCARD constexpr Result<const T&> operator[](const size_t index) const noexcept { return At(index); }
+		NODISCARD constexpr Result<const T&> operator[](const usize index) const noexcept { return At(index); }
 
 		/// <summary>
 		/// Copies the elements from the given Array.
@@ -396,9 +396,9 @@ namespace Micro
 	/// <summary>
 	/// Hashes the Array to produce a unique hash code.
 	/// </summary>
-	/// <returns>Hash code as a 'size_t'</returns>
-	template <typename T, size_t TSize>
-	NODISCARD size_t Hash(const Array<T, TSize>&) noexcept
+	/// <returns>Hash code as a 'usize'</returns>
+	template <typename T, usize TSize>
+	NODISCARD usize Hash(const Array<T, TSize>&) noexcept
 	{
 		return typeid(T).hash_code() + typeid(Array<T, TSize>).hash_code() + TSize;
 	}
@@ -411,7 +411,7 @@ namespace Micro
 	template <typename T>
 	NODISCARD constexpr auto MakeArray(std::convertible_to<T> auto... elements) noexcept
 	{
-		constexpr size_t length = sizeof ...(elements);
+		constexpr usize length = sizeof ...(elements);
 		return Array<T, length>(std::forward<T>(elements)...);
 	}
 }

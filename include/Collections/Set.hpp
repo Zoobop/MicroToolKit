@@ -1,106 +1,36 @@
 #pragma once
-
 #include "Common/Span.hpp"
 #include "Collections/Base/HashTable.hpp"
 
 namespace Micro
 {
-	template <Hashable T>
-	struct SetNode final
-	{
-		// Aliases
-		using KeyType = T;
-		using ValueType = T;
-		using IteratorType = T;
-
-		// Fields
-		T Value;
-		SetNode* Next = nullptr;
-		MemStatus Status = MemStatus::Invalid;
-
-		// Constructors
-		constexpr SetNode() noexcept = default;
-
-		constexpr SetNode(const SetNode& other) noexcept
-			: Value(other.Value), Next(other.Next), Status(other.Status)
-		{
-		}
-
-		constexpr SetNode(SetNode&& other) noexcept
-			: Value(std::move(other.Value)), Next(other.Next), Status(other.Status)
-		{
-			other.Invalidate();
-		}
-
-		explicit constexpr SetNode(const T& value) noexcept
-			: Value(value), Status(MemStatus::Valid)
-		{
-		}
-
-		explicit constexpr SetNode(T&& value) noexcept
-			: Value(std::move(value)), Status(MemStatus::Valid)
-		{
-		}
-
-		constexpr ~SetNode() noexcept { Invalidate(); }
-
-		// Utility
-		constexpr void Invalidate() noexcept
-		{
-			Next = nullptr;
-			Status = MemStatus::Invalid;
-		}
-
-		constexpr void Dispose() noexcept
-		{
-			Value.~T();
-		}
-
-		NODISCARD constexpr T& GetKey() noexcept { return Value; }
-		NODISCARD constexpr T& GetValue() noexcept { return Value; }
-		NODISCARD constexpr IteratorType& GetIteratorValue() noexcept { return Value; }
-		NODISCARD constexpr bool IsValid() const noexcept { return Status == MemStatus::Valid; }
-
-		// Operator Overloads
-		SetNode& operator=(const SetNode& other) noexcept
-		{
-			if (this == &other)
-				return *this;
-
-			Value = other.Value;
-			Next = other.Next;
-			Status = other.Status;
-
-			return *this;
-		}
-
-		SetNode& operator=(SetNode&& other) noexcept
-		{
-			if (this == &other)
-				return *this;
-
-			Value = std::move(other.Value);
-			Next = other.Next;
-			Status = other.Status;
-
-			return *this;
-		}
-	};
-
-	template <Hashable T>
-	class Set final : public HashTable<SetNode<T>>
+	template <typename T>
+	class Set final : public SetBase<T>
 	{
 	public:
-		// Aliases
-		using Node = SetNode<T>;
-		using Base = HashTable<Node>;
+		/*
+		 *  ============================================================
+		 *	|                          Aliases                         |
+		 *  ============================================================
+		 */
 
-		// Constructors/Destructor
+
+		using Base = SetBase<T>;
+		using Node = typename Base::Node;
+
+		
+		/*
+		 *  ============================================================
+		 *	|                  Constructors/Destructors                |
+		 *  ============================================================
+		 */
+
+
 		constexpr Set() noexcept : Base()
 		{
 		}
 
-		constexpr Set(const Set& other) : Base(other)
+		constexpr Set(const Set& other) noexcept : Base(other)
 		{
 		}
 
@@ -108,7 +38,7 @@ namespace Micro
 		{
 		}
 
-		constexpr Set(const Base& other) : Base(other)
+		constexpr Set(const Base& other) noexcept : Base(other)
 		{
 		}
 
@@ -120,142 +50,189 @@ namespace Micro
 		{
 		}
 
-		explicit Set(const size_t capacity) : Base(capacity)
+		constexpr explicit Set(const usize capacity) noexcept : Base(capacity)
 		{
 		}
 
 		constexpr ~Set() noexcept override = default;
 
-		// Utility
-		bool Add(const T& value)
+		
+		/*
+		 *  ============================================================
+		 *	|                         Utility                          |
+		 *  ============================================================
+		 */
+
+
+		constexpr bool Add(const T& value) noexcept { return Base::Insert(value); }
+
+		constexpr bool Add(T&& value) noexcept { return Base::Insert(std::move(value)); }
+
+		constexpr void AddRange(std::convertible_to<T> auto... elements) noexcept
 		{
-			return Base::Insert(value);
+			ASSERT_MSG(sizeof ...(elements) != 0, "Cannot call 'AddRange' without any arguments!");
+
+			for (auto values = { static_cast<T>(std::move(elements))... }; auto&& item : values)
+				Add(std::move(item));
 		}
 
-		bool Add(T&& value)
-		{
-			return Base::Insert(std::move(value));
-		}
+		constexpr bool Remove(const T& value) noexcept { return Base::Erase(value); }
 
-		bool Remove(const T& value)
-		{
-			return Base::Erase(value);
-		}
-
-		NODISCARD bool Overlaps(const Set& other) const
-		{
-			if (Base::IsEmpty())
-				return false;
-
-			auto metaData = other.m_MetaData;
-			while (metaData != nullptr)
-			{
-				auto bucket = metaData->BucketReference;
-				while (bucket != nullptr && bucket->IsValid())
-				{
-					if (Contains(bucket->Value))
-						return true;
-
-					bucket = bucket->Next;
-				}
-
-				metaData = metaData->Next;
-			}
-			return true;
-		}
-
-		NODISCARD bool SetEquals(const Set& other) const
-		{
-			if (Base::m_Size != other.m_Size)
-				return false;
-
-			auto metaData = other.m_MetaData;
-			while (metaData != nullptr)
-			{
-				auto bucket = metaData->BucketReference;
-				while (bucket != nullptr && bucket->IsValid())
-				{
-					if (!Contains(bucket->Value))
-						return false;
-
-					bucket = bucket->Next;
-				}
-
-				metaData = metaData->Next;
-			}
-			return true;
-		}
-
-		NODISCARD bool Contains(const T& value) const noexcept
+		NODISCARD constexpr bool Contains(const T& value) const noexcept
 		{
 			// Get hash of bucket
-			auto bucket = &Base::m_Data[Hash(value) % Base::m_Capacity];
+			auto bucket = &Base::m_Data[Micro::Hash(value) % Base::m_Capacity];
 			if (!bucket->IsValid())
 				return false;
 
 			// Loop through bucket for matching value
-			while (bucket != nullptr)
+			Node* node = const_cast<Node*>(bucket);
+			while (node && node->IsValid())
 			{
-				if (bucket->Value == value)
+				if (node->Value == value)
 					return true;
 
-				bucket = bucket->Next;
+				node = node->Next;
 			}
 
 			return false;
 		}
 
-		void IntersectWith(const Set& other)
+		NODISCARD constexpr bool Overlaps(const Set& other) const noexcept
 		{
-			auto metaData = Base::m_MetaData;
-			while (metaData != nullptr)
+			if (Base::IsEmpty())
+				return other.IsEmpty();
+
+			for (const auto& value : other)
 			{
-				const auto next = metaData->Next;
-				auto bucket = metaData->BucketReference;
-				while (bucket != nullptr && bucket->IsValid())
+				if (Contains(value))
+					return true;
+			}
+
+			return false;
+		}
+
+		NODISCARD constexpr bool SetEquals(const Set& other) const noexcept
+		{
+			if (Base::IsEmpty())
+				return other.IsEmpty();
+
+			if (Base::m_Size != other.m_Size)
+				return false;
+
+			for (const auto& value : other)
+			{
+				if (!Contains(value))
+					return false;
+			}
+
+			return true;
+		}
+
+		constexpr void Intersect(const Set& other) noexcept
+		{
+			for (usize i = 0; i < Base::m_Capacity; i++)
+			{
+				Node* bucket = &Base::m_Data[i];
+				if (!bucket->IsValid())
+					continue;
+
+				Node* node = bucket;
+				while (node && node->IsValid())
 				{
-					const auto nextNode = bucket->Next;
-					const auto& value = bucket->Value;
+					Node* next = node->Next;
+					const T& value = node->Value;
 					if (!other.Contains(value))
+					{
 						Remove(value);
+					}
 
-					bucket = nextNode;
+					node = next;
 				}
-
-				metaData = next;
 			}
 		}
 
-		void UnionWith(const Set& other)
+		constexpr void Union(const Set& other) noexcept
 		{
-			auto metaData = other.m_MetaData;
-			while (metaData != nullptr)
+			for (const auto& value : other)
 			{
-				auto bucket = metaData->BucketReference;
-				while (bucket != nullptr && bucket->IsValid())
-				{
-					Add(bucket->Value);
-					bucket = bucket->Next;
-				}
-
-				metaData = metaData->Next;
+				Add(value);
 			}
 		}
 
-		// Operator Overloads
-		Set& operator=(const Set& other)
+
+		/*
+		 *  ============================================================
+		 *	|                          Static                          |
+		 *  ============================================================
+		 */
+
+
+		NODISCARD constexpr static Set Intersect(const Set& set1, const Set& set2) noexcept
+		{
+			const usize capacity = MAX(set1.Capacity(), set2.Capacity());
+
+			Set set{ capacity };
+
+			for (const auto& value : set1)
+			{
+				if (set2.Contains(value))
+				{
+					set.Add(value);
+				}
+			}
+
+			return set;
+		}
+
+		NODISCARD constexpr static Set Union(const Set& set1, const Set& set2) noexcept
+		{
+			const usize capacity = MAX(set1.Capacity(), set2.Capacity());
+
+			Set set{ capacity };
+
+			for (const auto& value : set1)
+			{
+				set.Add(value);
+			}
+
+			for (const auto& value : set2)
+			{
+				set.Add(value);
+			}
+
+			return set;
+		}
+
+
+		/*
+		 *  ============================================================
+		 *	|                    Operator Overloads                    |
+		 *  ============================================================
+		 */
+
+
+		constexpr Set& operator=(const Set& other) noexcept
 		{
 			if (this == &other)
 				return *this;
 
-			Base::Clear();
+			if (!Base::IsEmpty())
+			{
+				Base::Clear();
+				Base::Reallocate(other.m_Capacity);
+			}
+			else
+			{
+				Base::Allocate(other.m_Capacity);
+			}
+
 
 			Base::CopyFrom(other);
-
 			return *this;
 		}
 
-		Set& operator=(Set&& other) noexcept
+		constexpr Set& operator=(Set&& other) noexcept
 		{
 			if (this == &other)
 				return *this;
@@ -263,13 +240,11 @@ namespace Micro
 			Base::Clear();
 
 			Base::m_Data = other.m_Data;
-			Base::m_MetaData = other.m_MetaData;
 			Base::m_Capacity = other.m_Capacity;
 			Base::m_Size = other.m_Size;
 			Base::m_LoadFactor = other.m_LoadFactor;
 
 			other.m_Data = nullptr;
-			other.m_MetaData = nullptr;
 			other.m_Capacity = 0;
 			other.m_Size = 0;
 			other.m_LoadFactor = 0;

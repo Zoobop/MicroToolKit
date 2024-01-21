@@ -59,7 +59,7 @@ namespace Micro
 		{
 		}
 
-		constexpr explicit Queue(const size_t capacity) noexcept : Base(capacity)
+		constexpr explicit Queue(const usize capacity) noexcept : Base(capacity)
 		{
 		}
 
@@ -115,13 +115,13 @@ namespace Micro
 			if (collection.IsEmpty())
 				return;
 
-			const size_t size = collection.Size();
+			const usize size = collection.Size();
 			const T* data = collection.Data();
 
-			const size_t length = Base::m_Size + size;
+			const usize length = Base::m_Size + size;
 			Base::HandleReallocation(length);
 
-			for (size_t i = 0; i < size; i++)
+			for (usize i = 0; i < size; i++)
 				Enqueue(data[i]);
 		}
 
@@ -130,13 +130,13 @@ namespace Micro
 			if (collection.IsEmpty())
 				return;
 
-			const size_t size = collection.Size();
+			const usize size = collection.Size();
 			T* data = const_cast<T*>(collection.Data());
 
-			const size_t length = Base::m_Size + size;
+			const usize length = Base::m_Size + size;
 			Base::HandleReallocation(length);
 
-			for (size_t i = 0; i < size; i++)
+			for (usize i = 0; i < size; i++)
 				Enqueue(std::move(data[i]));
 		}
 
@@ -149,22 +149,22 @@ namespace Micro
 			if (span.IsEmpty())
 				return;
 
-			const size_t size = span.Capacity();
+			const usize size = span.Capacity();
 			const T* data = span.Data();
 
-			const size_t length = Base::m_Size + size;
+			const usize length = Base::m_Size + size;
 			Base::HandleReallocation(length);
 
-			for (size_t i = 0; i < size; i++)
+			for (usize i = 0; i < size; i++)
 				Enqueue(data[i]);
 		}
 
 		constexpr void EnqueueRange(std::convertible_to<T> auto... elements) noexcept
 		{
-			constexpr size_t argumentCount = sizeof ...(elements);
+			constexpr usize argumentCount = sizeof ...(elements);
 			static_assert(argumentCount != 0, "Cannot call 'EnqueueRange' without any arguments!");
 
-			const size_t length = Base::m_Size + argumentCount;
+			const usize length = Base::m_Size + argumentCount;
 			Base::HandleReallocation(length);
 
 			for (auto values = { static_cast<T>(std::move(elements))... }; auto && item : values)
@@ -212,7 +212,7 @@ namespace Micro
 			if (this == &queue)
 				return *this;
 
-			const size_t capacity = queue.m_Capacity;
+			const usize capacity = queue.m_Capacity;
 			if (capacity == 0)
 				return *this;
 
@@ -255,6 +255,6 @@ namespace Micro
 		}
 
 	private:
-		static constexpr size_t DefaultCapacity = 16;
+		static constexpr usize DefaultCapacity = 16;
 	};
 }

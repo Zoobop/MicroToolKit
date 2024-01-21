@@ -23,9 +23,9 @@
 #include "Collections/Array.hpp"
 #include "Collections/LinkedList.hpp"
 #include "Collections/List.hpp"
-//#include "Collections/Map.hpp"
+#include "Collections/Map.hpp"
 #include "Collections/Queue.hpp"
-//#include "Collections/Set.hpp"
+#include "Collections/Set.hpp"
 #include "Collections/Stack.hpp"
 
 // IO Headers

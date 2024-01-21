@@ -1,7 +1,6 @@
 #pragma once
 #include "Core/Core.hpp"
 #include "Core/Typedef.hpp"
-#include "Core/Errors/Error.hpp"
 
 namespace Micro
 {
@@ -143,20 +142,24 @@ namespace Micro
 		NODISCARD Enumerator<T> GetEnumerator() noexcept override
 		{
 			auto node = m_Head;
-			while (node != nullptr)
+			while (node)
 			{
-				auto& value = node.Value();
+				auto& value = node->Value;
 				co_yield value;
+
+				node = node->Next;
 			}
 		}
 
 		NODISCARD Enumerator<T> GetEnumerator() const noexcept override
 		{
-			auto node = m_Head;
-			while (node != nullptr)
+			auto node = const_cast<Node*>(m_Head);
+			while (node)
 			{
-				const auto& value = node.Value();
+				const auto& value = node->Value;
 				co_yield value;
+
+				node = node->Next;
 			}
 		}
 

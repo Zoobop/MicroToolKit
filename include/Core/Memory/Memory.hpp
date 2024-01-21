@@ -105,7 +105,7 @@ namespace Micro
 		::operator delete(block, size * sizeof(T));
 	}
 
-	enum struct MemStatus : uint8_t { Valid = 0, Invalid = 1 };
+	enum struct MemStatus : u8 { Valid = 0, Invalid = 1 };
 
 	inline std::ostream& operator<<(std::ostream& stream, const MemStatus memStatus) noexcept
 	{
