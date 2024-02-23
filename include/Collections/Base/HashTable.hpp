@@ -211,39 +211,6 @@ namespace Micro
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const SetBase& hashTable) noexcept
-		{
-			stream << "[";
-
-			const auto data = hashTable.Data();
-			const usize capacity = hashTable.Capacity();
-			const usize size = hashTable.Size();
-			for (usize i = 0, count = 0; i < capacity && count < size; i++)
-			{
-				const auto bucket = &data[i];
-				if (!bucket->IsValid())
-					continue;
-
-				stream << bucket->Value;
-
-				if (++count < size)
-					stream << ", ";
-
-				auto node = bucket->Next;
-				while (node && node->IsValid())
-				{
-					stream << node->Value;
-					node = node->Next;
-
-					if (++count < size)
-						stream << ", ";
-				}
-			}
-
-			stream << "]";
-			return stream;
-		}
-
 	protected:
 		/*
 		 *  ============================================================
@@ -755,39 +722,6 @@ namespace Micro
 			other.m_LoadFactor = 0;
 
 			return *this;
-		}
-
-		friend std::ostream& operator<<(std::ostream& stream, const MapBase& hashTable) noexcept
-		{
-			stream << "[";
-
-			const auto data = hashTable.Data();
-			const usize capacity = hashTable.Capacity();
-			const usize size = hashTable.Size();
-			for (usize i = 0, count = 0; i < capacity && count < size; i++)
-			{
-				const auto bucket = &data[i];
-				if (!bucket->IsValid())
-					continue;
-
-				stream << bucket->Value;
-
-				if (++count < size)
-					stream << ", ";
-
-				auto node = bucket->Next;
-				while (node && node->IsValid())
-				{
-					stream << node->Value;
-					node = node->Next;
-
-					if (++count < size)
-						stream << ", ";
-				}
-			}
-
-			stream << "]";
-			return stream;
 		}
 
 	protected:

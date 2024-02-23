@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Collections/Base/Collection.hpp"
-#include "Utility/Options/Optional.hpp"
+#include "Utility/Options/Result.hpp"
 
 namespace Micro
 {
@@ -107,6 +107,8 @@ namespace Micro
 
 			ShiftRight<T>(Base::m_Data, Base::m_Size, 0);
 			new(&Base::m_Data[0]) T(std::forward<Args>(args)...);
+			
+			++Base::m_Size;
 			return Base::m_Data[0];
 		}
 

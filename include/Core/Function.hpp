@@ -39,10 +39,7 @@ namespace Micro
 
 #endif
 
-	using VoidCall = std::function<void()>;
-
-	template <typename... Args>
-	using Action = std::function<void(const Args&...)>;
+	using Action = std::function<void()>;
 
 	template <typename... Args>
 	using Predicate = std::function<bool(const Args&...)>;

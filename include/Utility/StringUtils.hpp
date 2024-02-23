@@ -29,7 +29,7 @@ namespace Micro
 		return true;
 	}
 
-	NODISCARD constexpr String Concat(const CharSequence auto& ... charSequences) noexcept
+	NODISCARD constexpr string Concat(const CharSequence auto& ... charSequences) noexcept
 	{
 		constexpr usize paramSizes = sizeof ...(charSequences);
 		static_assert(paramSizes > 0);
@@ -45,7 +45,7 @@ namespace Micro
 	}
 
 	template <StringConvertible T>
-	NODISCARD constexpr String Join(const char character, const Span<T>& sequence) noexcept
+	NODISCARD constexpr string Join(const char character, const Span<T>& sequence) noexcept
 	{
 		constexpr usize defaultSize = 64;
 
@@ -58,7 +58,7 @@ namespace Micro
 	}
 
 	template <StringConvertible T, usize TSize>
-	NODISCARD constexpr String Join(const char (&string)[TSize], const Span<T>& sequence) noexcept
+	NODISCARD constexpr string Join(const char (&string)[TSize], const Span<T>& sequence) noexcept
 	{
 		constexpr usize defaultSize = 64;
 
@@ -71,7 +71,7 @@ namespace Micro
 	}
 
 	template <StringConvertible T>
-	NODISCARD constexpr String Join(const CharSequence auto& string, const Span<T>& sequence) noexcept
+	NODISCARD constexpr string Join(const CharSequence auto& string, const Span<T>& sequence) noexcept
 	{
 		constexpr usize defaultSize = 64;
 
@@ -103,7 +103,7 @@ namespace Micro
 		return count;
 	}
 
-	NODISCARD constexpr List<String> Split(const CharSequence auto& string, const char delimiter = ' ') noexcept
+	NODISCARD constexpr List<string> Split(const CharSequence auto& string, const char delimiter = ' ') noexcept
 	{
 		const usize length = string.Length();
 		List<String> list(length);

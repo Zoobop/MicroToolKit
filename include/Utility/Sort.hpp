@@ -5,6 +5,9 @@
 namespace Micro
 {
 	template <typename T>
+	using Comparer = Func<bool, const T&, const T&>;
+
+	template <typename T>
 	concept Comparable = requires(T left, T right)
 	{
 		{ operator>(left, right) } -> std::convertible_to<bool>;
@@ -28,7 +31,7 @@ namespace Micro
 	NODISCARD constexpr bool LessThanEqual(const T& left, const T& right) noexcept { return left <= right; }
 
 	template <Comparable T>
-	constexpr void Sort(Span<T>& sequence, const Func<bool, T, T>& predicate = GreaterThan<T>) noexcept
+	constexpr void Sort(Span<T>& sequence, const Comparer<T>& predicate = GreaterThan<T>) noexcept
 	{
 		auto data = sequence.Data();
 		const size_t size = sequence.Size();
@@ -48,7 +51,7 @@ namespace Micro
 	}
 
 	template <Comparable T>
-	constexpr void ReverseSort(Span<T>& sequence, const Func<bool, T, T>& predicate = GreaterThan<T>) noexcept
+	constexpr void ReverseSort(Span<T>& sequence, const Comparer<T>& predicate = GreaterThan<T>) noexcept
 	{
 		auto data = sequence.Data();
 		const size_t size = sequence.Size();

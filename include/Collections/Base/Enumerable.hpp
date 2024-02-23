@@ -58,5 +58,22 @@ namespace Micro
 
 		constexpr Enumerable& operator=(const Enumerable&) noexcept = default;
 		constexpr Enumerable& operator=(Enumerable&&) noexcept = default;
+
+		friend std::ostream& operator<<(std::ostream& stream, const Enumerable& enumerable) noexcept
+		{
+			stream << "[";
+
+			auto enumerator = enumerable.GetEnumerator();
+			if (enumerator.MoveNext())
+				stream << enumerator.Current();
+
+			while (enumerator.MoveNext())
+			{
+				stream << ", " << enumerator.Current();
+			}
+
+			stream << "]";
+			return stream;
+		}
 	};
 }

@@ -1,6 +1,4 @@
 #pragma once
-
-#include <concepts>
 #include <ostream>
 
 namespace Micro

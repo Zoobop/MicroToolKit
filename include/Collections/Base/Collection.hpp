@@ -202,20 +202,6 @@ namespace Micro
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const HeapCollection& current) noexcept
-		{
-			stream << "[";
-			for (usize i = 0; i < current.m_Size; i++)
-			{
-				stream << current.m_Data[i];
-				if (i != current.m_Size - 1)
-					stream << ", ";
-			}
-
-			stream << "]";
-			return stream;
-		}
-
 	protected:
 		/*
 		 *  ============================================================
@@ -420,20 +406,6 @@ namespace Micro
 
 			MoveFrom(std::move(other));
 			return *this;
-		}
-
-		friend std::ostream& operator<<(std::ostream& stream, const StackCollection& current) noexcept
-		{
-			stream << "[";
-			for (usize i = 0; i < TSize; i++)
-			{
-				stream << current.m_Data[i];
-				if (i != TSize - 1)
-					stream << ", ";
-			}
-
-			stream << "]";
-			return stream;
 		}
 
 	protected:

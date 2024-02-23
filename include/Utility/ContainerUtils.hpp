@@ -6,12 +6,12 @@
 
 namespace Micro
 {
-	NODISCARD constexpr String CollectionToString(const StringBuildable auto* data, const size_t size)
+	NODISCARD constexpr string CollectionToString(const StringBuildable auto* data, const usize size)
 	{
 		StringBuilder builder(size);
 		builder.Append('[');
 
-		for (size_t i = 0; i < size; i++)
+		for (usize i = 0; i < size; i++)
 		{
             builder.Append(data[i]);
 			if (i != size - 1)
@@ -22,13 +22,13 @@ namespace Micro
 		return builder.ToString();
 	}
 
-	template <size_t TSize>
-	NODISCARD constexpr String CollectionToString(const StringBuildable auto (&data)[TSize])
+	template <usize TSize>
+	NODISCARD constexpr string CollectionToString(const StringBuildable auto (&data)[TSize])
 	{
 		StringBuilder builder(TSize);
 		builder.Append('[');
 
-		for (size_t i = 0; i < TSize; i++)
+		for (usize i = 0; i < TSize; i++)
 		{
             builder.Append(data[i]);
 			if (i != TSize - 1)
@@ -40,14 +40,14 @@ namespace Micro
 	}
 
     template <StringBuildable T>
-	NODISCARD constexpr String SpanToString(const Span<T>& span)
+	NODISCARD constexpr string SpanToString(const Span<T>& span)
 	{
-        const size_t length = span.Capacity();
+        const usize length = span.Capacity();
 		StringBuilder builder(length);
 		builder.Append('[');
 
 		const T* data = span.Data();
-		for (size_t i = 0; i < length; i++)
+		for (usize i = 0; i < length; i++)
 		{
             builder.Append(data[i]);
 			if (i != length - 1)

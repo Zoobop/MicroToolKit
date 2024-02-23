@@ -208,23 +208,6 @@ namespace Micro
 			return *this;
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, const NodeChain& current) noexcept
-		{
-			stream << "[";
-			auto node = current.m_Head;
-			while (IsNodeValid(node))
-			{
-				stream << node->Value;
-				if (IsNodeValid(node->Next))
-					stream << " -> ";
-
-				node = node->Next;
-			}
-
-			stream << "]";
-			return stream;
-		}
-
 	protected:
 		/*
 		 *  ============================================================
